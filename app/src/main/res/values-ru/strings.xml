@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_settings">Настройки</string>
+    <string name="calendar">Календарь</string>
+    <string name="clients">Клиенты</string>
+</resources>
