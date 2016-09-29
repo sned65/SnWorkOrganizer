@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_settings">Настройки</string>
+    <string name="author">Николай Смирнов</string>
+    <string name="ok">ОК</string>
+    <string name="error_no_camera_permission">Приложение не имеет разрешения на работу с камерой.</string>
+    <string name="permission_camera_rationale">Для фотографирования необходим доступ к камере</string>
+    <string name="menu_settings">Настройки</string>
     <string name="calendar">Календарь</string>
     <string name="clients">Клиенты</string>
+    <string name="menu_about">О программе</string>
 </resources>
