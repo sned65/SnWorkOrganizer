@@ -12,18 +12,21 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-
-import android.widget.TextView;
 
 import sne.workorganizer.help.AboutAppDialogFragment;
 
 public class MainActivity extends AppCompatActivity
 {
+    private static final String TAG = MainActivity.class.getName();
+    private static final int PAGE_JOURNAL = 0;
+    private static final int PAGE_CLIENTS = 1;
+    private static final int MENU_ITEM_CREATE_CLIENT = 0;
+    private static final int MENU_ITEM_CREATE_PROJECT = 1;
+    private static final int RC_CREATE_CLIENT = 100;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -39,6 +42,7 @@ public class MainActivity extends AppCompatActivity
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager _viewPager;
+    private Menu _menu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -48,6 +52,7 @@ public class MainActivity extends AppCompatActivity
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        _menu = toolbar.getMenu();
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         _sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -58,6 +63,17 @@ public class MainActivity extends AppCompatActivity
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(_viewPager);
+
+        ViewPager.OnPageChangeListener pageChangeListener = new ViewPager.SimpleOnPageChangeListener()
+        {
+            @Override
+            public void onPageSelected(int position)
+            {
+                super.onPageSelected(position);
+                changeMenuItemVisibility(position);
+            }
+        };
+        _viewPager.addOnPageChangeListener(pageChangeListener);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener()
@@ -72,12 +88,28 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    private void changeMenuItemVisibility(int position)
+    {
+        MenuItem createClientItem = _menu.getItem(MENU_ITEM_CREATE_CLIENT);
+        MenuItem createProjectItem = _menu.getItem(MENU_ITEM_CREATE_PROJECT);
+        if (position == PAGE_JOURNAL)
+        {
+            createClientItem.setVisible(false);
+            createProjectItem.setVisible(true);
+        }
+        else if (position == PAGE_CLIENTS)
+        {
+            createClientItem.setVisible(true);
+            createProjectItem.setVisible(false);
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        changeMenuItemVisibility(0);
         return true;
     }
 
@@ -89,6 +121,9 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId())
         {
+
+        // COMMON ITEMS
+
         case R.id.menu_settings:
 //            Intent settings = new Intent(this, SettingsActivity.class);
 //            startActivity(settings);
@@ -102,8 +137,36 @@ public class MainActivity extends AppCompatActivity
             about.show(getFragmentManager(), "about");
             return true;
         }
+
+        // CLIENT ITEMS
+        case R.id.menu_create_client:
+            Intent createClient = new Intent(this, CreateClientActivity.class);
+            startActivityForResult(createClient, RC_CREATE_CLIENT);
+            return true;
+
+        // JOURNAL ITEMS
+        case R.id.menu_create_project:
+            // TODO
+            Snackbar.make(_viewPager, "Create new project", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+            return true;
         default:
             return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,
+                                    Intent data)
+    {
+        Log.i(TAG, "requestCode = "+requestCode+", resultCode = "+resultCode);
+        if (resultCode == RESULT_OK)
+        {
+            if (requestCode==RC_CREATE_CLIENT)
+            {
+                Snackbar.make(_viewPager, "Create new client", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
         }
     }
 

@@ -3,8 +3,11 @@
     <string name="author">Nikolai Smirnov</string>
     <string name="copyright" translatable="false">© 2016</string>
     <string name="ok">OK</string>
+    <string name="create">Create</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
 
-    <string name="error_no_camera_permission">приложение не имеет разрешения на работу с камерой.</string>
+    <string name="error_no_camera_permission">Application does not have permission to work with the camera.</string>
     <string name="permission_camera_rationale">Необходим доступ к камере</string>
 
     <string name="menu_settings">Settings</string>
@@ -12,4 +15,5 @@
 
     <string name="calendar">Calendar</string>
     <string name="clients">Clients</string>
+    <string name="no_clients">No clients found</string>
 </resources>

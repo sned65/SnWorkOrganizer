@@ -3,6 +3,14 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context="sne.workorganizer.MainActivity">
 
+    <item android:id="@+id/menu_create_client"
+          android:title="@string/create"
+          app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/menu_create_project"
+          android:title="@string/create"
+          app:showAsAction="ifRoom"/>
+
     <item
         android:id="@+id/menu_settings"
         android:title="@string/menu_settings"

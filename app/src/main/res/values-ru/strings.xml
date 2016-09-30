@@ -8,4 +8,8 @@
     <string name="calendar">Календарь</string>
     <string name="clients">Клиенты</string>
     <string name="menu_about">О программе</string>
+    <string name="no_clients">Клиенты не найдены</string>
+    <string name="create">Создать</string>
+    <string name="delete">Удалить</string>
+    <string name="edit">Изменить</string>
 </resources>
