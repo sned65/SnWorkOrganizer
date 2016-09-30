@@ -12,4 +12,6 @@
     <string name="create">Создать</string>
     <string name="delete">Удалить</string>
     <string name="edit">Изменить</string>
+    <string name="cancel">Отмена</string>
+    <string name="save">Сохранить</string>
 </resources>

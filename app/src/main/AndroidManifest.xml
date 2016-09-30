@@ -30,8 +30,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".CreateClientActivity"
-                  android:label="">
+        <activity android:name=".CreateClientActivity">
         </activity>
     </application>
 
