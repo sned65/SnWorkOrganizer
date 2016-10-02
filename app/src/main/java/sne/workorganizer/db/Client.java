@@ -1,5 +1,8 @@
 package sne.workorganizer.db;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -7,39 +10,75 @@ import java.util.UUID;
 /**
  * Single row in the Clients table.
  */
-public class Client
+public class Client implements Parcelable
 {
     private String _id;
     private String _name;
     private String _phone;
     private String _email;
-    private List<Project> _projects;
+    private String _social;
+    private List<Project> _projects = new ArrayList<>();
 
     public Client()
     {
         _id = UUID.randomUUID().toString();
     }
 
-    public Client(String id, String name, String phone, String email)
-    {
-        this(id, name, phone, email, null);
-    }
-
-    public Client(String id, String name, String phone, String email, List<Project> projects)
+    public Client(String id, String name, String phone, String email, String social, List<Project> projects)
     {
         _id = id;
         _name = name;
         _phone = phone;
         _email = email;
-        if (projects == null)
-        {
-            _projects = new ArrayList<>();
-        }
-        else
+        _social = social;
+        if (projects != null)
         {
             _projects = projects;
         }
     }
+
+    protected Client(Parcel in)
+    {
+        _id = in.readString();
+        _name = in.readString();
+        _phone = in.readString();
+        _email = in.readString();
+        _social = in.readString();
+        // TODO projects
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeString(_id);
+        dest.writeString(_name);
+        dest.writeString(_phone);
+        dest.writeString(_email);
+        dest.writeString(_social);
+        // TODO projects
+    }
+
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<Client> CREATOR = new Parcelable.Creator<Client>()
+    {
+        @Override
+        public Client createFromParcel(Parcel in)
+        {
+            return new Client(in);
+        }
+
+        @Override
+        public Client[] newArray(int size)
+        {
+            return new Client[size];
+        }
+    };
 
     public String getId()
     {
@@ -89,5 +128,15 @@ public class Client
     public void setProjects(List<Project> projects)
     {
         _projects = projects;
+    }
+
+    public String getSocial()
+    {
+        return _social;
+    }
+
+    public void setSocial(String social)
+    {
+        _social = social;
     }
 }

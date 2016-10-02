@@ -1,10 +1,15 @@
 package sne.workorganizer.db;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.AsyncTask;
 import android.os.Process;
 import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Singleton class for database manipulations.
@@ -16,15 +21,17 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private static final String DATABASE_NAME = "SnWorkOrganizer.db";
     private static final int SCHEMA_VERSION = 1;
 
-    private static final int CLIENTS_NCOLS = 4;
+    private static final String CLIENTS_PK = "client_id";
+    private static final int CLIENTS_NCOLS = 5;
     private static final String CLIENTS_TYPED_COLUMNS =
-            "client_id TEXT PRIMARY KEY, fullname TEXT, phone TEXT, email TEXT";
+            "client_id TEXT PRIMARY KEY, fullname TEXT, phone TEXT, email TEXT, social TEXT";
     private static final String CLIENTS_COLUMNS =
-            "client_id, fullname, phone, email";
+            "client_id, fullname, phone, email, social";
     private static final String CLIENTS_VALUE_PLACEHOLDERS =
-            "?, ?, ?, ?";
+            "?, ?, ?, ?, ?";
 
     private static final int PROJECTS_NCOLS = 5;
+    private static final String PROJECTS_PK = "proj_id";
     private static final String PROJECTS_TYPED_COLUMNS =
             "proj_id TEXT PRIMARY KEY, client_id TEXT, proj_name TEXT, work_date TEXT, status TEXT," +
             " FOREIGN KEY(client_id) REFERENCES clients(client_id) ON DELETE CASCADE";
@@ -35,6 +42,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     private static DatabaseHelper _instance;
 
+    private ArrayList<Client> _clients = new ArrayList<>();
+    private boolean _clientsLoaded = false;
+    private static final int INSERT_POSITION = 0;
+
+    //////////////////////////////////////////////////////////////////
     public synchronized static DatabaseHelper getInstance(Context ctx)
     {
         if (_instance == null)
@@ -42,6 +54,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
             _instance = new DatabaseHelper(ctx.getApplicationContext());
         }
         return _instance;
+    }
+
+    public interface DbSelectCallback
+    {
+        void onSelectFinished(ArrayList<Client> records);
     }
 
     private DatabaseHelper(Context ctx)
@@ -77,25 +94,90 @@ public class DatabaseHelper extends SQLiteOpenHelper
         }
     }
 
+    public void invalidateCache()
+    {
+        _clients = null;
+    }
+
+    /**
+     * Finds all clients synchronously.
+     *
+     * @return list of {@code Client}s
+     */
+    public List<Client> findAllClients()
+    {
+        if (_clients == null)
+        {
+            _clients = new SelectTask(null).select();
+        }
+        return _clients;
+    }
+
+    /**
+     * Finds all clients asynchronously.
+     * Calls {@code callback} when the query is finished.
+     *
+     * @param callback
+     */
+    public void findAllClients(DbSelectCallback callback)
+    {
+        new SelectTask(callback).execute();
+    }
+
+    public int getInsertPosition()
+    {
+        return INSERT_POSITION;
+    }
+
+    /**
+     * Insert new client.
+     *
+     * @param client client to be inserted
+     */
+    public void createClient(Client client)
+    {
+        _clients.add(INSERT_POSITION, client);
+        new UpdateThread(client).start();
+    }
+
+    /**
+     * Update client in a separate thread.
+     *
+     * @param client
+     */
+    public void updateClient(Client client)
+    {
+        // TODO update _clients
+        new UpdateThread(client).start();
+    }
+
+    /**
+     * Delete client in a separate thread.
+     *
+     * @param id
+     */
+    public void deleteClient(String id)
+    {
+        // TODO delete from _clients
+        new DeleteThread(Table.CLIENTS, id).start();
+    }
+
     /**
      * SQL INSERT or UPDATE
      */
     private class UpdateThread extends Thread
     {
-        private Table _table;
         private Object _row;
 
         UpdateThread(Client row)
         {
             super();
-            _table = Table.CLIENTS;
             _row = row;
         }
 
         UpdateThread(Project row)
         {
             super();
-            _table = Table.PROJECTS;
             _row = row;
         }
 
@@ -116,8 +198,9 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 args[1] = client.getName();
                 args[2] = client.getPhone();
                 args[3] = client.getEmail();
-                Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s", sql,
-                        args[0], args[1], args[2], args[3]));
+                args[4] = client.getSocial();
+                Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s, %s", sql,
+                        args[0], args[1], args[2], args[3], args[4]));
             }
             else if (_row instanceof Project)
             {
@@ -158,9 +241,89 @@ public class DatabaseHelper extends SQLiteOpenHelper
         {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
 
-            String sql = "DELETE FROM " + _table + " WHERE id = ?";
+            String sql = null;
             Object[] args = { _id };
+
+            if (_table == Table.CLIENTS)
+            {
+                sql = "DELETE FROM " + _table + " WHERE " + CLIENTS_PK + " = ?";
+            }
+            else if (_table == Table.PROJECTS)
+            {
+                sql = "DELETE FROM " + _table + " WHERE " + PROJECTS_PK + " = ?";
+            }
+
             getWritableDatabase().execSQL(sql, args);
+        }
+    }
+
+    private class SelectTask extends AsyncTask<Void, Void, ArrayList<Client>>
+    {
+        private DbSelectCallback _callback = null;
+
+        SelectTask(DbSelectCallback callback)
+        {
+            super();
+            _callback = callback;
+        }
+
+        @Override
+        protected ArrayList<Client> doInBackground(Void... params)
+        {
+            return select();
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<Client> result)
+        {
+            if (_callback != null)
+            {
+                _callback.onSelectFinished(result);
+            }
+        }
+
+        public ArrayList<Client> select()
+        {
+            ArrayList<Client> result = new ArrayList<>();
+            String sql = "SELECT " + CLIENTS_COLUMNS + " FROM " + Table.CLIENTS;
+            String sqlProj = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS
+                    + " WHERE client_id = ?";
+
+            SQLiteDatabase db = getReadableDatabase();
+            Cursor c = db.rawQuery(sql, null);
+            String[] args = new String[1];
+
+            while (c.moveToNext())
+            {
+                Client client = new Client();
+                client.setId(c.getString(0));
+                client.setName(c.getString(1));
+                client.setPhone(c.getString(2));
+                client.setEmail(c.getString(3));
+                client.setSocial(c.getString(4));
+
+                // Fill projects
+
+                List<Project> projects = new ArrayList<>();
+                args[0] = client.getId();
+                Cursor c_proj = db.rawQuery(sqlProj, args);
+                while (c_proj.moveToNext())
+                {
+                    Project proj = new Project();
+                    proj.setId(c.getString(0));
+                    proj.setClientId(c.getString(1));
+                    proj.setName(c.getString(2));
+                    proj.setDate(c.getString(3));
+                    proj.setStatus(c.getString(4));
+                    projects.add(proj);
+                }
+                client.setProjects(projects);
+
+                result.add(client);
+            }
+
+            c.close();
+            return result;
         }
     }
 }

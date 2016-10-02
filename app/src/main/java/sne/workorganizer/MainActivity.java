@@ -17,6 +17,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import sne.workorganizer.db.Client;
+import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.help.AboutAppDialogFragment;
 
 public class MainActivity extends AppCompatActivity
@@ -27,6 +29,9 @@ public class MainActivity extends AppCompatActivity
     private static final int MENU_ITEM_CREATE_CLIENT = 0;
     private static final int MENU_ITEM_CREATE_PROJECT = 1;
     private static final int RC_CREATE_CLIENT = 100;
+
+    public static final String TAG_NEW_CLIENT = "new_client";
+    private ClientsFragment _clientsFragment;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -85,11 +90,25 @@ public class MainActivity extends AppCompatActivity
                         .setAction("Action", null).show();
             }
         });
-
     }
+//
+//    @Override
+//    public void onRestoreInstanceState(Bundle state)
+//    {
+//        super.onRestoreInstanceState(state);
+//    }
 
+    /**
+     *
+     * @param position current page viewer page
+     */
     private void changeMenuItemVisibility(int position)
     {
+        if (_menu.size() == 0)
+        {
+            return;
+        }
+
         MenuItem createClientItem = _menu.getItem(MENU_ITEM_CREATE_CLIENT);
         MenuItem createProjectItem = _menu.getItem(MENU_ITEM_CREATE_PROJECT);
         if (position == PAGE_JOURNAL)
@@ -109,7 +128,7 @@ public class MainActivity extends AppCompatActivity
     {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        changeMenuItemVisibility(0);
+        changeMenuItemVisibility(_viewPager.getCurrentItem());
         return true;
     }
 
@@ -162,9 +181,15 @@ public class MainActivity extends AppCompatActivity
         Log.i(TAG, "requestCode = "+requestCode+", resultCode = "+resultCode);
         if (resultCode == RESULT_OK)
         {
-            if (requestCode==RC_CREATE_CLIENT)
+            if (requestCode == RC_CREATE_CLIENT)
             {
-                Snackbar.make(_viewPager, "Create new client", Snackbar.LENGTH_LONG)
+                DatabaseHelper db = DatabaseHelper.getInstance(this);
+                if (_clientsFragment != null)
+                {
+                    _clientsFragment.getAdapter().notifyDataSetChanged();//.notifyItemInserted(db.getInsertPosition());
+                }
+                // TODO
+                Snackbar.make(_viewPager, "New client created", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         }
@@ -189,7 +214,13 @@ public class MainActivity extends AppCompatActivity
             switch (position)
             {
             case 0: return JournalFragment.newInstance();
-            case 1: return ClientsFragment.newInstance();
+            case 1:
+            {
+                // FIXME
+                _clientsFragment = ClientsFragment.newInstance();
+                Log.i(TAG, "SectionsPagerAdapter.getItem(1) "+_clientsFragment);
+                return _clientsFragment;
+            }
             default: return null;
             }
         }

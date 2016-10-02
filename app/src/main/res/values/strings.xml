@@ -18,4 +18,9 @@
     <string name="calendar">Calendar</string>
     <string name="clients">Clients</string>
     <string name="no_clients">No clients found</string>
+    <string name="new_client">New Client</string>
+    <string name="client_name">Name</string>
+    <string name="client_phone">Phone</string>
+    <string name="client_social">Social Network</string>
+    <string name="client_email">E-mail</string>
 </resources>

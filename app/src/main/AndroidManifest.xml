@@ -30,7 +30,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".CreateClientActivity">
+        <activity android:name=".CreateClientActivity"
+                  android:label="@string/new_client"
+                  android:windowSoftInputMode="adjustResize">
         </activity>
     </application>
 

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sne.workorganizer.db.Client;
+import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
 
 /**
@@ -26,14 +27,13 @@ import sne.workorganizer.db.Project;
 public class ClientsFragment extends Fragment
 {
     private RecyclerView _recyclerView;
+    private RecyclerView.Adapter _adapter;
 
     private static Client _EMPTY = new Client();
     static {
         _EMPTY.setId("EMPTY");
     }
 
-    private ArrayList<Client> _clients = new ArrayList<>();
-    private boolean _clientsLoaded = false;
 
     /**
      * Returns a new instance of ClientsFragment.
@@ -69,9 +69,14 @@ public class ClientsFragment extends Fragment
         LinearLayoutManager layoutManager = new LinearLayoutManager(rootView.getContext());
         _recyclerView.setLayoutManager(layoutManager);
 
-        RecyclerView.Adapter adapter = new ClientListAdapter(getActivity());
-        _recyclerView.setAdapter(adapter);
+        _adapter = new ClientListAdapter(getActivity());
+        _recyclerView.setAdapter(_adapter);
         return rootView;
+    }
+
+    public RecyclerView.Adapter getAdapter()
+    {
+        return _adapter;
     }
 
     private class ClientListAdapter extends RecyclerView.Adapter<RowHolder>
@@ -97,26 +102,28 @@ public class ClientsFragment extends Fragment
         @Override
         public void onBindViewHolder(RowHolder holder, int position)
         {
-            if (_clients.isEmpty())
+            List<Client> clients = DatabaseHelper.getInstance(getActivity()).findAllClients();
+            if (clients.isEmpty())
             {
                 holder.bindModel(_EMPTY);
             }
             else
             {
-                holder.bindModel(_clients.get(position));
+                holder.bindModel(clients.get(position));
             }
         }
 
         @Override
         public int getItemCount()
         {
-            if (_clients.isEmpty())
+            List<Client> clients = DatabaseHelper.getInstance(getActivity()).findAllClients();
+            if (clients.isEmpty())
             {
                 return 1;
             }
             else
             {
-                return _clients.size();
+                return clients.size();
             }
         }
     }

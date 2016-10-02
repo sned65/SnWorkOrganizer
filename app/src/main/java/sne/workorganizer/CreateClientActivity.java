@@ -6,6 +6,10 @@ import android.os.Bundle;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+
+import sne.workorganizer.db.Client;
+import sne.workorganizer.db.DatabaseHelper;
 
 public class CreateClientActivity extends AppCompatActivity
 {
@@ -22,7 +26,7 @@ public class CreateClientActivity extends AppCompatActivity
             public boolean onCreateActionMode(ActionMode mode, Menu menu)
             {
                 getMenuInflater().inflate(R.menu.menu_create_client, menu);
-                mode.setTitle("New Client");
+                //mode.setTitle("New Client");
                 return true;
             }
 
@@ -64,8 +68,22 @@ public class CreateClientActivity extends AppCompatActivity
 
     private void save()
     {
+        TextView nameView = (TextView) findViewById(R.id.client_name);
+        TextView phoneView = (TextView) findViewById(R.id.client_phone);
+        TextView socialView = (TextView) findViewById(R.id.client_social);
+        TextView emailView = (TextView) findViewById(R.id.client_email);
+
+        Client client = new Client();
+        client.setName(nameView.getText().toString());
+        client.setPhone(phoneView.getText().toString());
+        client.setSocial(socialView.getText().toString());
+        client.setEmail(emailView.getText().toString());
+
+        DatabaseHelper db = DatabaseHelper.getInstance(this);
+        db.createClient(client);
+
         Intent result = new Intent();
-        //result.putExtra()
+        //result.putExtra(MainActivity.TAG_NEW_CLIENT, client);
         setResult(RESULT_OK, result);
         finish();
     }
