@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +27,8 @@ import sne.workorganizer.db.Project;
  */
 public class ClientsFragment extends Fragment
 {
+    private static final String TAG = ClientsFragment.class.getSimpleName();
+
     private RecyclerView _recyclerView;
     private RecyclerView.Adapter _adapter;
 
@@ -50,15 +53,16 @@ public class ClientsFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
-        super.onCreate(savedInstanceState);
         //Log.i(TAG, "onCreate() called "+(savedInstanceState == null));
-        setRetainInstance(true);
+        super.onCreate(savedInstanceState);
+        //setRetainInstance(true);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
+        //Log.i(TAG, "onCreateView() called "+(savedInstanceState == null));
         View rootView = inflater.inflate(R.layout.client_list, container, false);
         _recyclerView = (RecyclerView) rootView.findViewById(R.id.client_list);
 

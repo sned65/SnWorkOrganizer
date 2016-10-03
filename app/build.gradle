@@ -36,9 +36,12 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:24.2.1'
-    compile 'com.android.support:design:24.2.1'
-    compile 'com.android.support:recyclerview-v7:24.2.1'
-    compile 'com.android.support:cardview-v7:24.2.1'
+    // 24.2.1 leads to
+    //  java.lang.IllegalArgumentException: Rect should intersect with child's bounds.
+    // http://stackoverflow.com/questions/39536519/java-lang-illegalargumentexception-rect-should-intersect-with-childs-bounds
+    compile 'com.android.support:appcompat-v7:24.1.1'
+    compile 'com.android.support:design:24.1.1'
+    compile 'com.android.support:recyclerview-v7:24.1.1'
+    compile 'com.android.support:cardview-v7:24.1.1'
     testCompile 'junit:junit:4.12'
 }

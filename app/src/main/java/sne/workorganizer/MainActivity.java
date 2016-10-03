@@ -5,6 +5,7 @@ import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 
 import android.support.v4.app.Fragment;
@@ -31,7 +32,6 @@ public class MainActivity extends AppCompatActivity
     private static final int RC_CREATE_CLIENT = 100;
 
     public static final String TAG_NEW_CLIENT = "new_client";
-    private ClientsFragment _clientsFragment;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -52,18 +52,20 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        //Log.i(TAG, "onCreate("+savedInstanceState+") called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         _menu = toolbar.getMenu();
+
+        _viewPager = (ViewPager) findViewById(R.id.container);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         _sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        _viewPager = (ViewPager) findViewById(R.id.container);
         _viewPager.setAdapter(_sectionsPagerAdapter);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
@@ -178,19 +180,18 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode,
                                     Intent data)
     {
-        Log.i(TAG, "requestCode = "+requestCode+", resultCode = "+resultCode);
+//        Log.i(TAG, "requestCode = "+(requestCode == RC_CREATE_CLIENT ? "CREATE_CLIENT" : requestCode)
+//                +", resultCode = "+(resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
         if (resultCode == RESULT_OK)
         {
             if (requestCode == RC_CREATE_CLIENT)
             {
                 DatabaseHelper db = DatabaseHelper.getInstance(this);
-                if (_clientsFragment != null)
-                {
-                    _clientsFragment.getAdapter().notifyDataSetChanged();//.notifyItemInserted(db.getInsertPosition());
-                }
-                // TODO
-                Snackbar.make(_viewPager, "New client created", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                RecyclerView rv = (RecyclerView) findViewById(R.id.client_list);
+                rv.getAdapter().notifyItemInserted(db.getInsertPosition());//.notifyDataSetChanged();
+
+//                Snackbar.make(_viewPager, "New client created", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
             }
         }
     }
@@ -210,16 +211,14 @@ public class MainActivity extends AppCompatActivity
         @Override
         public Fragment getItem(int position)
         {
+            Log.i(TAG, "SectionsPagerAdapter.getItem("+position+") called");
             // getItem is called to instantiate the fragment for the given page.
             switch (position)
             {
             case 0: return JournalFragment.newInstance();
             case 1:
             {
-                // FIXME
-                _clientsFragment = ClientsFragment.newInstance();
-                Log.i(TAG, "SectionsPagerAdapter.getItem(1) "+_clientsFragment);
-                return _clientsFragment;
+                return ClientsFragment.newInstance();
             }
             default: return null;
             }

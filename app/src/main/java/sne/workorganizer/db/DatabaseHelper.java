@@ -42,7 +42,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     private static DatabaseHelper _instance;
 
-    private ArrayList<Client> _clients = new ArrayList<>();
+    private ArrayList<Client> _clients;
     private boolean _clientsLoaded = false;
     private static final int INSERT_POSITION = 0;
 
@@ -99,6 +99,52 @@ public class DatabaseHelper extends SQLiteOpenHelper
         _clients = null;
     }
 
+    private ArrayList<Client> select()
+    {
+        ArrayList<Client> result = new ArrayList<>();
+        String sql = "SELECT " + CLIENTS_COLUMNS + " FROM " + Table.CLIENTS;
+        String sqlProj = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS
+                + " WHERE client_id = ?";
+
+        SQLiteDatabase db = getReadableDatabase();
+        Log.i(TAG, sql);
+        Cursor c = db.rawQuery(sql, null);
+        String[] args = new String[1];
+
+        while (c.moveToNext())
+        {
+            Client client = new Client();
+            client.setId(c.getString(0));
+            client.setName(c.getString(1));
+            client.setPhone(c.getString(2));
+            client.setEmail(c.getString(3));
+            client.setSocial(c.getString(4));
+
+            // Fill projects
+
+            List<Project> projects = new ArrayList<>();
+            args[0] = client.getId();
+            Log.i(TAG, sqlProj+", using "+args[0]);
+            Cursor c_proj = db.rawQuery(sqlProj, args);
+            while (c_proj.moveToNext())
+            {
+                Project proj = new Project();
+                proj.setId(c.getString(0));
+                proj.setClientId(c.getString(1));
+                proj.setName(c.getString(2));
+                proj.setDate(c.getString(3));
+                proj.setStatus(c.getString(4));
+                projects.add(proj);
+            }
+            client.setProjects(projects);
+
+            result.add(client);
+        }
+
+        c.close();
+        return result;
+    }
+
     /**
      * Finds all clients synchronously.
      *
@@ -106,9 +152,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
      */
     public List<Client> findAllClients()
     {
+        //Log.i(TAG, "findAllClients() called");
         if (_clients == null)
         {
-            _clients = new SelectTask(null).select();
+            //Log.i(TAG, "findAllClients() SELECT");
+            _clients = select();
         }
         return _clients;
     }
@@ -282,6 +330,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
             }
         }
 
+/*
         public ArrayList<Client> select()
         {
             ArrayList<Client> result = new ArrayList<>();
@@ -290,6 +339,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                     + " WHERE client_id = ?";
 
             SQLiteDatabase db = getReadableDatabase();
+            Log.i(TAG, sql);
             Cursor c = db.rawQuery(sql, null);
             String[] args = new String[1];
 
@@ -306,6 +356,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
                 List<Project> projects = new ArrayList<>();
                 args[0] = client.getId();
+                Log.i(TAG, sqlProj+", using "+args[0]);
                 Cursor c_proj = db.rawQuery(sqlProj, args);
                 while (c_proj.moveToNext())
                 {
@@ -325,5 +376,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
             c.close();
             return result;
         }
+*/
     }
 }
