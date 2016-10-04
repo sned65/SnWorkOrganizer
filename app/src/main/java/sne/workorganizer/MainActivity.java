@@ -1,6 +1,7 @@
 package sne.workorganizer;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -17,6 +18,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
@@ -196,6 +198,34 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public void callPhone(View view)
+    {
+        String phone = ((TextView) view).getText().toString();
+        Intent callIntent = new Intent(Intent.ACTION_DIAL);
+        callIntent.setData(Uri.parse("tel:"+ Uri.encode(phone.trim())));
+        callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(callIntent);
+    }
+
+    public void sendEmail(View view)
+    {
+        // TODO
+    }
+
+    public void openUrl(View view)
+    {
+        String url = ((TextView) view).getText().toString().trim();
+        if (!url.startsWith("http://") && !url.startsWith("https://"))
+        {
+            url = "http://" + url;
+        }
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        if (browserIntent.resolveActivity(getPackageManager()) != null)
+        {
+            startActivity(browserIntent);
+        }
+    }
+
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
@@ -211,7 +241,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         public Fragment getItem(int position)
         {
-            Log.i(TAG, "SectionsPagerAdapter.getItem("+position+") called");
+            //Log.i(TAG, "SectionsPagerAdapter.getItem("+position+") called");
             // getItem is called to instantiate the fragment for the given page.
             switch (position)
             {

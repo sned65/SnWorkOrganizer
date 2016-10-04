@@ -37,6 +37,12 @@ public class Client implements Parcelable
         }
     }
 
+    @Override
+    public String toString()
+    {
+        return "Client["+_id+", "+_name+"]";
+    }
+
     protected Client(Parcel in)
     {
         _id = in.readString();

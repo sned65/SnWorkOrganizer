@@ -7,6 +7,73 @@
     android:layout_margin="4dp"
     cardview:cardCornerRadius="4dp">
 
+    <com.silencedut.expandablelayout.ExpandableLayout
+        android:id="@+id/client_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground"
+        cardview:expWithParentScroll="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/client_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TextView"
+                android:textSize="25sp"
+                android:textStyle="bold"/>
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/tbl_client_proj"
+                android:stretchColumns="*">
+
+            </TableLayout>
+
+        </LinearLayout>
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/tbl_client_details">
+
+            <TableRow android:layout_marginTop="3dp" android:layout_marginBottom="3dp">
+                <TextView
+                    android:text="@string/client_phone"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"/>
+                <TextView android:id="@+id/client_phone"
+                    android:onClick="callPhone"/>
+            </TableRow>
+
+            <TableRow android:layout_marginTop="3dp" android:layout_marginBottom="3dp">
+                <TextView
+                    android:text="@string/client_email"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"/>
+                <TextView android:id="@+id/client_email"
+                    android:onClick="sendEmail"/>
+            </TableRow>
+
+            <TableRow android:layout_marginTop="3dp" android:layout_marginBottom="3dp">
+                <TextView android:text="@string/client_social"
+                          android:paddingStart="4dp"
+                          android:paddingEnd="4dp"/>
+                <TextView android:id="@+id/client_social"
+                    android:onClick="openUrl"/>
+            </TableRow>
+
+        </TableLayout>
+
+
+    </com.silencedut.expandablelayout.ExpandableLayout>
+
+<!--
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -29,4 +96,5 @@
         </TableLayout>
 
     </LinearLayout>
+-->
 </android.support.v7.widget.CardView>

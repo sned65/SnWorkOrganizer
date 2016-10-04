@@ -19,4 +19,7 @@
     <string name="client_phone">Телефон</string>
     <string name="client_social">Социальная сеть</string>
     <string name="client_email">Почта</string>
+    <string name="client_actions_dlg_title">Действия с записью</string>
+    <string name="ccd_sure">Вы уверены?</string>
+    <string name="client_delete_dlg_title">Удалить клиента</string>
 </resources>

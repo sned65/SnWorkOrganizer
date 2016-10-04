@@ -86,6 +86,7 @@ public class ClientsFragment extends Fragment
     private class ClientListAdapter extends RecyclerView.Adapter<RowHolder>
     {
         private Activity _activity;
+        List<Client> _clients = DatabaseHelper.getInstance(getActivity()).findAllClients();
 
         public ClientListAdapter(Activity activity)
         {
@@ -106,28 +107,27 @@ public class ClientsFragment extends Fragment
         @Override
         public void onBindViewHolder(RowHolder holder, int position)
         {
-            List<Client> clients = DatabaseHelper.getInstance(getActivity()).findAllClients();
-            if (clients.isEmpty())
+            if (_clients.isEmpty())
             {
                 holder.bindModel(_EMPTY);
             }
             else
             {
-                holder.bindModel(clients.get(position));
+                holder.bindModel(_clients.get(position));
             }
+
         }
 
         @Override
         public int getItemCount()
         {
-            List<Client> clients = DatabaseHelper.getInstance(getActivity()).findAllClients();
-            if (clients.isEmpty())
+            if (_clients.isEmpty())
             {
                 return 1;
             }
             else
             {
-                return clients.size();
+                return _clients.size();
             }
         }
     }
@@ -138,6 +138,9 @@ public class ClientsFragment extends Fragment
         private Activity _activity;
         private Client _client;
         private TextView _clientName;
+        private TextView _clientPhone;
+        private TextView _clientSocial;
+        private TextView _clientEmail;
         private TableLayout _projTable;
 
         public RowHolder(View itemView, Activity activity)
@@ -146,10 +149,17 @@ public class ClientsFragment extends Fragment
 
             _activity = activity;
             _clientName = (TextView) itemView.findViewById(R.id.client_name);
+            _clientPhone = (TextView) itemView.findViewById(R.id.client_phone);
+            _clientSocial = (TextView) itemView.findViewById(R.id.client_social);
+            _clientEmail = (TextView) itemView.findViewById(R.id.client_email);
             _projTable = (TableLayout) itemView.findViewById(R.id.tbl_client_proj);
 
-            itemView.setOnClickListener(this);
-            itemView.setOnLongClickListener(this);
+            //itemView.setOnClickListener(this);
+            //Log.i(TAG, "RowHolder() itemView "+itemView.getClass());
+            //itemView.setOnLongClickListener(this);
+            // set onLongClickListener for ExpandableLayout
+            View content = itemView.findViewById(R.id.client_content);
+            content.setOnLongClickListener(this);
         }
 
         public void setName(String text)
@@ -169,6 +179,9 @@ public class ClientsFragment extends Fragment
 
             _client = client;
             setName(_client.getName());
+            _clientPhone.setText(_client.getPhone());
+            _clientSocial.setText(_client.getSocial());
+            _clientEmail.setText(_client.getEmail());
             _projTable.setVisibility(View.VISIBLE);
 
             List<Project> projects = _client.getProjects();
@@ -199,6 +212,7 @@ public class ClientsFragment extends Fragment
             });
 */
 //            _trMap.put(row, nr);
+
             _projTable.addView(row);
         }
 
@@ -230,13 +244,13 @@ public class ClientsFragment extends Fragment
         @Override
         public boolean onLongClick(View v)
         {
-            //Log.i(TAG, "onLongClick() called "+getAdapterPosition());
+            Log.i(TAG, "onLongClick() called "+getAdapterPosition()+"; "+_client);
             if (_client == null)
             {
                 return true;
             }
 
-            //NoteActionsFragment.newInstance(_bookmark).show(_activity.getFragmentManager(), "note_actions");
+            ClientActionsFragment.newInstance(_client).show(_activity.getFragmentManager(), "client_actions");
             return true;
         }
     }

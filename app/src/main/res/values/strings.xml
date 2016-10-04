@@ -23,4 +23,7 @@
     <string name="client_phone">Phone</string>
     <string name="client_social">Social Network</string>
     <string name="client_email">E-mail</string>
+    <string name="client_actions_dlg_title">Actions on Record</string>
+    <string name="ccd_sure">Are you sure?</string>
+    <string name="client_delete_dlg_title">Delete Client</string>
 </resources>

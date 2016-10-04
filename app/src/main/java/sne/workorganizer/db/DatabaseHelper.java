@@ -202,12 +202,22 @@ public class DatabaseHelper extends SQLiteOpenHelper
     /**
      * Delete client in a separate thread.
      *
-     * @param id
+     * @param id id of {@code Client}
+     * @return position in internal client list, or -1 if not found
      */
-    public void deleteClient(String id)
+    public int deleteClient(String id)
     {
-        // TODO delete from _clients
-        new DeleteThread(Table.CLIENTS, id).start();
+        for (int i = 0; i < _clients.size(); ++i)
+        {
+            Client c = _clients.get(i);
+            if (id.equals(c.getId()))
+            {
+                _clients.remove(i);
+                new DeleteThread(Table.CLIENTS, id).start();
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -301,6 +311,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 sql = "DELETE FROM " + _table + " WHERE " + PROJECTS_PK + " = ?";
             }
 
+            Log.i(TAG, sql+", using "+_id);
             getWritableDatabase().execSQL(sql, args);
         }
     }
