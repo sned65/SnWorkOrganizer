@@ -43,7 +43,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private static DatabaseHelper _instance;
 
     private ArrayList<Client> _clients;
-    private boolean _clientsLoaded = false;
     private static final int INSERT_POSITION = 0;
 
     //////////////////////////////////////////////////////////////////
@@ -102,7 +101,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private ArrayList<Client> select()
     {
         ArrayList<Client> result = new ArrayList<>();
-        String sql = "SELECT " + CLIENTS_COLUMNS + " FROM " + Table.CLIENTS;
+        String sql = "SELECT " + CLIENTS_COLUMNS + " FROM " + Table.CLIENTS + " ORDER BY fullname";
         String sqlProj = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS
                 + " WHERE client_id = ?";
 
