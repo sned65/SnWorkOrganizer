@@ -22,4 +22,5 @@
     <string name="client_actions_dlg_title">Действия с записью</string>
     <string name="ccd_sure">Вы уверены?</string>
     <string name="client_delete_dlg_title">Удалить клиента</string>
+    <string name="client_edit_dlg_title">Изменить</string>
 </resources>

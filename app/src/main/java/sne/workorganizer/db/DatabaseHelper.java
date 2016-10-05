@@ -192,18 +192,30 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * Update client in a separate thread.
      *
      * @param client
+     * @return position in internal client list,
+     * or -1 if not found.
      */
-    public void updateClient(Client client)
+    public int updateClient(Client client)
     {
-        // TODO update _clients
-        new UpdateThread(client).start();
+        for (int i = 0; i < _clients.size(); ++i)
+        {
+            Client c = _clients.get(i);
+            if (client.getId().equals(c.getId()))
+            {
+                _clients.set(i, client);
+                new UpdateThread(client).start();
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
      * Delete client in a separate thread.
      *
      * @param id id of {@code Client}
-     * @return position in internal client list, or -1 if not found
+     * @return position in the original internal client list,
+     * or -1 if not found.
      */
     public int deleteClient(String id)
     {

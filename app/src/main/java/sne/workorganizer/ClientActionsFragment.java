@@ -76,7 +76,7 @@ public class ClientActionsFragment extends DialogFragment
             ConfirmDeleteClientFragment.newInstance(_client).show(getFragmentManager(), "confirm_del_client");
             break;
         case 1: // Edit
-//            EditNoteFragment.newInstance(_note).show(getFragmentManager(), "edit_note");
+            EditClientFragment.newInstance(_client).show(getFragmentManager(), "edit_client");
             break;
         }
     }
