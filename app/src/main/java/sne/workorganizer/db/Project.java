@@ -15,19 +15,23 @@ public class Project
     // Instead, dates and times can be stored as ISO8601 strings ("YYYY-MM-DD HH:MM:SS.SSS").
     private String _date;
     private String _status;
+    private String _design;
+    private Integer _price;
 
     public Project()
     {
         _id = UUID.randomUUID().toString();
     }
 
-    public Project(String id, String clientId, String name, String date, String status)
+    public Project(String id, String clientId, String name, String date, String status, String design, Integer price)
     {
         _id = id;
         _clientId = clientId;
         _name = name;
         _date = date;
         _status = status;
+        _design = design;
+        _price = price;
     }
 
     public String getId()
@@ -78,5 +82,25 @@ public class Project
     public void setStatus(String status)
     {
         _status = status;
+    }
+
+    public String getDesign()
+    {
+        return _design;
+    }
+
+    public void setDesign(String design)
+    {
+        _design = design;
+    }
+
+    public Integer getPrice()
+    {
+        return _price;
+    }
+
+    public void setPrice(Integer price)
+    {
+        _price = price;
     }
 }

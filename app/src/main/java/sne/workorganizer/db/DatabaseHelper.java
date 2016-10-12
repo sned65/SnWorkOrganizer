@@ -30,15 +30,15 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private static final String CLIENTS_VALUE_PLACEHOLDERS =
             "?, ?, ?, ?, ?";
 
-    private static final int PROJECTS_NCOLS = 5;
+    private static final int PROJECTS_NCOLS = 7;
     private static final String PROJECTS_PK = "proj_id";
     private static final String PROJECTS_TYPED_COLUMNS =
-            "proj_id TEXT PRIMARY KEY, client_id TEXT, proj_name TEXT, work_date TEXT, status TEXT," +
+            "proj_id TEXT PRIMARY KEY, client_id TEXT, proj_name TEXT, work_date TEXT, status TEXT, price NUMERIC, design TEXT," +
             " FOREIGN KEY(client_id) REFERENCES clients(client_id) ON DELETE CASCADE";
     private static final String PROJECTS_COLUMNS =
-            "proj_id, client_id, proj_name, work_date, status";
+            "proj_id, client_id, proj_name, work_date, status, price, design";
     private static final String PROJECTS_VALUE_PLACEHOLDERS =
-            "?, ?, ?, ?, ?";
+            "?, ?, ?, ?, ?, ?, ?";
 
     private static DatabaseHelper _instance;
 
@@ -133,6 +133,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 proj.setName(c.getString(2));
                 proj.setDate(c.getString(3));
                 proj.setStatus(c.getString(4));
+                proj.setPrice(c.getInt(5));
+                proj.setDesign(c.getString(6));
                 projects.add(proj);
             }
             client.setProjects(projects);
