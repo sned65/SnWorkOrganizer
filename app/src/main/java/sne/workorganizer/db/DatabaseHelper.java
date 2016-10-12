@@ -11,11 +11,29 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO work with photos
+// http://blog.cindypotvin.com/saving-an-image-in-a-sqlite-database-in-your-android-application/
+
 /**
  * Singleton class for database manipulations.
  */
 public class DatabaseHelper extends SQLiteOpenHelper
 {
+
+    /**
+     * List of DB tables.
+     */
+    public enum Table
+    {
+        CLIENTS, PROJECTS, PICTURES;
+
+        @Override
+        public String toString()
+        {
+            return name().toLowerCase();
+        }
+    }
+
     private static final String TAG = DatabaseHelper.class.getName();
 
     private static final String DATABASE_NAME = "SnWorkOrganizer.db";
@@ -39,6 +57,31 @@ public class DatabaseHelper extends SQLiteOpenHelper
             "proj_id, client_id, proj_name, work_date, status, price, design";
     private static final String PROJECTS_VALUE_PLACEHOLDERS =
             "?, ?, ?, ?, ?, ?, ?";
+
+    private static final int PICTURES_NCOLS = 3;
+    private static final String PICTURES_PK = "pict_id";
+    private static final String PICTURES_TYPED_COLUMNS =
+            "pict_id TEXT PRIMARY KEY, proj_id TEXT, photo TEXT," +
+            " FOREIGN KEY(proj_id) REFERENCES projects(proj_id) ON DELETE CASCADE";
+    private static final String PICTURES_COLUMNS =
+            "pict_id, proj_id, photo";
+    private static final String PICTURES_VALUE_PLACEHOLDERS =
+            "?, ?, ?";
+
+    // Notes:
+    // (1) I keep photos in a separate table to be possible
+    //     to keep the image when its project is removed
+    //     (for publicity).
+    // (2) The PICTURES table keeps only the path to the image and
+    //     the image is saved in the internal storage of the application.
+    private static final String[] DB_CREATE_SQL = new String[] {
+            "CREATE TABLE "+ Table.CLIENTS + "(" + CLIENTS_TYPED_COLUMNS + ");",
+            "CREATE TABLE "+ Table.PROJECTS + "(" + PROJECTS_TYPED_COLUMNS + ");",
+            "CREATE TABLE "+ Table.PICTURES + "(" + PICTURES_TYPED_COLUMNS + ");",
+
+            "CREATE INDEX idx_projects_client ON projects(client_id)",
+            "CREATE INDEX idx_pictures_proj ON pictures(proj_id)"
+    };
 
     private static DatabaseHelper _instance;
 
@@ -68,29 +111,16 @@ public class DatabaseHelper extends SQLiteOpenHelper
     @Override
     public void onCreate(SQLiteDatabase db)
     {
-        db.execSQL("CREATE TABLE "+ Table.CLIENTS + "(" + CLIENTS_TYPED_COLUMNS + ");");
-        db.execSQL("CREATE TABLE "+ Table.PROJECTS + "(" + PROJECTS_TYPED_COLUMNS + ");");
-        db.execSQL("CREATE INDEX idx_projects_client ON projects(client_id)");
+        for (String sql : DB_CREATE_SQL)
+        {
+            db.execSQL(sql);
+        }
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
         throw new RuntimeException("No upgrade available");
-    }
-
-    /**
-     * List of DB tables.
-     */
-    public enum Table
-    {
-        CLIENTS, PROJECTS;
-
-        @Override
-        public String toString()
-        {
-            return name().toLowerCase();
-        }
     }
 
     public void invalidateCache()
@@ -284,8 +314,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 args[2] = project.getName();
                 args[3] = project.getDate();
                 args[4] = project.getStatus();
-                Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s, %s", sql,
-                        args[0], args[1], args[2], args[3], args[4]));
+                args[5] = project.getPrice();
+                args[6] = project.getDesign();
+                Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s, %s, %s, %s", sql,
+                        args[0], args[1], args[2], args[3], args[4], args[5], args[6]));
             }
 
             getWritableDatabase().execSQL(sql, args);
@@ -322,6 +354,14 @@ public class DatabaseHelper extends SQLiteOpenHelper
             else if (_table == Table.PROJECTS)
             {
                 sql = "DELETE FROM " + _table + " WHERE " + PROJECTS_PK + " = ?";
+            }
+            else if (_table == Table.PICTURES)
+            {
+                sql = "DELETE FROM " + _table + " WHERE " + PICTURES_PK + " = ?";
+            }
+            else
+            {
+                throw new IllegalArgumentException("Cannot delete from unknown table "+_table);
             }
 
             Log.i(TAG, sql+", using "+_id);
