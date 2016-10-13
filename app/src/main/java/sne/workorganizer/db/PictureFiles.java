@@ -8,8 +8,6 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import sne.workorganizer.R;
-
 /**
  * This class contains file manipulation utilities.
  * The database tables keep only the paths to the images and
