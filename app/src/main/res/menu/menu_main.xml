@@ -3,13 +3,23 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context="sne.workorganizer.MainActivity">
 
-    <item android:id="@+id/menu_create_client"
+<!--
+    <item android:id="@+id/menu_editor_actions"
           android:title="@string/create"
           app:showAsAction="ifRoom"/>
+-->
 
     <item android:id="@+id/menu_create_project"
           android:title="@string/create"
           app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/menu_clients"
+          android:title="@string/clients"
+          app:showAsAction="never"/>
+
+    <item android:id="@+id/menu_examples"
+          android:title="@string/examples"
+          app:showAsAction="never"/>
 
     <item
         android:id="@+id/menu_settings"

@@ -8,6 +8,9 @@
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="save">Save</string>
+    <string name="design">Design</string>
+    <string name="price">Price</string>
+    <string name="title">Title</string>
 
     <string name="error_no_camera_permission">Application does not have permission to work with the camera.</string>
     <string name="permission_camera_rationale">Необходим доступ к камере</string>
@@ -16,9 +19,12 @@
     <string name="menu_about">About</string>
 
     <string name="calendar">Calendar</string>
+    <string name="client">Client</string>
     <string name="clients">Clients</string>
+    <string name="examples">Examples</string>
     <string name="no_clients">No clients found</string>
     <string name="new_client">New Client</string>
+    <string name="new_project">New Project</string>
     <string name="client_name">Name</string>
     <string name="client_phone">Phone</string>
     <string name="client_social">Social Network</string>
@@ -27,4 +33,7 @@
     <string name="ccd_sure">Are you sure?</string>
     <string name="client_delete_dlg_title">Delete Client</string>
     <string name="client_edit_dlg_title">Edit Client</string>
+    <string name="title_work_list">Works</string>
+    <string name="title_work_detail">Work Details</string>
+    <string name="select_design">&lt;Select Design&gt;</string>
 </resources>

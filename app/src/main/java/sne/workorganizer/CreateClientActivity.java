@@ -25,7 +25,7 @@ public class CreateClientActivity extends AppCompatActivity
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu)
             {
-                getMenuInflater().inflate(R.menu.menu_create_client, menu);
+                getMenuInflater().inflate(R.menu.menu_editor_actions, menu);
                 //mode.setTitle("New Client");
                 return true;
             }

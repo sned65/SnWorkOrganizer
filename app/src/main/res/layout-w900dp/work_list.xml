@@ -1,0 +1,65 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:layout_marginLeft="16dp"
+              android:layout_marginRight="16dp"
+              android:baselineAligned="false"
+              android:divider="?android:attr/dividerHorizontal"
+              android:orientation="horizontal"
+              android:showDividers="middle"
+              tools:context="sne.workorganizer.WorkListActivity">
+
+    <!--
+    This layout is a two-pane layout for the Works
+    master/detail flow.
+    
+    -->
+
+<!--
+    <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+                                            xmlns:tools="http://schemas.android.com/tools"
+                                            android:id="@+id/work_list"
+                                            android:name="sne.workorganizer.WorkListFragment"
+                                            android:layout_width="@dimen/item_width"
+                                            android:layout_height="match_parent"
+                                            android:layout_marginLeft="16dp"
+                                            android:layout_marginRight="16dp"
+                                            app:layoutManager="LinearLayoutManager"
+                                            tools:context="sne.workorganizer.WorkListActivity"
+                                            tools:listitem="@layout/work_list_content"/>
+-->
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:name="sne.workorganizer.WorkListFragment"
+        android:layout_width="@dimen/item_width"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <CalendarView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/calendarView"/>
+
+        <android.support.v7.widget.RecyclerView android:id="@+id/work_list"
+                                                android:name="sne.workorganizer.WorkListFragment"
+                                                android:layout_width="match_parent"
+                                                android:layout_height="match_parent"
+                                                android:layout_marginLeft="16dp"
+                                                android:layout_marginRight="16dp"
+                                                app:layoutManager="LinearLayoutManager"
+                                                tools:context="sne.workorganizer.WorkListActivity"
+                                                tools:listitem="@layout/work_list_content"/>
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/work_detail_container"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="3"/>
+
+</LinearLayout>

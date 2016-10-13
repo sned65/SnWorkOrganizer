@@ -24,6 +24,7 @@ import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.help.AboutAppDialogFragment;
 
+@Deprecated
 public class MainActivity extends AppCompatActivity
 {
     private static final String TAG = MainActivity.class.getName();
@@ -161,11 +162,13 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
 
+/*
         // CLIENT ITEMS
-        case R.id.menu_create_client:
+        case R.id.menu_editor_actions:
             Intent createClient = new Intent(this, CreateClientActivity.class);
             startActivityForResult(createClient, RC_CREATE_CLIENT);
             return true;
+*/
 
         // JOURNAL ITEMS
         case R.id.menu_create_project:
