@@ -27,6 +27,13 @@ public class ClientListActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
+        // add back arrow to toolbar
+        if (getSupportActionBar() != null)
+        {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            //getSupportActionBar().setDisplayShowHomeEnabled(true);
+            //getSupportActionBar().setHomeButtonEnabled(true);
+        }
         _menu = toolbar.getMenu();
     }
 
