@@ -41,7 +41,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/select_client"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:inputType="textImeMultiLine|textNoSuggestions"
+                    android:imeOptions="actionDone"
+                    android:imeActionLabel="@string/ok"/>
 
             </android.support.design.widget.TextInputLayout>
 
@@ -64,7 +67,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/title"
-                android:id="@+id/work_title"/>
+                android:id="@+id/work_title"
+                android:inputType="textImeMultiLine|text|textNoSuggestions"
+                android:imeOptions="actionDone"
+                android:imeActionLabel="@string/ok"/>
 
         </android.support.design.widget.TextInputLayout>
 
@@ -77,7 +83,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="number"
-                android:hint="@string/price"/>
+                android:hint="@string/price"
+                android:imeOptions="actionDone"
+                android:imeActionLabel="@string/ok"/>
         </android.support.design.widget.TextInputLayout>
 
         <LinearLayout

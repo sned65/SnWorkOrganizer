@@ -33,8 +33,11 @@
         <activity
             android:name=".CreateProjectActivity"
             android:label="@string/new_project"
-            android:windowSoftInputMode="adjustResize"
-            android:parentActivityName=".WorkListActivity">
+            android:parentActivityName=".WorkListActivity"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="sne.workorganizer.WorkListActivity"/>
         </activity>
 
         <activity

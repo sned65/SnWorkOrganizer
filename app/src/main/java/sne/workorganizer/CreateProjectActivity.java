@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -22,6 +23,7 @@ import java.util.Date;
 
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.util.Mix;
 
 /**
  * Create new or Update existing project.
@@ -79,7 +81,7 @@ public class CreateProjectActivity extends AppCompatActivity
             @Override
             public void onDestroyActionMode(ActionMode mode)
             {
-
+                cancel();
             }
         });
 
@@ -103,7 +105,10 @@ public class CreateProjectActivity extends AppCompatActivity
         _timePicker.setIs24HourView(true);
 
         _selectClientView = (AutoCompleteTextView) findViewById(R.id.select_client);
+
         _titleView = (TextInputEditText) findViewById(R.id.work_title);
+        _titleView.setInputType(Mix.getInputTypeForNoSuggestsInput());
+
         _priceView = (TextInputEditText) findViewById(R.id.work_price);
         _designView = (TextView) findViewById(R.id.work_design);
     }
