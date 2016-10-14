@@ -20,24 +20,27 @@ public class EditClientFragment extends DialogFragment
         implements DialogInterface.OnClickListener
 {
     private static final String TAG = EditClientFragment.class.getSimpleName();
-    private static final String KEY_CLIENT = "client";
+    private static final String KEY_CLIENT = "key_client";
+    private static final String KEY_POSITION = "key_position";
     private EditText _clientNameView;
     private EditText _clientPhoneView;
     private EditText _clientSocialView;
     private EditText _clientEmailView;
     private Client _client;
+    private int _position;
 
     //    "With normal Java objects, you might pass this [data] in via the constructor, but it is not a
     //    good idea to implement a constructor on a Fragment. Instead, the recipe is to create
     //    a static factory method (typically named newInstance()) that will create the
     //    Fragment and provide the parameters to it by updating the fragment’s “arguments”
     //    (a Bundle)"
-    public static EditClientFragment newInstance(Client client)
+    public static EditClientFragment newInstance(Client client, int position)
     {
         EditClientFragment f = new EditClientFragment();
 
         Bundle args = new Bundle();
         args.putParcelable(KEY_CLIENT, client);
+        args.putInt(KEY_POSITION, position);
         f.setArguments(args);
 
         return f;
@@ -50,6 +53,7 @@ public class EditClientFragment extends DialogFragment
                 .inflate(R.layout.client_fields, null);
 
         _client = getArguments().getParcelable(KEY_CLIENT);
+        _position = getArguments().getInt(KEY_POSITION);
 
         _clientNameView = (EditText) form.findViewById(R.id.client_name);
         _clientNameView.setText(_client.getName());
@@ -73,14 +77,18 @@ public class EditClientFragment extends DialogFragment
     @Override
     public void onClick(DialogInterface dialog, int which)
     {
+        // Fill client
         _client.setName(_clientNameView.getText().toString());
         _client.setPhone(_clientPhoneView.getText().toString());
         _client.setSocial(_clientSocialView.getText().toString());
         _client.setEmail(_clientEmailView.getText().toString());
 
-        int position = DatabaseHelper.getInstance(getActivity()).updateClient(_client);
-        MainActivity mainActivity = (MainActivity) getActivity();
-        RecyclerView rv = (RecyclerView) mainActivity.findViewById(R.id.client_list);
-        rv.getAdapter().notifyItemChanged(position);
+        // Update DB
+        DatabaseHelper.getInstance(getActivity()).updateClient(_client);
+
+        // Update UI
+        //MainActivity mainActivity = (MainActivity) getActivity();
+        ClientListActivity mainActivity = (ClientListActivity) getActivity();
+        mainActivity.updateClient(_client, _position);
     }
 }

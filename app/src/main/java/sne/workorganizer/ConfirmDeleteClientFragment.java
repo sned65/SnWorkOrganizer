@@ -20,20 +20,23 @@ public class ConfirmDeleteClientFragment extends DialogFragment
         implements DialogInterface.OnClickListener
 {
     private static final String TAG = ConfirmDeleteClientFragment.class.getSimpleName();
-    private static final String KEY_CLIENT = "client";
+    private static final String KEY_CLIENT = "key_client";
+    private static final String KEY_POSITION = "key_position";
     private Client _client;
+    private int _position;
 
     //    "With normal Java objects, you might pass this [data] in via the constructor, but it is not a
     //    good idea to implement a constructor on a Fragment. Instead, the recipe is to create
     //    a static factory method (typically named newInstance()) that will create the
     //    Fragment and provide the parameters to it by updating the fragment’s “arguments”
     //    (a Bundle)"
-    public static ConfirmDeleteClientFragment newInstance(Client client)
+    public static ConfirmDeleteClientFragment newInstance(Client client, int position)
     {
         ConfirmDeleteClientFragment f = new ConfirmDeleteClientFragment();
 
         Bundle args = new Bundle();
         args.putParcelable(KEY_CLIENT, client);
+        args.putInt(KEY_POSITION, position);
         f.setArguments(args);
 
         return f;
@@ -46,6 +49,7 @@ public class ConfirmDeleteClientFragment extends DialogFragment
                 .inflate(R.layout.client_confirm_delete, null);
 
         _client = getArguments().getParcelable(KEY_CLIENT);
+        _position = getArguments().getInt(KEY_POSITION);
 
         TextView clientNameView = (TextView) form.findViewById(R.id.client_name);
         clientNameView.setText(_client.getName());
@@ -60,9 +64,12 @@ public class ConfirmDeleteClientFragment extends DialogFragment
     @Override
     public void onClick(DialogInterface dialog, int which)
     {
-        int position = DatabaseHelper.getInstance(getActivity()).deleteClient(_client.getId());
-        MainActivity mainActivity = (MainActivity) getActivity();
-        RecyclerView rv = (RecyclerView) mainActivity.findViewById(R.id.client_list);
-        rv.getAdapter().notifyItemRemoved(position);
+        // Remove from DB
+        DatabaseHelper.getInstance(getActivity()).deleteClient(_client.getId());
+
+        // Remove from UI
+        //MainActivity mainActivity = (MainActivity) getActivity();
+        ClientListActivity mainActivity = (ClientListActivity) getActivity();
+        mainActivity.removeClient(_position);
     }
 }

@@ -85,7 +85,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     private static DatabaseHelper _instance;
 
-    private ArrayList<Client> _clients;
+    //private ArrayList<Client> _clients;
     private static final int INSERT_POSITION = 0;
 
     //////////////////////////////////////////////////////////////////
@@ -123,14 +123,14 @@ public class DatabaseHelper extends SQLiteOpenHelper
         throw new RuntimeException("No upgrade available");
     }
 
-    public void invalidateCache()
-    {
-        _clients = null;
-    }
+//    public void invalidateCache()
+//    {
+//        _clients = null;
+//    }
 
     private ArrayList<Client> select()
     {
-        ArrayList<Client> result = new ArrayList<>();
+        ArrayList<Client> clients = new ArrayList<>();
         String sql = "SELECT " + CLIENTS_COLUMNS + " FROM " + Table.CLIENTS + " ORDER BY fullname";
         String sqlProj = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS
                 + " WHERE client_id = ?";
@@ -169,28 +169,30 @@ public class DatabaseHelper extends SQLiteOpenHelper
             }
             client.setProjects(projects);
 
-            result.add(client);
+            clients.add(client);
         }
 
         c.close();
-        return result;
+        return clients;
     }
 
     /**
      * Finds all clients synchronously.
      *
      * @return list of {@code Client}s
+     * @deprecated Use asynchronous findAllClients(DbSelectCallback callback)
      */
-    public List<Client> findAllClients()
-    {
-        //Log.i(TAG, "findAllClients() called");
-        if (_clients == null)
-        {
-            //Log.i(TAG, "findAllClients() SELECT");
-            _clients = select();
-        }
-        return _clients;
-    }
+//    @Deprecated
+//    public List<Client> findAllClients()
+//    {
+//        //Log.i(TAG, "findAllClients() called");
+//        if (_clients == null)
+//        {
+//            //Log.i(TAG, "findAllClients() SELECT");
+//            _clients = select();
+//        }
+//        return _clients;
+//    }
 
     /**
      * Finds all clients asynchronously.
@@ -215,7 +217,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      */
     public void createClient(Client client)
     {
-        _clients.add(INSERT_POSITION, client);
+        //_clients.add(INSERT_POSITION, client);
         new UpdateThread(client).start();
     }
 
@@ -228,16 +230,17 @@ public class DatabaseHelper extends SQLiteOpenHelper
      */
     public int updateClient(Client client)
     {
-        for (int i = 0; i < _clients.size(); ++i)
-        {
-            Client c = _clients.get(i);
-            if (client.getId().equals(c.getId()))
-            {
-                _clients.set(i, client);
-                new UpdateThread(client).start();
-                return i;
-            }
-        }
+//        for (int i = 0; i < _clients.size(); ++i)
+//        {
+//            Client c = _clients.get(i);
+//            if (client.getId().equals(c.getId()))
+//            {
+//                _clients.set(i, client);
+//                new UpdateThread(client).start();
+//                return i;
+//            }
+//        }
+        new UpdateThread(client).start();
         return -1;
     }
 
@@ -250,16 +253,17 @@ public class DatabaseHelper extends SQLiteOpenHelper
      */
     public int deleteClient(String id)
     {
-        for (int i = 0; i < _clients.size(); ++i)
-        {
-            Client c = _clients.get(i);
-            if (id.equals(c.getId()))
-            {
-                _clients.remove(i);
-                new DeleteThread(Table.CLIENTS, id).start();
-                return i;
-            }
-        }
+//        for (int i = 0; i < _clients.size(); ++i)
+//        {
+//            Client c = _clients.get(i);
+//            if (id.equals(c.getId()))
+//            {
+//                _clients.remove(i);
+//                new DeleteThread(Table.CLIENTS, id).start();
+//                return i;
+//            }
+//        }
+        new DeleteThread(Table.CLIENTS, id).start();
         return -1;
     }
 

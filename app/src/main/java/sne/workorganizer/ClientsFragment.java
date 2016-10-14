@@ -1,7 +1,6 @@
 package sne.workorganizer;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,7 +14,6 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import sne.workorganizer.db.Client;
@@ -25,6 +23,7 @@ import sne.workorganizer.db.Project;
 /**
  * A fragment containing list of clients.
  */
+@Deprecated
 public class ClientsFragment extends Fragment
 {
     private static final String TAG = ClientsFragment.class.getSimpleName();
@@ -86,7 +85,7 @@ public class ClientsFragment extends Fragment
     private class ClientListAdapter extends RecyclerView.Adapter<RowHolder>
     {
         private Activity _activity;
-        List<Client> _clients = DatabaseHelper.getInstance(getActivity()).findAllClients();
+        List<Client> _clients;// = DatabaseHelper.getInstance(getActivity()).findAllClients();
 
         public ClientListAdapter(Activity activity)
         {
@@ -157,9 +156,11 @@ public class ClientsFragment extends Fragment
             //itemView.setOnClickListener(this);
             //Log.i(TAG, "RowHolder() itemView "+itemView.getClass());
             //itemView.setOnLongClickListener(this);
+
             // set onLongClickListener for ExpandableLayout
             View content = itemView.findViewById(R.id.client_content);
             content.setOnLongClickListener(this);
+
         }
 
         public void setName(String text)
@@ -201,16 +202,14 @@ public class ClientsFragment extends Fragment
             row.addView(nameView);
             row.addView(dateView);
             row.addView(statusView);
-/*
-            row.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    onClickRow(v);
-                }
-            });
-*/
+//            row.setOnClickListener(new View.OnClickListener()
+//            {
+//                @Override
+//                public void onClick(View v)
+//                {
+//                    onClickRow(v);
+//                }
+//            });
 //            _trMap.put(row, nr);
 
             _projTable.addView(row);
@@ -225,13 +224,20 @@ public class ClientsFragment extends Fragment
             return view;
         }
 
+//        public void onClickRow(View v)
+//        {
+//            onClick(v);
+//        }
+
         @Override
         public void onClick(View v)
         {
+            Log.i(TAG, "onClick() called "+getAdapterPosition()+"; "+_client);
             if (_client == null)
             {
                 return;
             }
+
             //Log.i(TAG, "onClick() called "+getAdapterPosition());
 //            Intent main = new Intent(v.getContext(), MainActivity.class);
 //            main.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -250,7 +256,7 @@ public class ClientsFragment extends Fragment
                 return true;
             }
 
-            ClientActionsFragment.newInstance(_client).show(_activity.getFragmentManager(), "client_actions");
+            ClientActionsFragment.newInstance(_client, getAdapterPosition()).show(_activity.getFragmentManager(), "client_actions");
             return true;
         }
     }

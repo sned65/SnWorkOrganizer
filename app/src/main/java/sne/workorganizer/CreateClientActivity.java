@@ -83,7 +83,7 @@ public class CreateClientActivity extends AppCompatActivity
         db.createClient(client);
 
         Intent result = new Intent();
-        //result.putExtra(MainActivity.TAG_NEW_CLIENT, client);
+        result.putExtra(ClientListActivity.KEY_NEW_CLIENT, client);
         setResult(RESULT_OK, result);
         finish();
     }

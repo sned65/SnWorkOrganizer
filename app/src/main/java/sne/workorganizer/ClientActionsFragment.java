@@ -20,19 +20,22 @@ import sne.workorganizer.db.Client;
 public class ClientActionsFragment extends DialogFragment
 {
     private static final String KEY_CLIENT = "key_client";
+    private static final String KEY_POSITION = "key_position";
     private Client _client;
+    private int _position;
 
     //    "With normal Java objects, you might pass this [data] in via the constructor, but it is not a
     //    good idea to implement a constructor on a Fragment. Instead, the recipe is to create
     //    a static factory method (typically named newInstance()) that will create the
     //    Fragment and provide the parameters to it by updating the fragment’s “arguments”
     //    (a Bundle)"
-    public static ClientActionsFragment newInstance(Client client)
+    public static ClientActionsFragment newInstance(Client client, int position)
     {
         ClientActionsFragment f = new ClientActionsFragment();
 
         Bundle args = new Bundle();
         args.putParcelable(KEY_CLIENT, client);
+        args.putInt(KEY_POSITION, position);
         f.setArguments(args);
 
         return f;
@@ -61,6 +64,7 @@ public class ClientActionsFragment extends DialogFragment
         });
 
         _client = getArguments().getParcelable(KEY_CLIENT);
+        _position = getArguments().getInt(KEY_POSITION);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         return builder.setTitle(R.string.client_actions_dlg_title).setView(form).create();
@@ -73,10 +77,10 @@ public class ClientActionsFragment extends DialogFragment
         switch (position)
         {
         case 0: // Delete
-            ConfirmDeleteClientFragment.newInstance(_client).show(getFragmentManager(), "confirm_del_client");
+            ConfirmDeleteClientFragment.newInstance(_client, _position).show(getFragmentManager(), "confirm_del_client");
             break;
         case 1: // Edit
-            EditClientFragment.newInstance(_client).show(getFragmentManager(), "edit_client");
+            EditClientFragment.newInstance(_client, _position).show(getFragmentManager(), "edit_client");
             break;
         }
     }
