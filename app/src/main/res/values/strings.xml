@@ -36,4 +36,5 @@
     <string name="title_work_list">Works</string>
     <string name="title_work_detail">Work Details</string>
     <string name="select_design">&lt;Select Design&gt;</string>
+    <string name="send_email_title">Send email using &#8230;</string>
 </resources>

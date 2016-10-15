@@ -2,11 +2,13 @@ package sne.workorganizer;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -17,6 +19,9 @@ import android.view.ViewGroup;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.silencedut.expandablelayout.ExpandableLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -165,10 +170,59 @@ public class ClientListActivity extends AppCompatActivity
         if (adapter.getClientCount() == 0)
         {
             adapter.notifyDataSetChanged();
+            ExpandableLayout expandableLayout = (ExpandableLayout) rv.findViewById(R.id.client_content);
+            expandableLayout.setExpand(false);
         }
         else
         {
             adapter.notifyItemRemoved(position);
+        }
+    }
+
+    public void callPhone(View view)
+    {
+        String phone = ((TextView) view).getText().toString();
+        if (TextUtils.isEmpty(phone)) return;
+        Intent callIntent = new Intent(Intent.ACTION_DIAL);
+        callIntent.setData(Uri.parse("tel:"+ Uri.encode(phone.trim())));
+        callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(callIntent);
+    }
+
+    public void sendEmail(View view)
+    {
+        String email = ((TextView) view).getText().toString();
+        Log.i(TAG, "sendEmail() called for "+email);
+        if (TextUtils.isEmpty(email)) return;
+
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+        //emailIntent.setType("text/plain");
+        emailIntent.setType("message/rfc822");
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] { email });
+        try
+        {
+            startActivity(Intent.createChooser(emailIntent, getString(R.string.send_email_title)));
+        }
+        catch (android.content.ActivityNotFoundException e)
+        {
+            Toast.makeText(this,
+                    "No email clients installed.",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void openUrl(View view)
+    {
+        String url = ((TextView) view).getText().toString().trim();
+        if (TextUtils.isEmpty(url)) return;
+        if (!url.startsWith("http://") && !url.startsWith("https://"))
+        {
+            url = "http://" + url;
+        }
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        if (browserIntent.resolveActivity(getPackageManager()) != null)
+        {
+            startActivity(browserIntent);
         }
     }
 
