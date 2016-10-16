@@ -7,8 +7,6 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -56,7 +54,7 @@ public class WorkListActivity extends AppCompatActivity
         _menu = toolbar.getMenu();
 
         _calendarView = (CalendarView) findViewById(R.id.calendarView);
-
+        _calendarView.setShowWeekNumber(false);
 /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener()
@@ -166,18 +164,18 @@ public class WorkListActivity extends AppCompatActivity
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView)
     {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(DummyContent.ITEMS));
+        recyclerView.setAdapter(new WorkListViewAdapter());
     }
 
-    public class SimpleItemRecyclerViewAdapter
-            extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>
+    public class WorkListViewAdapter
+            extends RecyclerView.Adapter<WorkListViewAdapter.ViewHolder>
     {
 
         private final List<DummyContent.DummyItem> mValues;
 
-        public SimpleItemRecyclerViewAdapter(List<DummyContent.DummyItem> items)
+        public WorkListViewAdapter()
         {
-            mValues = items;
+            mValues = DummyContent.ITEMS;
         }
 
         @Override

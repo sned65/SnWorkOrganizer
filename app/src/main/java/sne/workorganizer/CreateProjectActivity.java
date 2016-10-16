@@ -4,17 +4,23 @@ import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
+import android.widget.CursorAdapter;
+import android.widget.FilterQueryProvider;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
@@ -41,12 +47,33 @@ public class CreateProjectActivity extends AppCompatActivity
     private TextView _designView;
     private Uri _designUri;
 
+    private Cursor _currentCursor;
+    private AsyncTask _loadClientsTask;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_project);
 
+        initActionMode();
+
+        initWorkDate();
+
+        _timePicker = (TimePicker) findViewById(R.id.work_time);
+        _timePicker.setIs24HourView(true);
+
+        initClientSelector();
+
+        _titleView = (TextInputEditText) findViewById(R.id.work_title);
+        _titleView.setInputType(Mix.getInputTypeForNoSuggestsInput());
+
+        _priceView = (TextInputEditText) findViewById(R.id.work_price);
+        _designView = (TextView) findViewById(R.id.work_design);
+    }
+
+    private void initActionMode()
+    {
         startActionMode(new ActionMode.Callback()
         {
             @Override
@@ -84,7 +111,10 @@ public class CreateProjectActivity extends AppCompatActivity
                 cancel();
             }
         });
+    }
 
+    private void initWorkDate()
+    {
         long msec = getIntent().getLongExtra(EXTRA_DATE, -1);
         Date wd;
         if (msec < 0)
@@ -95,22 +125,76 @@ public class CreateProjectActivity extends AppCompatActivity
         {
             wd = new Date(msec);
         }
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
-        String workDate = sdf.format(wd);
+        String workDate = SimpleDateFormat.getDateInstance().format(wd);
+        //SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+        //String workDate = sdf.format(wd);
 
         TextView dateView = (TextView) findViewById(R.id.work_date);
         dateView.setText(workDate);
+    }
 
-        _timePicker = (TimePicker) findViewById(R.id.work_time);
-        _timePicker.setIs24HourView(true);
-
+    private void initClientSelector()
+    {
         _selectClientView = (AutoCompleteTextView) findViewById(R.id.select_client);
+        // TODO
+        SimpleCursorAdapter adapter =
+                new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2,
+                        null, new String[] {
+                        DatabaseHelper.CLIENTS_COL_FULLNAME, "_id" },
+                        new int[] { android.R.id.text1, android.R.id.text2 },
+                        0);
+        adapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter()
+        {
+            @Override
+            public CharSequence convertToString(Cursor cur)
+            {
+                int index = cur.getColumnIndex(DatabaseHelper.CLIENTS_COL_FULLNAME);
+                return cur.getString(index);
+            }
+        });
 
-        _titleView = (TextInputEditText) findViewById(R.id.work_title);
-        _titleView.setInputType(Mix.getInputTypeForNoSuggestsInput());
+        adapter.setFilterQueryProvider(new FilterQueryProvider()
+        {
+            @Override
+            public Cursor runQuery(CharSequence str)
+            {
+                if (str != null)
+                {
+                    _loadClientsTask = new LoadCursorTask(str.toString()).execute();
+                }
+                return _currentCursor;
+            }
+        });
 
-        _priceView = (TextInputEditText) findViewById(R.id.work_price);
-        _designView = (TextView) findViewById(R.id.work_design);
+        _selectClientView.setAdapter(adapter);
+
+        // FIXME move to callback
+//        if (_currentCursor == null)
+//        {
+//            _loadClientsTask = new LoadCursorTask(null).execute();
+//        }
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        cancelClientTask();
+        closeClientCursor();
+
+        super.onDestroy();
+    }
+
+    private void cancelClientTask()
+    {
+        if (_loadClientsTask != null)
+        {
+            _loadClientsTask.cancel(false);
+        }
+    }
+
+    private void closeClientCursor()
+    {
+        ((CursorAdapter) _selectClientView.getAdapter()).getCursor().close();
     }
 
     public void onSelectDesign(View view)
@@ -176,6 +260,10 @@ public class CreateProjectActivity extends AppCompatActivity
 
     private void save()
     {
+        // TODO save project
+        String text = _selectClientView.getText().toString();
+        int selection = _selectClientView.getListSelection();
+        Log.i(TAG, "save() text = "+text+"; selection = "+selection);
         Project project = new Project();
 
         DatabaseHelper db = DatabaseHelper.getInstance(this);
@@ -184,5 +272,70 @@ public class CreateProjectActivity extends AppCompatActivity
         Intent result = new Intent();
         setResult(RESULT_OK, result);
         finish();
+    }
+
+    private class LoadCursorTask extends BaseTask<Void>
+    {
+        private String _pattern;
+
+        public LoadCursorTask(String pattern)
+        {
+            _pattern = pattern;
+        }
+
+        @Override
+        protected Cursor doInBackground(Void... params)
+        {
+            return doQuery(_pattern);
+        }
+    }
+
+    abstract private class BaseTask<T> extends AsyncTask<T, Void, Cursor>
+    {
+        @Override
+        public void onPostExecute(Cursor result)
+        {
+            ((CursorAdapter) _selectClientView.getAdapter()).changeCursor(result);
+            _loadClientsTask = null;
+        }
+
+        protected Cursor doQuery(String startsWith)
+        {
+            String selection;
+            String [] selectionArgs;
+            if (TextUtils.isEmpty(startsWith))
+            {
+                selection = null;
+                selectionArgs = null;
+            }
+            else
+            {
+                selection = DatabaseHelper.CLIENTS_COL_FULLNAME+" LIKE ?";
+                selectionArgs = new String[] { startsWith+"%" };
+            }
+
+            DatabaseHelper db = DatabaseHelper.getInstance(CreateProjectActivity.this);
+            // FIXME move to DatabaseHelper
+            String table = DatabaseHelper.Table.CLIENTS.toString();
+            String[] columns = new String[] {
+                    DatabaseHelper.CLIENTS_PK+" AS _id",
+                    DatabaseHelper.CLIENTS_COL_FULLNAME
+            };
+            String orderBy = DatabaseHelper.CLIENTS_COL_FULLNAME;
+            Cursor result =
+                    db.getReadableDatabase()
+                            .query(table, columns,
+                                    selection, selectionArgs,
+                                    null, null, orderBy);
+
+            // Call getCount() on the Cursor, to force it to actually perform
+            // the query — query() returns the Cursor, but the query is not
+            // actually executed until we do something that needs the result set.
+            // We need to make sure to "touch" the Cursor while we are on the
+            // background thread.
+            result.getCount();
+
+            return result;
+        }
     }
 }

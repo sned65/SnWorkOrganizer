@@ -39,7 +39,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private static final String DATABASE_NAME = "SnWorkOrganizer.db";
     private static final int SCHEMA_VERSION = 1;
 
-    private static final String CLIENTS_PK = "client_id";
+    public static final String CLIENTS_PK = "client_id";
     private static final int CLIENTS_NCOLS = 5;
     private static final String CLIENTS_TYPED_COLUMNS =
             "client_id TEXT PRIMARY KEY, fullname TEXT, phone TEXT, email TEXT, social TEXT";
@@ -47,6 +47,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
             "client_id, fullname, phone, email, social";
     private static final String CLIENTS_VALUE_PLACEHOLDERS =
             "?, ?, ?, ?, ?";
+    public static final String CLIENTS_COL_FULLNAME = "fullname";
 
     private static final int PROJECTS_NCOLS = 7;
     private static final String PROJECTS_PK = "proj_id";
@@ -98,9 +99,14 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return _instance;
     }
 
-    public interface DbSelectCallback
+    public interface DbSelectClientsCallback
     {
         void onSelectFinished(ArrayList<Client> records);
+    }
+
+    public interface DbSelectProjectsCallback
+    {
+        void onSelectFinished(ArrayList<Project> records);
     }
 
     private DatabaseHelper(Context ctx)
@@ -128,7 +134,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 //        _clients = null;
 //    }
 
-    private ArrayList<Client> select()
+    private ArrayList<Client> selectClients()
     {
         ArrayList<Client> clients = new ArrayList<>();
         String sql = "SELECT " + CLIENTS_COLUMNS + " FROM " + Table.CLIENTS + " ORDER BY fullname";
@@ -189,7 +195,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 //        if (_clients == null)
 //        {
 //            //Log.i(TAG, "findAllClients() SELECT");
-//            _clients = select();
+//            _clients = selectClients();
 //        }
 //        return _clients;
 //    }
@@ -200,9 +206,9 @@ public class DatabaseHelper extends SQLiteOpenHelper
      *
      * @param callback
      */
-    public void findAllClients(DbSelectCallback callback)
+    public void findAllClients(DbSelectClientsCallback callback)
     {
-        new SelectTask(callback).execute();
+        new SelectClientsTask(callback).execute();
     }
 
     public int getInsertPosition()
@@ -373,11 +379,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
         }
     }
 
-    private class SelectTask extends AsyncTask<Void, Void, ArrayList<Client>>
+    private class SelectClientsTask extends AsyncTask<Void, Void, ArrayList<Client>>
     {
-        private DbSelectCallback _callback = null;
+        private DbSelectClientsCallback _callback = null;
 
-        SelectTask(DbSelectCallback callback)
+        SelectClientsTask(DbSelectClientsCallback callback)
         {
             super();
             _callback = callback;
@@ -386,7 +392,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         @Override
         protected ArrayList<Client> doInBackground(Void... params)
         {
-            return select();
+            return selectClients();
         }
 
         @Override
@@ -399,7 +405,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         }
 
 /*
-        public ArrayList<Client> select()
+        public ArrayList<Client> selectClients()
         {
             ArrayList<Client> result = new ArrayList<>();
             String sql = "SELECT " + CLIENTS_COLUMNS + " FROM " + Table.CLIENTS;

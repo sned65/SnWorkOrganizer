@@ -235,7 +235,7 @@ public class ClientListActivity extends AppCompatActivity
         {
             _activity = activity;
             DatabaseHelper db = DatabaseHelper.getInstance(_activity);
-            db.findAllClients(new DatabaseHelper.DbSelectCallback()
+            db.findAllClients(new DatabaseHelper.DbSelectClientsCallback()
             {
                 @Override
                 public void onSelectFinished(ArrayList<Client> records)

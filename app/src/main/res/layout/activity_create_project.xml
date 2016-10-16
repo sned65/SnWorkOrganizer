@@ -37,14 +37,15 @@
                 android:layout_weight="100">
 
                 <AutoCompleteTextView
-                    android:text="@string/client"
-                    android:layout_width="wrap_content"
+                    android:hint="@string/client"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/select_client"
                     android:layout_weight="1"
                     android:inputType="textImeMultiLine|textNoSuggestions"
                     android:imeOptions="actionDone"
-                    android:imeActionLabel="@string/ok"/>
+                    android:imeActionLabel="@string/ok"
+                    />
 
             </android.support.design.widget.TextInputLayout>
 
