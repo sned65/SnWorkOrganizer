@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+     The trick how to create a dimension that would be equal to 'wrap_content' constant
+     is from
+     http://stackoverflow.com/questions/17525957/assigning-wrap-content-or-2-to-dimension
+     -->
+    <item name="wrap_content" format="integer" type="dimen">-2</item>
+    <dimen name="calendar_height">@dimen/wrap_content</dimen>
+</resources>

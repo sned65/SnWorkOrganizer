@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!--
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,16 +8,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
--->
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
 
+    <!--
+         CalendarView in SDK < 23 cannot use layout_height = wrap_content,
+         only match_parent or some fixed sizes.
+         320dp is recommended by Deepak G M on
+         http://stackoverflow.com/questions/34438682/calendarview-not-showing-days-of-the-month
+     -->
     <CalendarView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="@dimen/calendar_height"
         android:id="@+id/calendarView"/>
 
     <android.support.v7.widget.RecyclerView android:id="@+id/work_list"
@@ -29,9 +28,7 @@
                                             android:layout_marginRight="16dp"
                                             app:layoutManager="LinearLayoutManager"
                                             tools:context="sne.workorganizer.WorkListActivity"
-                                            tools:listitem="@layout/work_list_content"
-                                            android:layout_below="@+id/calendarView"
-                                            android:visibility="gone"/>
+                                            tools:listitem="@layout/work_list_content"/>
 
 <!--
 <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -47,4 +44,4 @@
                                         tools:context="sne.workorganizer.WorkListActivity"
                                         tools:listitem="@layout/work_list_content"/>
 -->
-</RelativeLayout>
+</LinearLayout>
