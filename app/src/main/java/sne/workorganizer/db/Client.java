@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,7 +51,13 @@ public class Client implements Parcelable
         _phone = in.readString();
         _email = in.readString();
         _social = in.readString();
-        // TODO projects
+
+        Parcelable[] projArray = in.readParcelableArray(Project.class.getClassLoader());
+        for (Parcelable p : projArray)
+        {
+            Project pr = (Project) p;
+            _projects.add(pr);
+        }
     }
 
     @Override
@@ -67,7 +74,9 @@ public class Client implements Parcelable
         dest.writeString(_phone);
         dest.writeString(_email);
         dest.writeString(_social);
-        // TODO projects
+
+        Project[] projArray = _projects.toArray(new Project[0]);
+        dest.writeParcelableArray(projArray, 0);
     }
 
     @SuppressWarnings("unused")

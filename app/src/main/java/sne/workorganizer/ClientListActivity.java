@@ -24,11 +24,16 @@ import android.widget.Toast;
 import com.silencedut.expandablelayout.ExpandableLayout;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.util.WoConstants;
 
 /**
  * An activity representing a list of Clients.
@@ -39,8 +44,6 @@ public class ClientListActivity extends AppCompatActivity
     private static final int RC_CREATE_CLIENT = 101;
     private static final int RC_UPDATE_CLIENT = 102;
     private static final int RC_DELETE_CLIENT = 103;
-    public static final String KEY_NEW_CLIENT = "key_new_client";
-    public static final String KEY_POSITION = "key_position";
 
     //private RecyclerView _clientListView;
 
@@ -126,7 +129,7 @@ public class ClientListActivity extends AppCompatActivity
         {
             //DatabaseHelper db = DatabaseHelper.getInstance(this);
             //rv.getAdapter().notifyItemInserted(db.getInsertPosition());//.notifyDataSetChanged();
-            Client newClient = data.getParcelableExtra(KEY_NEW_CLIENT);
+            Client newClient = data.getParcelableExtra(WoConstants.KEY_NEW_CLIENT);
             createClient(newClient, 0);
 
 //                Snackbar.make(_viewPager, "New client created", Snackbar.LENGTH_LONG)
@@ -229,7 +232,7 @@ public class ClientListActivity extends AppCompatActivity
     private class ClientListAdapter extends RecyclerView.Adapter<RowHolder>
     {
         private Activity _activity;
-        List<Client> _clients;
+        private List<Client> _clients;
 
         public ClientListAdapter(Activity activity)
         {
@@ -371,9 +374,9 @@ public class ClientListActivity extends AppCompatActivity
 
         private void fillRow(int nr, Project project)
         {
-            TextView nameView = fillCell(project.getName());
-            TextView dateView = fillCell(project.getDate());
-            TextView statusView = fillCell(project.getStatus());
+            TextView nameView = fillCellText(project.getName());
+            TextView dateView = fillCellTime(project.getDate());
+            TextView statusView = fillCellText(project.getStatus());
 
             TableRow row = new TableRow(_activity);
             row.addView(nameView);
@@ -392,9 +395,23 @@ public class ClientListActivity extends AppCompatActivity
             _projTable.addView(row);
         }
 
-        private TextView fillCell(final String text)
+        private TextView fillCellText(final String text)
         {
             TextView view = new TextView(_activity);
+            view.setText(text);
+            view.setGravity(Gravity.CENTER_HORIZONTAL);
+            view.setPadding(0, 25, 0, 25);
+            return view;
+        }
+
+        private TextView fillCellTime(final Long value)
+        {
+            TextView view = new TextView(_activity);
+            if (value == null) return view;
+
+            Calendar cal = GregorianCalendar.getInstance();
+            cal.setTimeInMillis(value);
+            String text = String.format(Locale.US, "%02d:%02d", cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
             view.setText(text);
             view.setGravity(Gravity.CENTER_HORIZONTAL);
             view.setPadding(0, 25, 0, 25);

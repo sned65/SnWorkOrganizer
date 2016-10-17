@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
+import sne.workorganizer.util.WoConstants;
 
 public class CreateClientActivity extends AppCompatActivity
 {
@@ -83,7 +84,7 @@ public class CreateClientActivity extends AppCompatActivity
         db.createClient(client);
 
         Intent result = new Intent();
-        result.putExtra(ClientListActivity.KEY_NEW_CLIENT, client);
+        result.putExtra(WoConstants.KEY_NEW_CLIENT, client);
         setResult(RESULT_OK, result);
         finish();
     }

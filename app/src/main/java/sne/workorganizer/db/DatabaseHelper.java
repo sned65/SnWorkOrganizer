@@ -9,6 +9,7 @@ import android.os.Process;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 // TODO work with photos
@@ -19,7 +20,6 @@ import java.util.List;
  */
 public class DatabaseHelper extends SQLiteOpenHelper
 {
-
     /**
      * List of DB tables.
      */
@@ -52,7 +52,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private static final int PROJECTS_NCOLS = 7;
     private static final String PROJECTS_PK = "proj_id";
     private static final String PROJECTS_TYPED_COLUMNS =
-            "proj_id TEXT PRIMARY KEY, client_id TEXT, proj_name TEXT, work_date TEXT, status TEXT, price NUMERIC, design TEXT," +
+            "proj_id TEXT PRIMARY KEY, client_id TEXT, proj_name TEXT, work_date INTEGER, status TEXT, price NUMERIC, design TEXT," +
             " FOREIGN KEY(client_id) REFERENCES clients(client_id) ON DELETE CASCADE";
     private static final String PROJECTS_COLUMNS =
             "proj_id, client_id, proj_name, work_date, status, price, design";
@@ -138,43 +138,14 @@ public class DatabaseHelper extends SQLiteOpenHelper
     {
         ArrayList<Client> clients = new ArrayList<>();
         String sql = "SELECT " + CLIENTS_COLUMNS + " FROM " + Table.CLIENTS + " ORDER BY fullname";
-        String sqlProj = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS
-                + " WHERE client_id = ?";
 
         SQLiteDatabase db = getReadableDatabase();
         Log.i(TAG, sql);
         Cursor c = db.rawQuery(sql, null);
-        String[] args = new String[1];
 
         while (c.moveToNext())
         {
-            Client client = new Client();
-            client.setId(c.getString(0));
-            client.setName(c.getString(1));
-            client.setPhone(c.getString(2));
-            client.setEmail(c.getString(3));
-            client.setSocial(c.getString(4));
-
-            // Fill projects
-
-            List<Project> projects = new ArrayList<>();
-            args[0] = client.getId();
-            Log.i(TAG, sqlProj+", using "+args[0]);
-            Cursor c_proj = db.rawQuery(sqlProj, args);
-            while (c_proj.moveToNext())
-            {
-                Project proj = new Project();
-                proj.setId(c.getString(0));
-                proj.setClientId(c.getString(1));
-                proj.setName(c.getString(2));
-                proj.setDate(c.getString(3));
-                proj.setStatus(c.getString(4));
-                proj.setPrice(c.getInt(5));
-                proj.setDesign(c.getString(6));
-                projects.add(proj);
-            }
-            client.setProjects(projects);
-
+            Client client = createClientFromCursor(c);
             clients.add(client);
         }
 
@@ -200,6 +171,74 @@ public class DatabaseHelper extends SQLiteOpenHelper
 //        return _clients;
 //    }
 
+    private ArrayList<Project> selectProjects(Date date)
+    {
+        ArrayList<Project> projects = new ArrayList<>();
+        String sql = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS +
+                " WHERE work_date > ? AND work_date < ?" +
+                " ORDER BY work_date";
+
+        long from = date.getTime();
+        long to = from + 24 * 60 * 60 * 1000;
+        String[] args = new String[] { String.valueOf(from), String.valueOf(to) };
+
+        SQLiteDatabase db = getReadableDatabase();
+        Log.i(TAG, sql+", using "+date);
+        Cursor c = db.rawQuery(sql, args);
+
+        while (c.moveToNext())
+        {
+            Project proj = createProjectFromCursor(c);
+            projects.add(proj);
+        }
+
+        c.close();
+        return projects;
+    }
+
+    private Client createClientFromCursor(Cursor c)
+    {
+        String sqlProj = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS
+                + " WHERE client_id = ?";
+
+        Client client = new Client();
+        client.setId(c.getString(0));
+        client.setName(c.getString(1));
+        client.setPhone(c.getString(2));
+        client.setEmail(c.getString(3));
+        client.setSocial(c.getString(4));
+
+        // Fill projects
+
+        SQLiteDatabase db = getReadableDatabase();
+        String[] args = new String[1];
+
+        List<Project> projects = new ArrayList<>();
+        args[0] = client.getId();
+        Log.i(TAG, sqlProj+", using "+args[0]);
+        Cursor c_proj = db.rawQuery(sqlProj, args);
+        while (c_proj.moveToNext())
+        {
+            Project proj = createProjectFromCursor(c_proj);
+            projects.add(proj);
+        }
+        client.setProjects(projects);
+        return client;
+    }
+
+    private Project createProjectFromCursor(Cursor c)
+    {
+        Project proj = new Project();
+        proj.setId(c.getString(0));
+        proj.setClientId(c.getString(1));
+        proj.setName(c.getString(2));
+        proj.setDate(c.getLong(3));
+        proj.setStatus(c.getString(4));
+        proj.setPrice(c.getInt(5));
+        proj.setDesign(c.getString(6));
+        return proj;
+    }
+
     /**
      * Finds all clients asynchronously.
      * Calls {@code callback} when the query is finished.
@@ -211,13 +250,25 @@ public class DatabaseHelper extends SQLiteOpenHelper
         new SelectClientsTask(callback).execute();
     }
 
+    /**
+     * Finds all projects for the given date asynchronously.
+     * Calls {@code callback} when the query is finished.
+     *
+     * @param callback
+     * @param date
+     */
+    public void findAllProjects(DbSelectProjectsCallback callback, Date date)
+    {
+        new SelectProjectsTask(callback, date).execute();
+    }
+
     public int getInsertPosition()
     {
         return INSERT_POSITION;
     }
 
     /**
-     * Insert new client.
+     * Insert new client in a separate thread.
      *
      * @param client client to be inserted
      */
@@ -271,6 +322,16 @@ public class DatabaseHelper extends SQLiteOpenHelper
 //        }
         new DeleteThread(Table.CLIENTS, id).start();
         return -1;
+    }
+
+    /**
+     * Insert new project in a separate thread.
+     *
+     * @param project project to be inserted
+     */
+    public void createProject(Project project)
+    {
+        new UpdateThread(project).start();
     }
 
     /**
@@ -451,5 +512,37 @@ public class DatabaseHelper extends SQLiteOpenHelper
             return result;
         }
 */
+    }
+
+    private class SelectProjectsTask extends AsyncTask<Void, Void, ArrayList<Project>>
+    {
+        private DbSelectProjectsCallback _callback = null;
+        private Date _date;
+
+        SelectProjectsTask(DbSelectProjectsCallback callback, Date date)
+        {
+            super();
+            _callback = callback;
+            long time = date.getTime(); // msec
+            // drop hours, minutes, seconds, milliseconds
+            time /= 1000 * 60 * 60 * 24;
+            time *= 1000 * 60 * 60 * 24;
+            _date = new Date(time);
+        }
+
+        @Override
+        protected ArrayList<Project> doInBackground(Void... params)
+        {
+            return selectProjects(_date);
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<Project> result)
+        {
+            if (_callback != null)
+            {
+                _callback.onSelectFinished(result);
+            }
+        }
     }
 }

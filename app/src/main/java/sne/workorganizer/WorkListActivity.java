@@ -1,5 +1,6 @@
 package sne.workorganizer;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,9 +19,12 @@ import android.widget.TextView;
 
 
 import sne.workorganizer.db.DatabaseHelper;
+import sne.workorganizer.db.Project;
 import sne.workorganizer.dummy.DummyContent;
 import sne.workorganizer.help.AboutAppDialogFragment;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -32,6 +37,7 @@ import java.util.List;
  */
 public class WorkListActivity extends AppCompatActivity
 {
+    private static final String TAG = WorkListActivity.class.getName();
     private static final int RC_CREATE_PROJECT = 100;
     private Menu _menu;
     private CalendarView _calendarView;
@@ -153,6 +159,7 @@ public class WorkListActivity extends AppCompatActivity
 
         if (requestCode == RC_CREATE_PROJECT)
         {
+            // TODO update project list
             DatabaseHelper db = DatabaseHelper.getInstance(this);
             RecyclerView rv = (RecyclerView) findViewById(R.id.work_list);
             rv.getAdapter().notifyDataSetChanged();//.notifyItemInserted(db.getInsertPosition());
@@ -164,18 +171,34 @@ public class WorkListActivity extends AppCompatActivity
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView)
     {
-        recyclerView.setAdapter(new WorkListViewAdapter());
+        Date date = new Date(_calendarView.getDate());
+        recyclerView.setAdapter(new WorkListViewAdapter(this, date));
     }
 
     public class WorkListViewAdapter
             extends RecyclerView.Adapter<WorkListViewAdapter.ViewHolder>
     {
+        private Activity _activity;
+        private Date _date;
+        private List<Project> _projects;
 
-        private final List<DummyContent.DummyItem> mValues;
+        //private final List<DummyContent.DummyItem> mValues;
 
-        public WorkListViewAdapter()
+        public WorkListViewAdapter(Activity activity, Date date)
         {
-            mValues = DummyContent.ITEMS;
+            _activity = activity;
+            _date = date;
+            DatabaseHelper db = DatabaseHelper.getInstance(_activity);
+            db.findAllProjects(new DatabaseHelper.DbSelectProjectsCallback()
+            {
+                @Override
+                public void onSelectFinished(ArrayList<Project> records)
+                {
+                    Log.i(TAG, "onSelectFinished() "+records+", size = "+((records == null) ? "" : records.size()));
+                    _projects = records;
+                    //showProjectList();
+                }
+            }, _date);
         }
 
         @Override
@@ -186,12 +209,20 @@ public class WorkListActivity extends AppCompatActivity
             return new ViewHolder(view);
         }
 
+//        @Override
+//        public void onBindViewHolder(final ViewHolder holder, int position)
+//        {
+//            holder.bindModel(_projects.get(position));
+//        }
+
+
+
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position)
         {
-            holder.mItem = mValues.get(position);
-            holder.mIdView.setText(mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).content);
+            holder.mItem = _projects.get(position);
+            holder.mIdView.setText(_projects.get(position).getId());
+            holder.mContentView.setText(_projects.get(position).getName());
 
             holder.mView.setOnClickListener(new View.OnClickListener()
             {
@@ -201,7 +232,7 @@ public class WorkListActivity extends AppCompatActivity
                     if (_twoPane)
                     {
                         Bundle arguments = new Bundle();
-                        arguments.putString(WorkDetailFragment.ARG_ITEM_ID, holder.mItem.id);
+                        arguments.putString(WorkDetailFragment.ARG_ITEM_ID, holder.mItem.getId());
                         WorkDetailFragment fragment = new WorkDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
@@ -212,7 +243,7 @@ public class WorkListActivity extends AppCompatActivity
                     {
                         Context context = v.getContext();
                         Intent intent = new Intent(context, WorkDetailActivity.class);
-                        intent.putExtra(WorkDetailFragment.ARG_ITEM_ID, holder.mItem.id);
+                        intent.putExtra(WorkDetailFragment.ARG_ITEM_ID, holder.mItem.getId());
 
                         context.startActivity(intent);
                     }
@@ -223,7 +254,8 @@ public class WorkListActivity extends AppCompatActivity
         @Override
         public int getItemCount()
         {
-            return mValues.size();
+            if (_projects == null) return 0;
+            return _projects.size();
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder
@@ -231,7 +263,7 @@ public class WorkListActivity extends AppCompatActivity
             public final View mView;
             public final TextView mIdView;
             public final TextView mContentView;
-            public DummyContent.DummyItem mItem;
+            public Project mItem;
 
             public ViewHolder(View view)
             {

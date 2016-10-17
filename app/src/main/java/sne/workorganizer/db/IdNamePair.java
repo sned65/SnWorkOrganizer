@@ -9,6 +9,14 @@ public class IdNamePair
     private String _id;
     private String _name;
 
+    public IdNamePair() {}
+
+    public IdNamePair(String id, String name)
+    {
+        _id = id;
+        _name = name;
+    }
+
     public String getId()
     {
         return _id;

@@ -14,6 +14,7 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.util.Date;
 import java.util.List;
 
 import sne.workorganizer.db.Client;
@@ -195,7 +196,8 @@ public class ClientsFragment extends Fragment
         private void fillRow(int nr, Project project)
         {
             TextView nameView = fillCell(project.getName());
-            TextView dateView = fillCell(project.getDate());
+            String date = (new Date(project.getDate())).toString();
+            TextView dateView = fillCell(date);
             TextView statusView = fillCell(project.getStatus());
 
             TableRow row = new TableRow(_activity);

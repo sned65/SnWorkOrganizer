@@ -5,18 +5,18 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.CursorAdapter;
 import android.widget.FilterQueryProvider;
@@ -25,11 +25,16 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
+import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
+import sne.workorganizer.db.IdNamePair;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.util.Mix;
+import sne.workorganizer.util.WoConstants;
 
 /**
  * Create new or Update existing project.
@@ -39,6 +44,7 @@ public class CreateProjectActivity extends AppCompatActivity
     private static final String TAG = CreateProjectActivity.class.getSimpleName();
     public static final String EXTRA_DATE = "work_date";
     private static final int RC_OPEN = 123;
+    private static final int RC_CREATE_CLIENT = 124;
 
     private TimePicker _timePicker;
     private AutoCompleteTextView _selectClientView;
@@ -49,6 +55,9 @@ public class CreateProjectActivity extends AppCompatActivity
 
     private Cursor _currentCursor;
     private AsyncTask _loadClientsTask;
+
+    private Date _workDate;
+    private IdNamePair _selectedClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -116,18 +125,17 @@ public class CreateProjectActivity extends AppCompatActivity
     private void initWorkDate()
     {
         long msec = getIntent().getLongExtra(EXTRA_DATE, -1);
-        Date wd;
         if (msec < 0)
         {
-            wd = new Date();
+            _workDate = new Date();
         }
         else
         {
-            wd = new Date(msec);
+            _workDate = new Date(msec);
         }
-        String workDate = SimpleDateFormat.getDateInstance().format(wd);
+        String workDate = SimpleDateFormat.getDateInstance().format(_workDate);
         //SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
-        //String workDate = sdf.format(wd);
+        //String workDate = sdf.format(_workDate);
 
         TextView dateView = (TextView) findViewById(R.id.work_date);
         dateView.setText(workDate);
@@ -167,6 +175,21 @@ public class CreateProjectActivity extends AppCompatActivity
         });
 
         _selectClientView.setAdapter(adapter);
+
+        _selectClientView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                // Cursor -> Client Id-Name pair
+                Cursor c = (Cursor) (parent.getAdapter().getItem(position));
+                _selectedClient = new IdNamePair();
+                int idx_id = c.getColumnIndex("_id");
+                _selectedClient.setId(c.getString(idx_id));
+                int idx_name = c.getColumnIndex(DatabaseHelper.CLIENTS_COL_FULLNAME);
+                _selectedClient.setName(c.getString(idx_name));
+            }
+        });
 
         // FIXME move to callback
 //        if (_currentCursor == null)
@@ -212,11 +235,11 @@ public class CreateProjectActivity extends AppCompatActivity
         if (resultCode != Activity.RESULT_OK) return;
         if (resultData == null) return;
 
-        Uri uri = resultData.getData();
-        Log.i(TAG, uri.toString());
-
         if (requestCode == RC_OPEN)
         {
+            Uri uri = resultData.getData();
+            Log.i(TAG, uri.toString());
+
             Cursor c =
                     getContentResolver().query(uri, null, null,
                             null, null);
@@ -249,6 +272,13 @@ public class CreateProjectActivity extends AppCompatActivity
                 Log.i(TAG, "?No metadata available for "+uri);
             }
         }
+
+        else if (requestCode == RC_CREATE_CLIENT)
+        {
+            Client client = resultData.getParcelableExtra(WoConstants.KEY_NEW_CLIENT);
+            _selectedClient = new IdNamePair(client.getId(), client.getName());
+            _selectClientView.setText(_selectedClient.getName());
+        }
     }
 
     private void cancel()
@@ -260,18 +290,102 @@ public class CreateProjectActivity extends AppCompatActivity
 
     private void save()
     {
-        // TODO save project
-        String text = _selectClientView.getText().toString();
-        int selection = _selectClientView.getListSelection();
-        Log.i(TAG, "save() text = "+text+"; selection = "+selection);
-        Project project = new Project();
+        // Validate fields
+
+        String client_name = _selectClientView.getText().toString();
+        Log.i(TAG, "save() client_name = "+client_name);
+        if (TextUtils.isEmpty(client_name))
+        {
+            _selectClientView.setError(getString(R.string.error_field_required));
+            _selectClientView.requestFocus();
+            return;
+        }
+
+        if (_selectedClient == null || !client_name.equals(_selectedClient.getName()))
+        {
+            // new client
+            Log.i(TAG, "save() new client");
+            DatabaseHelper db = DatabaseHelper.getInstance(this);
+            Client newClient = new Client();
+            newClient.setName(client_name);
+            db.createClient(newClient);
+
+            _selectedClient = new IdNamePair();
+            _selectedClient.setId(newClient.getId());
+            _selectedClient.setName(client_name);
+        }
+
+        // Create Project structure
+
+        Project project = fillProject();
 
         DatabaseHelper db = DatabaseHelper.getInstance(this);
-        //db.createProject(project);
+        db.createProject(project);
 
         Intent result = new Intent();
+        result.putExtra(WoConstants.KEY_NEW_PROJECT, project);
         setResult(RESULT_OK, result);
         finish();
+    }
+
+    private Project fillProject()
+    {
+        Project project = new Project();
+        project.setClientId(_selectedClient.getId());
+        project.setName(_titleView.getText().toString());
+
+        String price_str = _priceView.getText().toString();
+        if (!TextUtils.isEmpty(price_str))
+        {
+            try
+            {
+                Integer price = Integer.valueOf(price_str);
+                project.setPrice(price);
+            }
+            catch (NumberFormatException e)
+            {
+                // ignore
+            }
+        }
+
+        int hh;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            hh = _timePicker.getHour();
+        }
+        else
+        {
+            hh = _timePicker.getCurrentHour();
+        }
+
+        int mm;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            mm = _timePicker.getMinute();
+        }
+        else
+        {
+            mm = _timePicker.getCurrentMinute();
+        }
+
+
+        Calendar cal = GregorianCalendar.getInstance();
+        cal.setTime(_workDate);
+        int yyyy = cal.get(Calendar.YEAR);
+        int MM = cal.get(Calendar.MONTH);
+        int dd = cal.get(Calendar.DAY_OF_MONTH);
+        cal.set(yyyy, MM, dd, hh, mm);
+        project.setDate(cal.getTimeInMillis());
+
+        project.setDesign(_designUri.toString());
+
+        return project;
+    }
+
+    public void onCreateClient(View view)
+    {
+        Intent cc = new Intent(this, CreateClientActivity.class);
+        startActivityForResult(cc, RC_CREATE_CLIENT);
     }
 
     private class LoadCursorTask extends BaseTask<Void>

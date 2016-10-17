@@ -33,4 +33,5 @@
     <string name="select_design">&lt;Выберите эскиз&gt;</string>
     <string name="examples">Примеры</string>
     <string name="send_email_title">Послать почту с помощью &#8230;</string>
+    <string name="error_field_required">Это поле обязательно</string>
 </resources>
