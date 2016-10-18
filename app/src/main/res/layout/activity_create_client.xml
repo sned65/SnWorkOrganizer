@@ -5,6 +5,6 @@
             android:layout_height="match_parent"
             tools:context="sne.workorganizer.CreateClientActivity">
 
-    <include layout="@layout/client_fields"/>
+    <include layout="@layout/client_input_fields"/>
 
 </ScrollView>

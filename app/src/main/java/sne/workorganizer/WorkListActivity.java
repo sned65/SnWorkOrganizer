@@ -18,10 +18,11 @@ import android.widget.CalendarView;
 import android.widget.TextView;
 
 
+import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
-import sne.workorganizer.dummy.DummyContent;
 import sne.workorganizer.help.AboutAppDialogFragment;
+import sne.workorganizer.util.WoConstants;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -220,11 +221,9 @@ public class WorkListActivity extends AppCompatActivity
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position)
         {
-            holder.mItem = _projects.get(position);
-            holder.mIdView.setText(_projects.get(position).getId());
-            holder.mContentView.setText(_projects.get(position).getName());
+            holder.setProject(_projects.get(position));
 
-            holder.mView.setOnClickListener(new View.OnClickListener()
+            holder._itemView.setOnClickListener(new View.OnClickListener()
             {
                 @Override
                 public void onClick(View v)
@@ -232,7 +231,7 @@ public class WorkListActivity extends AppCompatActivity
                     if (_twoPane)
                     {
                         Bundle arguments = new Bundle();
-                        arguments.putString(WorkDetailFragment.ARG_ITEM_ID, holder.mItem.getId());
+                        arguments.putParcelable(WoConstants.ARG_PROJECT, holder.getProject());
                         WorkDetailFragment fragment = new WorkDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
@@ -243,7 +242,7 @@ public class WorkListActivity extends AppCompatActivity
                     {
                         Context context = v.getContext();
                         Intent intent = new Intent(context, WorkDetailActivity.class);
-                        intent.putExtra(WorkDetailFragment.ARG_ITEM_ID, holder.mItem.getId());
+                        intent.putExtra(WoConstants.ARG_PROJECT, holder.getProject());
 
                         context.startActivity(intent);
                     }
@@ -260,23 +259,40 @@ public class WorkListActivity extends AppCompatActivity
 
         public class ViewHolder extends RecyclerView.ViewHolder
         {
-            public final View mView;
-            public final TextView mIdView;
-            public final TextView mContentView;
-            public Project mItem;
+            public final View _itemView;
+            public final TextView _timeView;
+            public final TextView _clientNameView;
+            public final TextView _workTitleView;
+            private Project _project;
 
             public ViewHolder(View view)
             {
                 super(view);
-                mView = view;
-                mIdView = (TextView) view.findViewById(R.id.id);
-                mContentView = (TextView) view.findViewById(R.id.content);
+                _itemView = view;
+                _timeView = (TextView) view.findViewById(R.id.work_time);
+                _clientNameView = (TextView) view.findViewById(R.id.client_name);
+                _workTitleView = (TextView) view.findViewById(R.id.work_title);
             }
 
             @Override
             public String toString()
             {
-                return super.toString() + " '" + mContentView.getText() + "'";
+                return super.toString() + " '" + _clientNameView.getText() + "'";
+            }
+
+            public Project getProject()
+            {
+                return _project;
+            }
+
+            public void setProject(Project project)
+            {
+                _project = project;
+                _timeView.setText(_project.getTimeString());
+                _workTitleView.setText(_project.getName());
+                DatabaseHelper db = DatabaseHelper.getInstance(_itemView.getContext());
+                Client client = db.findClientById(_project.getClientId());
+                _clientNameView.setText(client.getName());
             }
         }
     }

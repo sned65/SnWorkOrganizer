@@ -1,9 +1,139 @@
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
-          android:id="@+id/work_detail"
-          style="?android:attr/textAppearanceLarge"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:padding="16dp"
-          android:textIsSelectable="true"
-          tools:context="sne.workorganizer.WorkDetailFragment"/>
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".WorkDetailFragment">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingEnd="4dp"
+        android:paddingStart="4dp"
+        android:stretchColumns="1">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                tools:text="01 Oct 2016 11:30"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/work_date_time"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:gravity="center"
+                android:layout_span="2"/>
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="4dp"
+            android:paddingBottom="8dp">
+
+            <TextView
+                android:id="@+id/work_title"
+                style="?android:attr/textAppearanceLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_span="2"
+                tools:text="Title"/>
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/client_attr_margin"
+            android:layout_marginBottom="@dimen/client_attr_margin">
+
+            <TextView android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:text="@string/client"
+                      android:paddingStart="@dimen/client_attr_padding_start"
+                      android:paddingEnd="@dimen/client_attr_padding_end"/>
+
+            <TextView android:id="@+id/work_client_name"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:textStyle="bold"
+                      tools:text="Client"/>
+        </TableRow>
+
+        <TableRow android:layout_marginTop="@dimen/client_attr_margin"
+                  android:layout_marginBottom="@dimen/client_attr_margin">
+            <TextView
+                android:text="@string/client_phone"
+                android:paddingStart="@dimen/client_attr_padding_start"
+                android:paddingEnd="@dimen/client_attr_padding_end"/>
+            <TextView android:id="@+id/client_phone"
+                      android:onClick="callPhone"/>
+        </TableRow>
+
+        <TableRow android:layout_marginTop="@dimen/client_attr_margin"
+                  android:layout_marginBottom="@dimen/client_attr_margin">
+            <TextView
+                android:text="@string/client_email"
+                android:paddingStart="@dimen/client_attr_padding_start"
+                android:paddingEnd="@dimen/client_attr_padding_end"/>
+            <TextView android:id="@+id/client_email"
+                      android:onClick="sendEmail"/>
+        </TableRow>
+
+        <TableRow android:layout_marginTop="@dimen/client_attr_margin"
+                  android:layout_marginBottom="@dimen/client_attr_margin">
+            <TextView android:text="@string/client_social"
+                      android:paddingStart="@dimen/client_attr_padding_start"
+                      android:paddingEnd="@dimen/client_attr_padding_end"/>
+            <TextView android:id="@+id/client_social"
+                      android:onClick="openUrl"/>
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
+
+            <TextView android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:paddingStart="@dimen/client_attr_padding_start"
+                      android:paddingEnd="@dimen/client_attr_padding_end"
+                      android:text="@string/price"/>
+
+            <TextView android:id="@+id/work_price"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      tools:text="[price]"/>
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
+
+            <TextView android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:paddingStart="@dimen/client_attr_padding_start"
+                      android:paddingEnd="@dimen/client_attr_padding_end"
+                      android:text="@string/design"
+                      android:gravity="center_vertical"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ic_local_florist_black_24dp"
+                android:id="@+id/work_design"
+                android:layout_margin="8dp"
+                android:scaleType="fitCenter"/>
+        </TableRow>
+    </TableLayout>
+
+</ScrollView>
+

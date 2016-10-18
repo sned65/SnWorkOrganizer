@@ -3,7 +3,9 @@ package sne.workorganizer.db;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -11,6 +13,9 @@ import java.util.UUID;
  */
 public class Project implements Parcelable
 {
+    private static final String DATETIME_FORMAT = "dd MMM yyyy HH:mm";
+    private static final String TIME_FORMAT = "HH:mm";
+
     private String _id;
     private String _clientId;
     private String _name;
@@ -38,6 +43,34 @@ public class Project implements Parcelable
         _price = price;
     }
 
+    /**
+     *
+     * @return work date and time string formatted as "dd MMM yyyy HH:mm",
+     * or empty string.
+     */
+    public String getDateTimeString()
+    {
+        if (_date == null) return "";
+
+        Date date = new Date(_date);
+        SimpleDateFormat sdf = new SimpleDateFormat(DATETIME_FORMAT, Locale.getDefault());
+        return sdf.format(date);
+    }
+
+    /**
+     *
+     * @return work time string formatted as "HH:mm",
+     * or empty string.
+     */
+    public String getTimeString()
+    {
+        if (_date == null) return "";
+
+        Date date = new Date(_date);
+        SimpleDateFormat sdf = new SimpleDateFormat(TIME_FORMAT, Locale.getDefault());
+        return sdf.format(date);
+    }
+
     protected Project(Parcel in)
     {
         _id = in.readString();
@@ -46,7 +79,15 @@ public class Project implements Parcelable
         _date = in.readLong();
         _status = in.readString();
         _design = in.readString();
-        _price = in.readInt();
+        int price = in.readInt();
+        if (price < 0)
+        {
+            _price = null;
+        }
+        else
+        {
+            _price = price;
+        }
     }
 
     @Override
@@ -64,7 +105,14 @@ public class Project implements Parcelable
         dest.writeLong(_date);
         dest.writeString(_status);
         dest.writeString(_design);
-        dest.writeInt(_price);
+        if (_price == null)
+        {
+            dest.writeInt(-1);
+        }
+        else
+        {
+            dest.writeInt(_price);
+        }
     }
 
     @SuppressWarnings("unused")

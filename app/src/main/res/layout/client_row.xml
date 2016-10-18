@@ -32,8 +32,7 @@
             <TableLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/tbl_client_proj"
-                android:stretchColumns="*">
+                android:id="@+id/tbl_client_proj">
 
             </TableLayout>
 
@@ -44,28 +43,31 @@
             android:layout_height="wrap_content"
             android:id="@+id/tbl_client_details">
 
-            <TableRow android:layout_marginTop="3dp" android:layout_marginBottom="3dp">
+            <TableRow android:layout_marginTop="@dimen/client_attr_margin"
+                      android:layout_marginBottom="@dimen/client_attr_margin">
                 <TextView
                     android:text="@string/client_phone"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="4dp"/>
+                    android:paddingStart="@dimen/client_attr_padding_start"
+                    android:paddingEnd="@dimen/client_attr_padding_end"/>
                 <TextView android:id="@+id/client_phone"
                     android:onClick="callPhone"/>
             </TableRow>
 
-            <TableRow android:layout_marginTop="3dp" android:layout_marginBottom="3dp">
+            <TableRow android:layout_marginTop="@dimen/client_attr_margin"
+                      android:layout_marginBottom="@dimen/client_attr_margin">
                 <TextView
                     android:text="@string/client_email"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="4dp"/>
+                    android:paddingStart="@dimen/client_attr_padding_start"
+                    android:paddingEnd="@dimen/client_attr_padding_end"/>
                 <TextView android:id="@+id/client_email"
                     android:onClick="sendEmail"/>
             </TableRow>
 
-            <TableRow android:layout_marginTop="3dp" android:layout_marginBottom="3dp">
+            <TableRow android:layout_marginTop="@dimen/client_attr_margin"
+                      android:layout_marginBottom="@dimen/client_attr_margin">
                 <TextView android:text="@string/client_social"
-                          android:paddingStart="4dp"
-                          android:paddingEnd="4dp"/>
+                          android:paddingStart="@dimen/client_attr_padding_start"
+                          android:paddingEnd="@dimen/client_attr_padding_end"/>
                 <TextView android:id="@+id/client_social"
                     android:onClick="openUrl"/>
             </TableRow>

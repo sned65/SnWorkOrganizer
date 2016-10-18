@@ -144,13 +144,19 @@ public class CreateProjectActivity extends AppCompatActivity
     private void initClientSelector()
     {
         _selectClientView = (AutoCompleteTextView) findViewById(R.id.select_client);
-        // TODO
+        // TODO move to DatabaseHandler
         SimpleCursorAdapter adapter =
-                new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2,
+                new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1,
                         null, new String[] {
-                        DatabaseHelper.CLIENTS_COL_FULLNAME, "_id" },
-                        new int[] { android.R.id.text1, android.R.id.text2 },
+                        DatabaseHelper.CLIENTS_COL_FULLNAME },
+                        new int[] { android.R.id.text1 },
                         0);
+//        SimpleCursorAdapter adapter =
+//                new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2,
+//                        null, new String[] {
+//                        DatabaseHelper.CLIENTS_COL_FULLNAME, "_id" },
+//                        new int[] { android.R.id.text1, android.R.id.text2 },
+//                        0);
         adapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter()
         {
             @Override
@@ -217,7 +223,8 @@ public class CreateProjectActivity extends AppCompatActivity
 
     private void closeClientCursor()
     {
-        ((CursorAdapter) _selectClientView.getAdapter()).getCursor().close();
+        Cursor c = ((CursorAdapter) _selectClientView.getAdapter()).getCursor();
+        if (c != null) c.close();
     }
 
     public void onSelectDesign(View view)
@@ -275,7 +282,7 @@ public class CreateProjectActivity extends AppCompatActivity
 
         else if (requestCode == RC_CREATE_CLIENT)
         {
-            Client client = resultData.getParcelableExtra(WoConstants.KEY_NEW_CLIENT);
+            Client client = resultData.getParcelableExtra(WoConstants.ARG_CLIENT);
             _selectedClient = new IdNamePair(client.getId(), client.getName());
             _selectClientView.setText(_selectedClient.getName());
         }
@@ -294,10 +301,28 @@ public class CreateProjectActivity extends AppCompatActivity
 
         String client_name = _selectClientView.getText().toString();
         Log.i(TAG, "save() client_name = "+client_name);
+
+        boolean cancel = false;
+        View focus = null;
+
         if (TextUtils.isEmpty(client_name))
         {
             _selectClientView.setError(getString(R.string.error_field_required));
-            _selectClientView.requestFocus();
+            focus = _selectClientView;
+            cancel = true;
+        }
+
+        String title = _titleView.getText().toString();
+        if (TextUtils.isEmpty(title))
+        {
+            _titleView.setError(getString(R.string.error_field_required));
+            if (!cancel) focus = _titleView;
+            cancel = true;
+        }
+
+        if (cancel)
+        {
+            focus.requestFocus();
             return;
         }
 
@@ -323,7 +348,7 @@ public class CreateProjectActivity extends AppCompatActivity
         db.createProject(project);
 
         Intent result = new Intent();
-        result.putExtra(WoConstants.KEY_NEW_PROJECT, project);
+        result.putExtra(WoConstants.ARG_PROJECT, project);
         setResult(RESULT_OK, result);
         finish();
     }
@@ -332,7 +357,7 @@ public class CreateProjectActivity extends AppCompatActivity
     {
         Project project = new Project();
         project.setClientId(_selectedClient.getId());
-        project.setName(_titleView.getText().toString());
+        project.setName(_titleView.getText().toString().trim());
 
         String price_str = _priceView.getText().toString();
         if (!TextUtils.isEmpty(price_str))
@@ -377,7 +402,10 @@ public class CreateProjectActivity extends AppCompatActivity
         cal.set(yyyy, MM, dd, hh, mm);
         project.setDate(cal.getTimeInMillis());
 
-        project.setDesign(_designUri.toString());
+        if (_designUri != null)
+        {
+            project.setDesign(_designUri.toString());
+        }
 
         return project;
     }
@@ -415,41 +443,8 @@ public class CreateProjectActivity extends AppCompatActivity
 
         protected Cursor doQuery(String startsWith)
         {
-            String selection;
-            String [] selectionArgs;
-            if (TextUtils.isEmpty(startsWith))
-            {
-                selection = null;
-                selectionArgs = null;
-            }
-            else
-            {
-                selection = DatabaseHelper.CLIENTS_COL_FULLNAME+" LIKE ?";
-                selectionArgs = new String[] { startsWith+"%" };
-            }
-
             DatabaseHelper db = DatabaseHelper.getInstance(CreateProjectActivity.this);
-            // FIXME move to DatabaseHelper
-            String table = DatabaseHelper.Table.CLIENTS.toString();
-            String[] columns = new String[] {
-                    DatabaseHelper.CLIENTS_PK+" AS _id",
-                    DatabaseHelper.CLIENTS_COL_FULLNAME
-            };
-            String orderBy = DatabaseHelper.CLIENTS_COL_FULLNAME;
-            Cursor result =
-                    db.getReadableDatabase()
-                            .query(table, columns,
-                                    selection, selectionArgs,
-                                    null, null, orderBy);
-
-            // Call getCount() on the Cursor, to force it to actually perform
-            // the query — query() returns the Cursor, but the query is not
-            // actually executed until we do something that needs the result set.
-            // We need to make sure to "touch" the Cursor while we are on the
-            // background thread.
-            result.getCount();
-
-            return result;
+            return db.getClientCursorByNameStart(startsWith);
         }
     }
 }

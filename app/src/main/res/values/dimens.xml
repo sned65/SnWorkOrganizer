@@ -14,4 +14,7 @@
      -->
     <dimen name="calendar_height">320dp</dimen>
     <dimen name="text_margin">16dp</dimen>
+    <dimen name="client_attr_margin">4dp</dimen>
+    <dimen name="client_attr_padding_start">4dp</dimen>
+    <dimen name="client_attr_padding_end">10dp</dimen>
 </resources>

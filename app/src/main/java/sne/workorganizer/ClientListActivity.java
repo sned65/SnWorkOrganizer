@@ -24,11 +24,7 @@ import android.widget.Toast;
 import com.silencedut.expandablelayout.ExpandableLayout;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Locale;
 
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
@@ -129,7 +125,7 @@ public class ClientListActivity extends AppCompatActivity
         {
             //DatabaseHelper db = DatabaseHelper.getInstance(this);
             //rv.getAdapter().notifyItemInserted(db.getInsertPosition());//.notifyDataSetChanged();
-            Client newClient = data.getParcelableExtra(WoConstants.KEY_NEW_CLIENT);
+            Client newClient = data.getParcelableExtra(WoConstants.ARG_CLIENT);
             createClient(newClient, 0);
 
 //                Snackbar.make(_viewPager, "New client created", Snackbar.LENGTH_LONG)
@@ -368,14 +364,14 @@ public class ClientListActivity extends AppCompatActivity
             List<Project> projects = _client.getProjects();
             for (int i = 0; i < projects.size(); ++i)
             {
-                fillRow(i, projects.get(i));
+                fillProjectRow(i, projects.get(i));
             }
         }
 
-        private void fillRow(int nr, Project project)
+        private void fillProjectRow(int nr, Project project)
         {
             TextView nameView = fillCellText(project.getName());
-            TextView dateView = fillCellTime(project.getDate());
+            TextView dateView = fillCellText(project.getDateTimeString());
             TextView statusView = fillCellText(project.getStatus());
 
             TableRow row = new TableRow(_activity);
@@ -400,21 +396,7 @@ public class ClientListActivity extends AppCompatActivity
             TextView view = new TextView(_activity);
             view.setText(text);
             view.setGravity(Gravity.CENTER_HORIZONTAL);
-            view.setPadding(0, 25, 0, 25);
-            return view;
-        }
-
-        private TextView fillCellTime(final Long value)
-        {
-            TextView view = new TextView(_activity);
-            if (value == null) return view;
-
-            Calendar cal = GregorianCalendar.getInstance();
-            cal.setTimeInMillis(value);
-            String text = String.format(Locale.US, "%02d:%02d", cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
-            view.setText(text);
-            view.setGravity(Gravity.CENTER_HORIZONTAL);
-            view.setPadding(0, 25, 0, 25);
+            view.setPadding(25, 0, 25, 0);
             return view;
         }
 

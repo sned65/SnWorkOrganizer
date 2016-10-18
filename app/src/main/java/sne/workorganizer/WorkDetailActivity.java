@@ -10,6 +10,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
+import sne.workorganizer.util.WoConstants;
+
 /**
  * An activity representing a single Work detail screen. This
  * activity is only used narrow width devices. On tablet-size devices,
@@ -61,8 +63,8 @@ public class WorkDetailActivity extends AppCompatActivity
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(WorkDetailFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(WorkDetailFragment.ARG_ITEM_ID));
+            arguments.putParcelable(WoConstants.ARG_PROJECT,
+                    getIntent().getParcelableExtra(WoConstants.ARG_PROJECT));
             WorkDetailFragment fragment = new WorkDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()

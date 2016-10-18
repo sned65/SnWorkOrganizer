@@ -3,9 +3,11 @@ package sne.workorganizer.db;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.os.Process;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -153,7 +155,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return clients;
     }
 
-    /**
+    /*
      * Finds all clients synchronously.
      *
      * @return list of {@code Client}s
@@ -248,6 +250,73 @@ public class DatabaseHelper extends SQLiteOpenHelper
     public void findAllClients(DbSelectClientsCallback callback)
     {
         new SelectClientsTask(callback).execute();
+    }
+
+    /**
+     * Synchronously selects {@code Client} by its id.
+     *
+     * @param clientId
+     * @return {@code Client} corresponding the given id, or {@code null}
+     */
+    public Client findClientById(String clientId)
+    {
+        Client client = null;
+        String sql = "SELECT " + CLIENTS_COLUMNS + " FROM " + Table.CLIENTS +
+                " WHERE " + CLIENTS_PK + " = ?";
+
+        SQLiteDatabase db = getReadableDatabase();
+        Log.i(TAG, sql+", using "+clientId);
+        String[] args = new String[] { clientId };
+        Cursor c = db.rawQuery(sql, args);
+
+        while (c.moveToNext())
+        {
+            if (client != null)
+            {
+                throw new SQLiteDatabaseCorruptException("Too many clients for id "+clientId);
+            }
+            client = createClientFromCursor(c);
+        }
+
+        c.close();
+        return client;
+    }
+
+    public Cursor getClientCursorByNameStart(String startsWith)
+    {
+        String selection;
+        String [] selectionArgs;
+        if (TextUtils.isEmpty(startsWith))
+        {
+            selection = null;
+            selectionArgs = null;
+        }
+        else
+        {
+            selection = DatabaseHelper.CLIENTS_COL_FULLNAME+" LIKE ?";
+            selectionArgs = new String[] { startsWith+"%" };
+        }
+
+        String table = DatabaseHelper.Table.CLIENTS.toString();
+        String[] columns = new String[] {
+                DatabaseHelper.CLIENTS_PK+" AS _id",
+                DatabaseHelper.CLIENTS_COL_FULLNAME
+        };
+        String orderBy = DatabaseHelper.CLIENTS_COL_FULLNAME;
+        Cursor result =
+                getReadableDatabase()
+                        .query(table, columns,
+                                selection, selectionArgs,
+                                null, null, orderBy);
+
+        // Call getCount() on the Cursor, to force it to actually perform
+        // the query — query() returns the Cursor, but the query is not
+        // actually executed until we do something that needs the result set.
+        // We need to make sure to "touch" the Cursor while we are on the
+        // background thread.
+        result.getCount();
+
+        return result;
     }
 
     /**

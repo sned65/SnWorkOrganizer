@@ -1,15 +1,27 @@
 package sne.workorganizer;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import sne.workorganizer.dummy.DummyContent;
+import java.io.File;
+import java.net.URI;
+
+import sne.workorganizer.db.Client;
+import sne.workorganizer.db.DatabaseHelper;
+import sne.workorganizer.db.Project;
+import sne.workorganizer.util.WoConstants;
 
 /**
  * A fragment representing a single Work detail screen.
@@ -19,16 +31,11 @@ import sne.workorganizer.dummy.DummyContent;
  */
 public class WorkDetailFragment extends Fragment
 {
+    private static final String TAG = WorkDetailFragment.class.getName();
     /**
-     * The fragment argument representing the item ID that this fragment
-     * represents.
+     * The content this fragment is presenting.
      */
-    public static final String ARG_ITEM_ID = "item_id";
-
-    /**
-     * The dummy content this fragment is presenting.
-     */
-    private DummyContent.DummyItem mItem;
+    private Project _project;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -43,18 +50,18 @@ public class WorkDetailFragment extends Fragment
     {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(ARG_ITEM_ID))
+        if (getArguments().containsKey(WoConstants.ARG_PROJECT))
         {
-            // Load the dummy content specified by the fragment
+            // Load the content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
-            mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
+            _project = getArguments().getParcelable(WoConstants.ARG_PROJECT);
 
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null)
             {
-                appBarLayout.setTitle(mItem.content);
+                appBarLayout.setTitle(_project.getName());
             }
         }
     }
@@ -64,11 +71,36 @@ public class WorkDetailFragment extends Fragment
                              Bundle savedInstanceState)
     {
         View rootView = inflater.inflate(R.layout.work_detail, container, false);
+        if (_project == null) return rootView;
 
-        // Show the dummy content as text in a TextView.
-        if (mItem != null)
+        ((TextView) rootView.findViewById(R.id.work_date_time)).setText(_project.getDateTimeString());
+        ((TextView) rootView.findViewById(R.id.work_title)).setText(_project.getName());
+        String price = _project.getPrice() == null ? "" : _project.getPrice().toString();
+        ((TextView) rootView.findViewById(R.id.work_price)).setText(price);
+
+        DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
+        Client client = db.findClientById(_project.getClientId());
+        ((TextView) rootView.findViewById(R.id.work_client_name)).setText(client.getName());
+        ((TextView) rootView.findViewById(R.id.client_phone)).setText(client.getPhone());
+        ((TextView) rootView.findViewById(R.id.client_email)).setText(client.getEmail());
+        ((TextView) rootView.findViewById(R.id.client_social)).setText(client.getSocial());
+
+        ImageView designView = (ImageView) rootView.findViewById(R.id.work_design);
+        String designStr = _project.getDesign();
+        Log.i(TAG, "onCreateView() designStr = "+designStr);
+        if (designStr != null)
         {
-            ((TextView) rootView.findViewById(R.id.work_detail)).setText(mItem.details);
+            URI uuu = URI.create(designStr);
+            Uri designUri = Uri.parse(designStr);
+            File file = new File(uuu);
+            String path = file.getPath();
+            Log.i(TAG, "onCreateView() path = "+path);
+            //designView.setImageURI(designUri);
+
+            Bitmap bm = BitmapFactory.decodeFile(path);
+            int nh = (int) ( bm.getHeight() * (512.0 / bm.getWidth()) );
+            Bitmap scaled = Bitmap.createScaledBitmap(bm, 512, nh, true);
+            designView.setImageBitmap(scaled);
         }
 
         return rootView;
