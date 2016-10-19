@@ -18,6 +18,8 @@ import android.widget.CalendarView;
 import android.widget.TextView;
 
 
+import com.silencedut.expandablelayout.ExpandableLayout;
+
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
@@ -128,6 +130,14 @@ public class WorkListActivity extends AppCompatActivity
         setupRecyclerView(workListView);
     }
 
+    public void removeWork(int position)
+    {
+        RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list);
+        WorkListViewAdapter adapter = (WorkListViewAdapter) workListView.getAdapter();
+        adapter.removeWork(position);
+        adapter.notifyItemRemoved(position);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -176,9 +186,9 @@ public class WorkListActivity extends AppCompatActivity
 
         case R.id.menu_create_project:
         {
-            Intent createProject = new Intent(this, CreateProjectActivity.class);
+            Intent createProject = new Intent(this, CreateWorkActivity.class);
             long msec = _calendarView.getDate();
-            createProject.putExtra(CreateProjectActivity.EXTRA_DATE, msec);
+            createProject.putExtra(CreateWorkActivity.EXTRA_DATE, msec);
             startActivityForResult(createProject, RC_CREATE_PROJECT);
 //            Snackbar.make(findViewById(R.id.frameLayout), "Create new project", Snackbar.LENGTH_LONG)
 //                    .setAction("Action", null).show();
@@ -302,13 +312,20 @@ public class WorkListActivity extends AppCompatActivity
             return _projects.size();
         }
 
+        public void removeWork(int position)
+        {
+            _projects.remove(position);
+        }
+
         public class ViewHolder extends RecyclerView.ViewHolder
+            implements View.OnLongClickListener
         {
             public final View _itemView;
             public final TextView _timeView;
             public final TextView _clientNameView;
             public final TextView _workTitleView;
             private Project _project;
+            private String _clientName;
 
             public ViewHolder(View view)
             {
@@ -317,6 +334,8 @@ public class WorkListActivity extends AppCompatActivity
                 _timeView = (TextView) view.findViewById(R.id.work_time);
                 _clientNameView = (TextView) view.findViewById(R.id.client_name);
                 _workTitleView = (TextView) view.findViewById(R.id.work_title);
+
+                _itemView.setOnLongClickListener(this);
             }
 
             @Override
@@ -337,7 +356,22 @@ public class WorkListActivity extends AppCompatActivity
                 _workTitleView.setText(_project.getName());
                 DatabaseHelper db = DatabaseHelper.getInstance(_itemView.getContext());
                 Client client = db.findClientById(_project.getClientId());
-                _clientNameView.setText(client.getName());
+                _clientName = client.getName();
+                _clientNameView.setText(_clientName);
+            }
+
+            @Override
+            public boolean onLongClick(View v)
+            {
+                Log.i(TAG, "onLongClick() called "+getAdapterPosition()+"; "+_project);
+                if (_project == null)
+                {
+                    return true;
+                }
+
+                WorkActionsFragment.newInstance(_project, _clientName, getAdapterPosition())
+                        .show(_activity.getFragmentManager(), "project_actions");
+                return true;
             }
         }
     }

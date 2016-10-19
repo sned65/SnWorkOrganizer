@@ -31,7 +31,7 @@
             android:windowSoftInputMode="adjustResize">
         </activity>
         <activity
-            android:name=".CreateProjectActivity"
+            android:name=".CreateWorkActivity"
             android:label="@string/new_project"
             android:parentActivityName=".WorkListActivity"
             android:windowSoftInputMode="adjustResize">

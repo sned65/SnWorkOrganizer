@@ -6,6 +6,6 @@
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/client_actions_list"
+        android:id="@+id/base_actions_list"
         />
 </RelativeLayout>

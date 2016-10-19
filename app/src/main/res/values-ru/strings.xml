@@ -34,4 +34,6 @@
     <string name="examples">Примеры</string>
     <string name="send_email_title">Послать почту с помощью &#8230;</string>
     <string name="error_field_required">Это поле обязательно</string>
+    <string name="project_edit_dlg_title">Изменить</string>
+    <string name="project_delete_dlg_title">Удалить работу</string>
 </resources>

@@ -12,16 +12,18 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.List;
 
-import sne.workorganizer.db.Client;
+import sne.workorganizer.db.Project;
 
 /**
- * Created by Nikolay_Smirnov on 04.10.2016.
+ * Created by Nikolay_Smirnov on 19.10.2016.
  */
-public class ClientActionsFragment extends DialogFragment
+public class WorkActionsFragment extends DialogFragment
 {
-    private static final String KEY_CLIENT = "key_client";
+    private static final String KEY_PROJECT = "key_project";
+    private static final String KEY_CLIENT_NAME = "key_client_name";
     private static final String KEY_POSITION = "key_position";
-    private Client _client;
+    private Project _project;
+    private String _clientName;
     private int _position;
 
     //    "With normal Java objects, you might pass this [data] in via the constructor, but it is not a
@@ -29,12 +31,13 @@ public class ClientActionsFragment extends DialogFragment
     //    a static factory method (typically named newInstance()) that will create the
     //    Fragment and provide the parameters to it by updating the fragment’s “arguments”
     //    (a Bundle)"
-    public static ClientActionsFragment newInstance(Client client, int position)
+    public static WorkActionsFragment newInstance(Project project, String clientName, int position)
     {
-        ClientActionsFragment f = new ClientActionsFragment();
+        WorkActionsFragment f = new WorkActionsFragment();
 
         Bundle args = new Bundle();
-        args.putParcelable(KEY_CLIENT, client);
+        args.putParcelable(KEY_PROJECT, project);
+        args.putString(KEY_CLIENT_NAME, clientName);
         args.putInt(KEY_POSITION, position);
         f.setArguments(args);
 
@@ -63,7 +66,8 @@ public class ClientActionsFragment extends DialogFragment
             }
         });
 
-        _client = getArguments().getParcelable(KEY_CLIENT);
+        _project = getArguments().getParcelable(KEY_PROJECT);
+        _clientName = getArguments().getString(KEY_CLIENT_NAME);
         _position = getArguments().getInt(KEY_POSITION);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -77,10 +81,11 @@ public class ClientActionsFragment extends DialogFragment
         switch (position)
         {
         case 0: // Delete
-            ConfirmDeleteClientFragment.newInstance(_client, _position).show(getFragmentManager(), "confirm_del_client");
+            ConfirmDeleteWorkFragment.newInstance(_project, _clientName, _position)
+                    .show(getFragmentManager(), "confirm_del_work");
             break;
         case 1: // Edit
-            EditClientFragment.newInstance(_client, _position).show(getFragmentManager(), "edit_client");
+            // TODO EditProjectFragment.newInstance(_project, _position).show(getFragmentManager(), "edit_work");
             break;
         }
     }

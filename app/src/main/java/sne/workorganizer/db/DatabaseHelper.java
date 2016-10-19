@@ -201,7 +201,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private Client createClientFromCursor(Cursor c)
     {
         String sqlProj = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS
-                + " WHERE client_id = ?";
+                + " WHERE client_id = ? ORDER BY work_date";
 
         Client client = new Client();
         client.setId(c.getString(0));
@@ -401,6 +401,19 @@ public class DatabaseHelper extends SQLiteOpenHelper
     public void createProject(Project project)
     {
         new UpdateThread(project).start();
+    }
+
+    /**
+     * Delete work in a separate thread.
+     *
+     * @param id id of {@code Client}
+     * @return position in the original internal client list,
+     * or -1 if not found.
+     */
+    public int deleteWork(String id)
+    {
+        new DeleteThread(Table.PROJECTS, id).start();
+        return -1;
     }
 
     /**

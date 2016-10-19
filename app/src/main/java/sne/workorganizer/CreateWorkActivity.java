@@ -39,9 +39,9 @@ import sne.workorganizer.util.WoConstants;
 /**
  * Create new or Update existing project.
  */
-public class CreateProjectActivity extends AppCompatActivity
+public class CreateWorkActivity extends AppCompatActivity
 {
-    private static final String TAG = CreateProjectActivity.class.getSimpleName();
+    private static final String TAG = CreateWorkActivity.class.getSimpleName();
     public static final String EXTRA_DATE = "work_date";
     private static final int RC_OPEN = 123;
     private static final int RC_CREATE_CLIENT = 124;
@@ -443,7 +443,7 @@ public class CreateProjectActivity extends AppCompatActivity
 
         protected Cursor doQuery(String startsWith)
         {
-            DatabaseHelper db = DatabaseHelper.getInstance(CreateProjectActivity.this);
+            DatabaseHelper db = DatabaseHelper.getInstance(CreateWorkActivity.this);
             return db.getClientCursorByNameStart(startsWith);
         }
     }

@@ -33,6 +33,8 @@
     <string name="ccd_sure">Are you sure?</string>
     <string name="client_delete_dlg_title">Delete Client</string>
     <string name="client_edit_dlg_title">Edit Client</string>
+    <string name="project_delete_dlg_title">Delete Work</string>
+    <string name="project_edit_dlg_title">Edit Work</string>
     <string name="title_work_list">Works</string>
     <string name="title_work_detail">Work Details</string>
     <string name="select_design">&lt;Select Design&gt;</string>
