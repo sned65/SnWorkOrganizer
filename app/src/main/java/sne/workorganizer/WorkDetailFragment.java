@@ -1,10 +1,13 @@
 package sne.workorganizer;
 
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.provider.OpenableColumns;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,8 +17,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URI;
 
 import sne.workorganizer.db.Client;
@@ -90,17 +96,35 @@ public class WorkDetailFragment extends Fragment
         Log.i(TAG, "onCreateView() designStr = "+designStr);
         if (designStr != null)
         {
-            URI uuu = URI.create(designStr);
             Uri designUri = Uri.parse(designStr);
-            File file = new File(uuu);
-            String path = file.getPath();
-            Log.i(TAG, "onCreateView() path = "+path);
+            ContentResolver resolver = getActivity().getContentResolver();
+            String[] projection = new String[] { OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE };
+            Cursor c = resolver.query(designUri, projection, null, null, null);
+            while (c.moveToNext())
+            {
+                int name_idx = c.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                String name = c.getString(name_idx);
+                int size_idx = c.getColumnIndex(OpenableColumns.SIZE);
+                Long size = c.getLong(size_idx);
+                Log.i(TAG, "onCreateView() name = "+name+", size = "+size);
+            }
+            //Log.i(TAG, "onCreateView() path = "+path);
             //designView.setImageURI(designUri);
 
-            Bitmap bm = BitmapFactory.decodeFile(path);
-            int nh = (int) ( bm.getHeight() * (512.0 / bm.getWidth()) );
-            Bitmap scaled = Bitmap.createScaledBitmap(bm, 512, nh, true);
-            designView.setImageBitmap(scaled);
+            InputStream is = null;
+            try
+            {
+                final int BITMAP_WIDTH = 256;
+                is = resolver.openInputStream(designUri);
+                Bitmap bm = BitmapFactory.decodeStream(is);
+                int nh = (int) (bm.getHeight() * ((float) BITMAP_WIDTH / bm.getWidth()));
+                Bitmap scaled = Bitmap.createScaledBitmap(bm, BITMAP_WIDTH, nh, true);
+                designView.setImageBitmap(scaled);
+            }
+            catch (FileNotFoundException e)
+            {
+                Toast.makeText(getActivity(), "File not found: "+designStr, Toast.LENGTH_LONG).show();
+            }
         }
 
         return rootView;
