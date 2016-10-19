@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
+import sne.workorganizer.db.Project;
 import sne.workorganizer.util.WoConstants;
 
 /**
@@ -85,7 +86,10 @@ public class WorkDetailActivity extends AppCompatActivity
             //
             // http://developer.android.com/design/patterns/navigation.html#up-vs-back
             //
-            navigateUpTo(new Intent(this, WorkListActivity.class));
+            Intent i = new Intent(this, WorkListActivity.class);
+            Project p = getIntent().getParcelableExtra(WoConstants.ARG_PROJECT);
+            i.putExtra(WoConstants.ARG_CURRENT_DATE, p.getDate());
+            navigateUpTo(i);
             return true;
         }
         return super.onOptionsItemSelected(item);

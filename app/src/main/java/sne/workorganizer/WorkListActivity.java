@@ -52,6 +52,7 @@ public class WorkListActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        Log.i(TAG, "onCreate("+savedInstanceState+") called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_work_list);
 
@@ -62,6 +63,20 @@ public class WorkListActivity extends AppCompatActivity
 
         _calendarView = (CalendarView) findViewById(R.id.calendarView);
         _calendarView.setShowWeekNumber(false);
+        long current_date = getIntent().getLongExtra(WoConstants.ARG_CURRENT_DATE, -1);
+        if (current_date > 0)
+        {
+            Log.i(TAG, "onCreate() current date = "+(new Date(current_date)));
+            _calendarView.setDate(current_date);
+        }
+        _calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener()
+        {
+            @Override
+            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth)
+            {
+                resetWorkList();
+            }
+        });
 /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener()
@@ -75,9 +90,9 @@ public class WorkListActivity extends AppCompatActivity
         });
 */
 
-        View recyclerView = findViewById(R.id.work_list);
-        assert recyclerView != null;
-        setupRecyclerView((RecyclerView) recyclerView);
+        View workListView = findViewById(R.id.work_list);
+        assert workListView != null;
+        setupRecyclerView((RecyclerView) workListView);
 
         if (findViewById(R.id.work_detail_container) != null)
         {
@@ -87,6 +102,30 @@ public class WorkListActivity extends AppCompatActivity
             // activity should be in two-pane mode.
             _twoPane = true;
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle state)
+    {
+        super.onSaveInstanceState(state);
+        state.putLong(WoConstants.ARG_CURRENT_DATE, _calendarView.getDate());
+        //Log.i(TAG, "onSaveInstanceState() stored current date");
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState)
+    {
+        long date = savedInstanceState.getLong(WoConstants.ARG_CURRENT_DATE, -1);
+        if (date > 0)
+        {
+            _calendarView.setDate(date);
+        }
+    }
+
+    private void resetWorkList()
+    {
+        RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list);
+        setupRecyclerView(workListView);
     }
 
     @Override
@@ -163,7 +202,7 @@ public class WorkListActivity extends AppCompatActivity
             // TODO update project list
             DatabaseHelper db = DatabaseHelper.getInstance(this);
             RecyclerView rv = (RecyclerView) findViewById(R.id.work_list);
-            rv.getAdapter().notifyDataSetChanged();//.notifyItemInserted(db.getInsertPosition());
+            rv.getAdapter().notifyDataSetChanged();
 
 //                Snackbar.make(_viewPager, "New client created", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
@@ -174,6 +213,12 @@ public class WorkListActivity extends AppCompatActivity
     {
         Date date = new Date(_calendarView.getDate());
         recyclerView.setAdapter(new WorkListViewAdapter(this, date));
+    }
+
+    private void showProjectList()
+    {
+        RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list);
+        workListView.getAdapter().notifyDataSetChanged();
     }
 
     public class WorkListViewAdapter
@@ -197,7 +242,7 @@ public class WorkListActivity extends AppCompatActivity
                 {
                     Log.i(TAG, "onSelectFinished() "+records+", size = "+((records == null) ? "" : records.size()));
                     _projects = records;
-                    //showProjectList();
+                    showProjectList();
                 }
             }, _date);
         }

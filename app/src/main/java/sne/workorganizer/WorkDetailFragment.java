@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
@@ -108,15 +109,17 @@ public class WorkDetailFragment extends Fragment
                 Long size = c.getLong(size_idx);
                 Log.i(TAG, "onCreateView() name = "+name+", size = "+size);
             }
+            c.close();
             //Log.i(TAG, "onCreateView() path = "+path);
             //designView.setImageURI(designUri);
 
-            InputStream is = null;
             try
             {
                 final int BITMAP_WIDTH = 256;
-                is = resolver.openInputStream(designUri);
+                InputStream is = resolver.openInputStream(designUri);
                 Bitmap bm = BitmapFactory.decodeStream(is);
+                assert is != null;
+                is.close();
                 int nh = (int) (bm.getHeight() * ((float) BITMAP_WIDTH / bm.getWidth()));
                 Bitmap scaled = Bitmap.createScaledBitmap(bm, BITMAP_WIDTH, nh, true);
                 designView.setImageBitmap(scaled);
@@ -124,6 +127,11 @@ public class WorkDetailFragment extends Fragment
             catch (FileNotFoundException e)
             {
                 Toast.makeText(getActivity(), "File not found: "+designStr, Toast.LENGTH_LONG).show();
+            }
+            catch (IOException e)
+            {
+                Log.e(TAG, "onCreateView() Close stream error for "+designStr);
+                e.printStackTrace();
             }
         }
 
