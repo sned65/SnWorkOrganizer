@@ -2,10 +2,7 @@ package sne.workorganizer;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
@@ -64,8 +61,8 @@ public class WorkDetailActivity extends AppCompatActivity
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putParcelable(WoConstants.ARG_PROJECT,
-                    getIntent().getParcelableExtra(WoConstants.ARG_PROJECT));
+            arguments.putParcelable(WoConstants.ARG_WORK,
+                    getIntent().getParcelableExtra(WoConstants.ARG_WORK));
             WorkDetailFragment fragment = new WorkDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
@@ -87,7 +84,7 @@ public class WorkDetailActivity extends AppCompatActivity
             // http://developer.android.com/design/patterns/navigation.html#up-vs-back
             //
             Intent i = new Intent(this, WorkListActivity.class);
-            Project p = getIntent().getParcelableExtra(WoConstants.ARG_PROJECT);
+            Project p = getIntent().getParcelableExtra(WoConstants.ARG_WORK);
             i.putExtra(WoConstants.ARG_CURRENT_DATE, p.getDate());
             navigateUpTo(i);
             return true;

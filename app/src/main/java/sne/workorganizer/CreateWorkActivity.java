@@ -63,7 +63,7 @@ public class CreateWorkActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_create_project);
+        setContentView(R.layout.activity_create_work);
 
         initActionMode();
 
@@ -348,7 +348,7 @@ public class CreateWorkActivity extends AppCompatActivity
         db.createProject(project);
 
         Intent result = new Intent();
-        result.putExtra(WoConstants.ARG_PROJECT, project);
+        result.putExtra(WoConstants.ARG_WORK, project);
         setResult(RESULT_OK, result);
         finish();
     }

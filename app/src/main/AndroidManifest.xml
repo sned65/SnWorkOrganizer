@@ -40,6 +40,15 @@
                 android:value="sne.workorganizer.WorkListActivity"/>
         </activity>
         <activity
+            android:name=".EditWorkActivity"
+            android:label="@string/edit"
+            android:parentActivityName=".WorkListActivity"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="sne.workorganizer.WorkListActivity"/>
+        </activity>
+        <activity
             android:name=".WorkListActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">

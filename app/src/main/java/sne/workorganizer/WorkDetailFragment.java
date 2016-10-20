@@ -5,7 +5,6 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.provider.OpenableColumns;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -19,11 +18,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
@@ -57,12 +54,12 @@ public class WorkDetailFragment extends Fragment
     {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(WoConstants.ARG_PROJECT))
+        if (getArguments().containsKey(WoConstants.ARG_WORK))
         {
             // Load the content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
-            _project = getArguments().getParcelable(WoConstants.ARG_PROJECT);
+            _project = getArguments().getParcelable(WoConstants.ARG_WORK);
 
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);

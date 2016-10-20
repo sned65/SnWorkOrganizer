@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import sne.workorganizer.util.Mix;
+
 // TODO work with photos
 // http://blog.cindypotvin.com/saving-an-image-in-a-sqlite-database-in-your-android-application/
 
@@ -41,6 +43,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private static final String DATABASE_NAME = "SnWorkOrganizer.db";
     private static final int SCHEMA_VERSION = 1;
 
+    // CLIENTS TABLE
+
     public static final String CLIENTS_PK = "client_id";
     private static final int CLIENTS_NCOLS = 5;
     private static final String CLIENTS_TYPED_COLUMNS =
@@ -50,6 +54,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private static final String CLIENTS_VALUE_PLACEHOLDERS =
             "?, ?, ?, ?, ?";
     public static final String CLIENTS_COL_FULLNAME = "fullname";
+
+    // END OF CLIENTS TABLE
+
+    // WORKS TABLE
 
     private static final int PROJECTS_NCOLS = 7;
     private static final String PROJECTS_PK = "proj_id";
@@ -61,6 +69,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private static final String PROJECTS_VALUE_PLACEHOLDERS =
             "?, ?, ?, ?, ?, ?, ?";
 
+    // END OF WORKS TABLE
+
+
+    // PICTURES TABLE
+
     private static final int PICTURES_NCOLS = 3;
     private static final String PICTURES_PK = "pict_id";
     private static final String PICTURES_TYPED_COLUMNS =
@@ -71,8 +84,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private static final String PICTURES_VALUE_PLACEHOLDERS =
             "?, ?, ?";
 
+    // END OF PICTURES TABLE
+
+
     // Notes:
-    // (1) I keep photos in a separate table to be possible
+    // (1) I put photos in a separate table to be possible
     //     to keep the image when its project is removed
     //     (for publicity).
     // (2) The PICTURES table keeps only the path to the image and
@@ -417,6 +433,16 @@ public class DatabaseHelper extends SQLiteOpenHelper
     }
 
     /**
+     * Update work in a separate thread.
+     *
+     * @param work
+     */
+    public void updateWork(Project work)
+    {
+        new UpdateThread(work).start();
+    }
+
+    /**
      * SQL INSERT or UPDATE
      */
     private class UpdateThread extends Thread
@@ -605,11 +631,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         {
             super();
             _callback = callback;
-            long time = date.getTime(); // msec
-            // drop hours, minutes, seconds, milliseconds
-            time /= 1000 * 60 * 60 * 24;
-            time *= 1000 * 60 * 60 * 24;
-            _date = new Date(time);
+            _date = Mix.truncateDate(date);
         }
 
         @Override

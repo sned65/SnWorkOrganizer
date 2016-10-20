@@ -18,7 +18,7 @@ public class ConfirmDeleteWorkFragment extends DialogFragment
         implements DialogInterface.OnClickListener
 {
     private static final String TAG = ConfirmDeleteClientFragment.class.getSimpleName();
-    private static final String KEY_PROJECT = "key_project";
+    private static final String KEY_WORK = "key_work";
     private static final String KEY_CLIENT_NAME = "key_client_name";
     private static final String KEY_POSITION = "key_position";
     private Project _project;
@@ -34,7 +34,7 @@ public class ConfirmDeleteWorkFragment extends DialogFragment
         ConfirmDeleteWorkFragment f = new ConfirmDeleteWorkFragment();
 
         Bundle args = new Bundle();
-        args.putParcelable(KEY_PROJECT, project);
+        args.putParcelable(KEY_WORK, project);
         args.putString(KEY_CLIENT_NAME, clientName);
         args.putInt(KEY_POSITION, position);
         f.setArguments(args);
@@ -46,9 +46,9 @@ public class ConfirmDeleteWorkFragment extends DialogFragment
     public Dialog onCreateDialog(Bundle savedInstanceState)
     {
         View form = getActivity().getLayoutInflater()
-                .inflate(R.layout.project_confirm_delete, null);
+                .inflate(R.layout.work_confirm_delete, null);
 
-        _project = getArguments().getParcelable(KEY_PROJECT);
+        _project = getArguments().getParcelable(KEY_WORK);
         _position = getArguments().getInt(KEY_POSITION);
 
         TextView workTimeView = (TextView) form.findViewById(R.id.work_time);

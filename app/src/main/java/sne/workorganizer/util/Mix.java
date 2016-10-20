@@ -2,6 +2,9 @@ package sne.workorganizer.util;
 
 import android.text.InputType;
 
+import java.util.Calendar;
+import java.util.Date;
+
 /**
  * Collection of general-purpose utilities.
  */
@@ -30,5 +33,21 @@ public class Mix
         {
             return InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
         }
+    }
+
+    /**
+     *
+     * @param date date to be truncated
+     * @return date with the time portion of the day truncated
+     */
+    public static Date truncateDate(Date date)
+    {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.set(Calendar.HOUR_OF_DAY, c.getActualMinimum(Calendar.HOUR_OF_DAY));
+        c.set(Calendar.MINUTE, c.getActualMinimum(Calendar.MINUTE));
+        c.set(Calendar.SECOND, c.getActualMinimum(Calendar.SECOND));
+        c.set(Calendar.MILLISECOND, c.getActualMinimum(Calendar.MILLISECOND));
+        return c.getTime();
     }
 }

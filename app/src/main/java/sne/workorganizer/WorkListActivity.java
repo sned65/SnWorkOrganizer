@@ -18,8 +18,6 @@ import android.widget.CalendarView;
 import android.widget.TextView;
 
 
-import com.silencedut.expandablelayout.ExpandableLayout;
-
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
@@ -27,7 +25,9 @@ import sne.workorganizer.help.AboutAppDialogFragment;
 import sne.workorganizer.util.WoConstants;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -41,7 +41,9 @@ import java.util.List;
 public class WorkListActivity extends AppCompatActivity
 {
     private static final String TAG = WorkListActivity.class.getName();
-    private static final int RC_CREATE_PROJECT = 100;
+    private static final int RC_CREATE_WORK = 100;
+    public static final int RC_EDIT_WORK = 101;
+
     private Menu _menu;
     private CalendarView _calendarView;
 
@@ -76,6 +78,18 @@ public class WorkListActivity extends AppCompatActivity
             @Override
             public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth)
             {
+                Log.i(TAG, "onSelectedDayChange(" + year + "-" + month + "-" + dayOfMonth + ") called");
+
+                // It seems there is a bug in CalendarView implementation for some devices.
+                // http://stackoverflow.com/questions/31602849/calendarview-returns-always-current-day-ignoring-what-user-selects
+                // In Nexus 10 tablet whatever date is selected, CalendarView returns the current day.
+                // And if I keep changing the date, nothing changes - getDate() always returns the current day.
+                // The code below is workaround.
+                Calendar c = GregorianCalendar.getInstance();
+                c.set(year, month, dayOfMonth);
+                long ms = c.getTimeInMillis();
+                view.setDate(ms);
+
                 resetWorkList();
             }
         });
@@ -138,6 +152,14 @@ public class WorkListActivity extends AppCompatActivity
         adapter.notifyItemRemoved(position);
     }
 
+    public void updateWork(Project work, int position)
+    {
+        RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list);
+        WorkListViewAdapter adapter = (WorkListViewAdapter) workListView.getAdapter();
+        adapter.updateWork(work, position);
+        adapter.notifyItemChanged(position);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -189,7 +211,7 @@ public class WorkListActivity extends AppCompatActivity
             Intent createProject = new Intent(this, CreateWorkActivity.class);
             long msec = _calendarView.getDate();
             createProject.putExtra(CreateWorkActivity.EXTRA_DATE, msec);
-            startActivityForResult(createProject, RC_CREATE_PROJECT);
+            startActivityForResult(createProject, RC_CREATE_WORK);
 //            Snackbar.make(findViewById(R.id.frameLayout), "Create new project", Snackbar.LENGTH_LONG)
 //                    .setAction("Action", null).show();
             return true;
@@ -203,25 +225,28 @@ public class WorkListActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode,
                                     Intent data)
     {
-//        Log.i(TAG, "requestCode = "+(requestCode == RC_CREATE_PROJECT ? "CREATE_PROJECT" : requestCode)
-//                +", resultCode = "+(resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
+        //super.onActivityResult(requestCode, resultCode, data);
+        Log.i(TAG, "requestCode = "+(requestCode == RC_CREATE_WORK ? "CREATE_PROJECT" : requestCode)
+                +", resultCode = "+(resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
         if (resultCode != RESULT_OK) return;
 
-        if (requestCode == RC_CREATE_PROJECT)
+        if (requestCode == RC_CREATE_WORK)
         {
-            // TODO update project list
-            DatabaseHelper db = DatabaseHelper.getInstance(this);
-            RecyclerView rv = (RecyclerView) findViewById(R.id.work_list);
-            rv.getAdapter().notifyDataSetChanged();
+            resetWorkList();
+        }
 
-//                Snackbar.make(_viewPager, "New client created", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
+        else if (requestCode == RC_EDIT_WORK)
+        {
+            Project work = data.getParcelableExtra(WoConstants.ARG_WORK);
+            int position = data.getIntExtra(WoConstants.ARG_POSITION, -1);
+            updateWork(work, position);
         }
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView)
     {
         Date date = new Date(_calendarView.getDate());
+        Log.i(TAG, "setupRecyclerView() for "+date);
         recyclerView.setAdapter(new WorkListViewAdapter(this, date));
     }
 
@@ -286,7 +311,7 @@ public class WorkListActivity extends AppCompatActivity
                     if (_twoPane)
                     {
                         Bundle arguments = new Bundle();
-                        arguments.putParcelable(WoConstants.ARG_PROJECT, holder.getProject());
+                        arguments.putParcelable(WoConstants.ARG_WORK, holder.getProject());
                         WorkDetailFragment fragment = new WorkDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
@@ -297,7 +322,7 @@ public class WorkListActivity extends AppCompatActivity
                     {
                         Context context = v.getContext();
                         Intent intent = new Intent(context, WorkDetailActivity.class);
-                        intent.putExtra(WoConstants.ARG_PROJECT, holder.getProject());
+                        intent.putExtra(WoConstants.ARG_WORK, holder.getProject());
 
                         context.startActivity(intent);
                     }
@@ -315,6 +340,11 @@ public class WorkListActivity extends AppCompatActivity
         public void removeWork(int position)
         {
             _projects.remove(position);
+        }
+
+        public void updateWork(Project work, int position)
+        {
+            _projects.set(position, work);
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder

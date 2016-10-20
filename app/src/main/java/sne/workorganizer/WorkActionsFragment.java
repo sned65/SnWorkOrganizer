@@ -3,7 +3,9 @@ package sne.workorganizer;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -13,16 +15,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sne.workorganizer.db.Project;
+import sne.workorganizer.util.WoConstants;
+
+import static android.app.Activity.RESULT_CANCELED;
+import static android.app.Activity.RESULT_OK;
 
 /**
  * Created by Nikolay_Smirnov on 19.10.2016.
  */
 public class WorkActionsFragment extends DialogFragment
 {
-    private static final String KEY_PROJECT = "key_project";
+    private static final String TAG = WorkActionsFragment.class.getName();
+    private static final String KEY_WORK = "key_work";
     private static final String KEY_CLIENT_NAME = "key_client_name";
     private static final String KEY_POSITION = "key_position";
-    private Project _project;
+    private Project _work;
     private String _clientName;
     private int _position;
 
@@ -36,7 +43,7 @@ public class WorkActionsFragment extends DialogFragment
         WorkActionsFragment f = new WorkActionsFragment();
 
         Bundle args = new Bundle();
-        args.putParcelable(KEY_PROJECT, project);
+        args.putParcelable(KEY_WORK, project);
         args.putString(KEY_CLIENT_NAME, clientName);
         args.putInt(KEY_POSITION, position);
         f.setArguments(args);
@@ -66,7 +73,7 @@ public class WorkActionsFragment extends DialogFragment
             }
         });
 
-        _project = getArguments().getParcelable(KEY_PROJECT);
+        _work = getArguments().getParcelable(KEY_WORK);
         _clientName = getArguments().getString(KEY_CLIENT_NAME);
         _position = getArguments().getInt(KEY_POSITION);
 
@@ -81,11 +88,20 @@ public class WorkActionsFragment extends DialogFragment
         switch (position)
         {
         case 0: // Delete
-            ConfirmDeleteWorkFragment.newInstance(_project, _clientName, _position)
+            ConfirmDeleteWorkFragment.newInstance(_work, _clientName, _position)
                     .show(getFragmentManager(), "confirm_del_work");
             break;
         case 1: // Edit
-            // TODO EditProjectFragment.newInstance(_project, _position).show(getFragmentManager(), "edit_work");
+            Intent i = new Intent(getActivity(), EditWorkActivity.class);
+            i.putExtra(WoConstants.ARG_WORK, _work);
+            i.putExtra(WoConstants.ARG_CLIENT_NAME, _clientName);
+            i.putExtra(WoConstants.ARG_POSITION, _position);
+            // Contrary to documentation
+            // this.startActivityForResult(Intent, int);
+            // does NOT call startActivityForResult() from the fragment's containing Activity.
+            // Explicit call is needed to get control back to onActivityResult().
+            getActivity().startActivityForResult(i, WorkListActivity.RC_EDIT_WORK);
+            //EditWorkActivity.newInstance(_work, _clientName, _position).show(getFragmentManager(), "edit_work");
             break;
         }
     }
