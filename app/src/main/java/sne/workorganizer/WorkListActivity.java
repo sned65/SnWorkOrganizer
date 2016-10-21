@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -22,10 +23,13 @@ import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.help.AboutAppDialogFragment;
+import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -41,6 +45,7 @@ import java.util.List;
 public class WorkListActivity extends AppCompatActivity
 {
     private static final String TAG = WorkListActivity.class.getName();
+    private static final String FRG_DETAILS = "FRG_DETAILS";
     private static final int RC_CREATE_WORK = 100;
     public static final int RC_EDIT_WORK = 101;
 
@@ -52,6 +57,18 @@ public class WorkListActivity extends AppCompatActivity
      * device.
      */
     private boolean _twoPane;
+
+    /*
+     * Whether or not it is necessary to update detail pane in two-pane mode
+     * onRestoreInstanceState.
+     * <br/>
+     * Possible values:
+     * <ul>
+     *     <li>&lt;=0 - index of modified work</li>
+     *     <li>-1 - do nothing</li>
+     * </ul>
+     */
+    //private int _updateDetailPane = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -78,18 +95,9 @@ public class WorkListActivity extends AppCompatActivity
             @Override
             public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth)
             {
-                Log.i(TAG, "onSelectedDayChange(" + year + "-" + month + "-" + dayOfMonth + ") called");
+                //Log.i(TAG, "onSelectedDayChange(" + year + "-" + month + "-" + dayOfMonth + ") called");
 
-                // It seems there is a bug in CalendarView implementation for some devices.
-                // http://stackoverflow.com/questions/31602849/calendarview-returns-always-current-day-ignoring-what-user-selects
-                // In Nexus 10 tablet whatever date is selected, CalendarView returns the current day.
-                // And if I keep changing the date, nothing changes - getDate() always returns the current day.
-                // The code below is workaround.
-                Calendar c = GregorianCalendar.getInstance();
-                c.set(year, month, dayOfMonth);
-                long ms = c.getTimeInMillis();
-                view.setDate(ms);
-
+                Mix.calendarSetSelection(view, year, month, dayOfMonth);
                 resetWorkList();
             }
         });
@@ -131,12 +139,32 @@ public class WorkListActivity extends AppCompatActivity
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState)
     {
+        Log.i(TAG, "onRestoreInstanceState() called");
+        super.onRestoreInstanceState(savedInstanceState);
         long date = savedInstanceState.getLong(WoConstants.ARG_CURRENT_DATE, -1);
         if (date > 0)
         {
             _calendarView.setDate(date);
         }
     }
+
+/*
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState)
+    {
+        super.onPostCreate(savedInstanceState);
+
+        Log.i(TAG, "onPostCreate() _twoPane = "+_twoPane+"; _updateDetailPane = "+_updateDetailPane);
+        if (_twoPane && _updateDetailPane >= 0)
+        {
+            RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list);
+            // TODO update detail part, if any
+            boolean done = workListView.getChildAt(_updateDetailPane).performClick();
+            if (done) Log.i(TAG, "onRestoreInstanceState() click successful");
+            else Log.i(TAG, "onRestoreInstanceState() click NOT successful");
+        }
+    }
+*/
 
     private void resetWorkList()
     {
@@ -156,8 +184,9 @@ public class WorkListActivity extends AppCompatActivity
     {
         RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list);
         WorkListViewAdapter adapter = (WorkListViewAdapter) workListView.getAdapter();
+        //_updateDetailPane = adapter.updateWork(work, position);
         adapter.updateWork(work, position);
-        adapter.notifyItemChanged(position);
+        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -240,8 +269,24 @@ public class WorkListActivity extends AppCompatActivity
             Project work = data.getParcelableExtra(WoConstants.ARG_WORK);
             int position = data.getIntExtra(WoConstants.ARG_POSITION, -1);
             updateWork(work, position);
+
+            WorkDetailFragment wdf = (WorkDetailFragment) getSupportFragmentManager().findFragmentByTag(FRG_DETAILS);
+            if (wdf != null)
+            {
+                wdf.setWork(work);
+            }
         }
     }
+
+/*
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        Fragment frg = getSupportFragmentManager().findFragmentByTag(FRG_DETAILS);
+        Log.i(TAG, "onResume() FRAGMENT = "+frg);
+    }
+*/
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView)
     {
@@ -290,14 +335,6 @@ public class WorkListActivity extends AppCompatActivity
             return new ViewHolder(view);
         }
 
-//        @Override
-//        public void onBindViewHolder(final ViewHolder holder, int position)
-//        {
-//            holder.bindModel(_projects.get(position));
-//        }
-
-
-
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position)
         {
@@ -315,7 +352,7 @@ public class WorkListActivity extends AppCompatActivity
                         WorkDetailFragment fragment = new WorkDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.work_detail_container, fragment)
+                                .replace(R.id.work_detail_container, fragment, FRG_DETAILS)
                                 .commit();
                     }
                     else
@@ -340,11 +377,65 @@ public class WorkListActivity extends AppCompatActivity
         public void removeWork(int position)
         {
             _projects.remove(position);
+
+            if (_twoPane)
+            {
+                // TODO clear details
+            }
         }
 
-        public void updateWork(Project work, int position)
+        public int updateWork(Project work, int position)
         {
-            _projects.set(position, work);
+            int new_position = -1;
+            Project old = _projects.get(position);
+            boolean sameDate = Mix.sameDate(old.getDate(), work.getDate());
+            if (sameDate)
+            {
+                boolean sameTime = Mix.sameTime(old.getDate(), work.getDate());
+                _projects.set(position, work);
+                if (!sameTime)
+                {
+                    sortWorksByTime();
+                    for (int i = 0; i < _projects.size(); ++i)
+                    {
+                        Project p = _projects.get(i);
+                        if (work.getId().equals(p.getId()))
+                        {
+                            new_position = i;
+                            break;
+                        }
+                    }
+                }
+
+/*
+                // FIXME experimental code
+                Bundle arguments = new Bundle();
+                arguments.putParcelable(WoConstants.ARG_WORK, work);
+                WorkDetailFragment fragment = new WorkDetailFragment();
+                fragment.setArguments(arguments);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.work_detail_container, fragment)
+                        .commit();wdwdwd
+*/
+            }
+            else
+            {
+                removeWork(position);
+            }
+
+            return new_position;
+        }
+
+        private void sortWorksByTime()
+        {
+            Collections.sort(_projects, new Comparator<Project>()
+            {
+                @Override
+                public int compare(Project w1, Project w2)
+                {
+                    return w1.getDate().compareTo(w2.getDate());
+                }
+            });
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder

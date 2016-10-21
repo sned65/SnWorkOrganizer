@@ -496,7 +496,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 args[5] = project.getPrice();
                 args[6] = project.getDesign();
                 Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s, %s, %s, %s", sql,
-                        args[0], args[1], args[2], args[3], args[4], args[5], args[6]));
+                        args[0], args[1], args[2], new Date(project.getDate()).toString(),
+                        args[4], args[5], args[6]));
             }
 
             getWritableDatabase().execSQL(sql, args);

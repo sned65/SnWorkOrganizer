@@ -41,6 +41,8 @@ public class WorkDetailFragment extends Fragment
      */
     private Project _project;
 
+    private View _rootView;
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -74,22 +76,29 @@ public class WorkDetailFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        View rootView = inflater.inflate(R.layout.work_detail, container, false);
-        if (_project == null) return rootView;
+        _rootView = inflater.inflate(R.layout.work_detail, container, false);
+        if (_project == null) return _rootView;
 
-        ((TextView) rootView.findViewById(R.id.work_date_time)).setText(_project.getDateTimeString());
-        ((TextView) rootView.findViewById(R.id.work_title)).setText(_project.getName());
+        fillViews();
+
+        return _rootView;
+    }
+
+    private void fillViews()
+    {
+        ((TextView) _rootView.findViewById(R.id.work_date_time)).setText(_project.getDateTimeString());
+        ((TextView) _rootView.findViewById(R.id.work_title)).setText(_project.getName());
         String price = _project.getPrice() == null ? "" : _project.getPrice().toString();
-        ((TextView) rootView.findViewById(R.id.work_price)).setText(price);
+        ((TextView) _rootView.findViewById(R.id.work_price)).setText(price);
 
         DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
         Client client = db.findClientById(_project.getClientId());
-        ((TextView) rootView.findViewById(R.id.work_client_name)).setText(client.getName());
-        ((TextView) rootView.findViewById(R.id.client_phone)).setText(client.getPhone());
-        ((TextView) rootView.findViewById(R.id.client_email)).setText(client.getEmail());
-        ((TextView) rootView.findViewById(R.id.client_social)).setText(client.getSocial());
+        ((TextView) _rootView.findViewById(R.id.work_client_name)).setText(client.getName());
+        ((TextView) _rootView.findViewById(R.id.client_phone)).setText(client.getPhone());
+        ((TextView) _rootView.findViewById(R.id.client_email)).setText(client.getEmail());
+        ((TextView) _rootView.findViewById(R.id.client_social)).setText(client.getSocial());
 
-        ImageView designView = (ImageView) rootView.findViewById(R.id.work_design);
+        ImageView designView = (ImageView) _rootView.findViewById(R.id.work_design);
         String designStr = _project.getDesign();
         Log.i(TAG, "onCreateView() designStr = "+designStr);
         if (designStr != null)
@@ -131,7 +140,17 @@ public class WorkDetailFragment extends Fragment
                 e.printStackTrace();
             }
         }
+    }
 
-        return rootView;
+    public void setWork(Project work)
+    {
+        _project = work;
+        if (_project == null)
+        {
+            // TODO
+            return;
+        }
+
+        fillViews();
     }
 }

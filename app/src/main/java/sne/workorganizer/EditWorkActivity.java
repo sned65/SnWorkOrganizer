@@ -1,9 +1,5 @@
 package sne.workorganizer;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,11 +10,16 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.TimePicker;
+
+import java.util.Calendar;
 
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
 
 import static sne.workorganizer.util.WoConstants.ARG_CLIENT_NAME;
@@ -30,8 +31,10 @@ import static sne.workorganizer.util.WoConstants.ARG_POSITION;
 public class EditWorkActivity extends AppCompatActivity
 {
     private static final String TAG = EditClientFragment.class.getSimpleName();
-    private EditText _workTitleView;
-    private EditText _workPriceView;
+    private CalendarView _dateView;
+    private TimePicker _timeView;
+    private EditText _titleView;
+    private EditText _priceView;
     private TextView _designView;
     private Uri _designUri;
 
@@ -53,14 +56,33 @@ public class EditWorkActivity extends AppCompatActivity
         TextView clientNameView = (TextView) findViewById(R.id.client_name);
         clientNameView.setText(clientName);
 
-        _workTitleView = (EditText) findViewById(R.id.work_title);
-        _workTitleView.setText(_work.getName());
+        _dateView = (CalendarView) findViewById(R.id.work_date);
+        _dateView.setDate(_work.getDate());
+        _dateView.setOnDateChangeListener(new CalendarView.OnDateChangeListener()
+        {
+            @Override
+            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth)
+            {
+                // CalendarView bug workaround. See javadoc comments.
+                Mix.calendarSetSelection(view, year, month, dayOfMonth);
+            }
+        });
 
-        _workPriceView = (EditText) findViewById(R.id.work_price);
+        _timeView = (TimePicker) findViewById(R.id.work_time);
+        _timeView.setIs24HourView(true);
+        int hh = Mix.getDateField(_work.getDate(), Calendar.HOUR_OF_DAY);
+        _timeView.setCurrentHour(hh);
+        int mm = Mix.getDateField(_work.getDate(), Calendar.MINUTE);
+        _timeView.setCurrentMinute(mm);
+
+        _titleView = (EditText) findViewById(R.id.work_title);
+        _titleView.setText(_work.getName());
+
+        _priceView = (EditText) findViewById(R.id.work_price);
         Integer price = _work.getPrice();
         if (price != null)
         {
-            _workPriceView.setText(_work.getPrice().toString());
+            _priceView.setText(_work.getPrice().toString());
         }
 
         _designView = (TextView) findViewById(R.id.work_design);
@@ -139,11 +161,11 @@ public class EditWorkActivity extends AppCompatActivity
         boolean cancel = false;
         View focus = null;
 
-        String title = _workTitleView.getText().toString();
+        String title = _titleView.getText().toString();
         if (TextUtils.isEmpty(title))
         {
-            _workTitleView.setError(getString(R.string.error_field_required));
-            if (!cancel) focus = _workTitleView;
+            _titleView.setError(getString(R.string.error_field_required));
+            if (!cancel) focus = _titleView;
             cancel = true;
         }
 
@@ -157,9 +179,19 @@ public class EditWorkActivity extends AppCompatActivity
 
     private void fillWork()
     {
-        _work.setName(_workTitleView.getText().toString());
-        String price_str = _workPriceView.getText().toString();
-        if (!TextUtils.isEmpty(price_str))
+        long dt = _dateView.getDate();
+        int hh = _timeView.getCurrentHour();
+        int mm = _timeView.getCurrentMinute();
+        long date = Mix.updateTime(dt, hh, mm);
+        _work.setDate(date);
+
+        _work.setName(_titleView.getText().toString());
+        String price_str = _priceView.getText().toString();
+        if (TextUtils.isEmpty(price_str))
+        {
+            _work.setPrice(null);
+        }
+        else
         {
             try
             {
