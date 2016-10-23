@@ -29,6 +29,7 @@ import java.util.List;
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
 
 /**
@@ -178,53 +179,6 @@ public class ClientListActivity extends AppCompatActivity
         }
     }
 
-    public void callPhone(View view)
-    {
-        String phone = ((TextView) view).getText().toString();
-        if (TextUtils.isEmpty(phone)) return;
-        Intent callIntent = new Intent(Intent.ACTION_DIAL);
-        callIntent.setData(Uri.parse("tel:"+ Uri.encode(phone.trim())));
-        callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(callIntent);
-    }
-
-    public void sendEmail(View view)
-    {
-        String email = ((TextView) view).getText().toString();
-        Log.i(TAG, "sendEmail() called for "+email);
-        if (TextUtils.isEmpty(email)) return;
-
-        Intent emailIntent = new Intent(Intent.ACTION_SEND);
-        //emailIntent.setType("text/plain");
-        emailIntent.setType("message/rfc822");
-        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] { email });
-        try
-        {
-            startActivity(Intent.createChooser(emailIntent, getString(R.string.send_email_title)));
-        }
-        catch (android.content.ActivityNotFoundException e)
-        {
-            Toast.makeText(this,
-                    "No email clients installed.",
-                    Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    public void openUrl(View view)
-    {
-        String url = ((TextView) view).getText().toString().trim();
-        if (TextUtils.isEmpty(url)) return;
-        if (!url.startsWith("http://") && !url.startsWith("https://"))
-        {
-            url = "http://" + url;
-        }
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        if (browserIntent.resolveActivity(getPackageManager()) != null)
-        {
-            startActivity(browserIntent);
-        }
-    }
-
     private class ClientListAdapter extends RecyclerView.Adapter<RowHolder>
     {
         private Activity _activity;
@@ -328,6 +282,8 @@ public class ClientListActivity extends AppCompatActivity
             _clientSocial = (TextView) itemView.findViewById(R.id.client_social);
             _clientEmail = (TextView) itemView.findViewById(R.id.client_email);
             _projTable = (TableLayout) itemView.findViewById(R.id.tbl_client_proj);
+
+            Mix.setupClientCommunications(_activity, _clientPhone, _clientEmail, _clientSocial);
 
             //itemView.setOnClickListener(this);
             //Log.i(TAG, "RowHolder() itemView "+itemView.getClass());

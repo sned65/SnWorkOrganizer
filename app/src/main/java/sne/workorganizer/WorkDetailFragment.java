@@ -25,6 +25,7 @@ import java.io.InputStream;
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
 
 /**
@@ -94,9 +95,13 @@ public class WorkDetailFragment extends Fragment
         DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
         Client client = db.findClientById(_project.getClientId());
         ((TextView) _rootView.findViewById(R.id.work_client_name)).setText(client.getName());
-        ((TextView) _rootView.findViewById(R.id.client_phone)).setText(client.getPhone());
-        ((TextView) _rootView.findViewById(R.id.client_email)).setText(client.getEmail());
-        ((TextView) _rootView.findViewById(R.id.client_social)).setText(client.getSocial());
+        TextView phoneView = (TextView) _rootView.findViewById(R.id.client_phone);
+        phoneView.setText(client.getPhone());
+        TextView emailView = (TextView) _rootView.findViewById(R.id.client_email);
+        emailView.setText(client.getEmail());
+        TextView socialView = (TextView) _rootView.findViewById(R.id.client_social);
+        socialView.setText(client.getSocial());
+        Mix.setupClientCommunications(getActivity(), phoneView, emailView, socialView);
 
         ImageView designView = (ImageView) _rootView.findViewById(R.id.work_design);
         String designStr = _project.getDesign();

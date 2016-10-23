@@ -1,11 +1,21 @@
 package sne.workorganizer.util;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.text.InputType;
+import android.text.TextUtils;
+import android.util.Log;
+import android.view.View;
 import android.widget.CalendarView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import sne.workorganizer.R;
 
 /**
  * Collection of general-purpose utilities.
@@ -13,6 +23,8 @@ import java.util.GregorianCalendar;
 
 public class Mix
 {
+    private static final String TAG = Mix.class.getName();
+
     private Mix() {}
 
     /**
@@ -141,5 +153,110 @@ public class Mix
         c2.setTimeInMillis(date2);
         return c1.get(Calendar.HOUR_OF_DAY) == c2.get(Calendar.HOUR_OF_DAY) &&
                 c1.get(Calendar.MINUTE) == c2.get(Calendar.MINUTE);
+    }
+
+    /**
+     * Dial a number as specified by the {@code phone}.
+     *
+     * @param ctx The context to use.
+     * @param phone phone to be dialed.
+     */
+    public static void callPhone(Context ctx, String phone)
+    {
+        if (TextUtils.isEmpty(phone)) return;
+        Intent callIntent = new Intent(Intent.ACTION_DIAL);
+        callIntent.setData(Uri.parse("tel:"+ Uri.encode(phone.trim())));
+        callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        ctx.startActivity(callIntent);
+    }
+
+    /**
+     * Invoke an activity to send e-mail.
+     *
+     * @param ctx The context to use.
+     * @param email e-mail address
+     */
+    public static void sendEmail(Context ctx, String email)
+    {
+        Log.i(TAG, "sendEmail() called for "+email);
+        if (TextUtils.isEmpty(email)) return;
+
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+        //emailIntent.setType("text/plain");
+        emailIntent.setType("message/rfc822");
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] { email });
+        try
+        {
+            ctx.startActivity(Intent.createChooser(emailIntent, ctx.getString(R.string.send_email_title)));
+        }
+        catch (android.content.ActivityNotFoundException e)
+        {
+            Toast.makeText(ctx,
+                    "No email clients installed.",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Invoke an activity to browse URL.
+     *
+     * @param ctx The context to use.
+     * @param url URL to be opened.
+     */
+    public static void openUrl(Context ctx, String url)
+    {
+        if (TextUtils.isEmpty(url)) return;
+        if (!url.startsWith("http://") && !url.startsWith("https://"))
+        {
+            url = "http://" + url;
+        }
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        if (browserIntent.resolveActivity(ctx.getPackageManager()) != null)
+        {
+            ctx.startActivity(browserIntent);
+        }
+    }
+
+    /**
+     * Setups {@code OnClickListener}s for client communication {@code TextView}s.
+     *
+     * @param ctx The context to use.
+     * @param clientPhone {@code TextView} containing a phone number
+     * @param clientEmail {@code TextView} containing an e-mail address
+     * @param clientSocial {@code TextView} containing URL
+     */
+    public static void setupClientCommunications(final Context ctx,
+                                                 TextView clientPhone, TextView clientEmail, TextView clientSocial)
+    {
+        clientPhone.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                String phone = ((TextView) v).getText().toString();
+                Mix.callPhone(ctx, phone);
+            }
+        });
+
+        clientSocial.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                String url = ((TextView) v).getText().toString().trim();
+                Mix.openUrl(ctx, url);
+            }
+        });
+
+        clientEmail.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                String email = ((TextView) v).getText().toString();
+                Mix.sendEmail(ctx, email);
+            }
+        });
+
     }
 }

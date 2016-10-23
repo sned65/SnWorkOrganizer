@@ -73,8 +73,7 @@
                 android:text="@string/client_phone"
                 android:paddingStart="@dimen/client_attr_padding_start"
                 android:paddingEnd="@dimen/client_attr_padding_end"/>
-            <TextView android:id="@+id/client_phone"
-                      android:onClick="callPhone"/>
+            <TextView android:id="@+id/client_phone"/>
         </TableRow>
 
         <TableRow android:layout_marginTop="@dimen/client_attr_margin"
@@ -83,8 +82,7 @@
                 android:text="@string/client_email"
                 android:paddingStart="@dimen/client_attr_padding_start"
                 android:paddingEnd="@dimen/client_attr_padding_end"/>
-            <TextView android:id="@+id/client_email"
-                      android:onClick="sendEmail"/>
+            <TextView android:id="@+id/client_email"/>
         </TableRow>
 
         <TableRow android:layout_marginTop="@dimen/client_attr_margin"
@@ -92,8 +90,7 @@
             <TextView android:text="@string/client_social"
                       android:paddingStart="@dimen/client_attr_padding_start"
                       android:paddingEnd="@dimen/client_attr_padding_end"/>
-            <TextView android:id="@+id/client_social"
-                      android:onClick="openUrl"/>
+            <TextView android:id="@+id/client_social"/>
         </TableRow>
 
         <TableRow
