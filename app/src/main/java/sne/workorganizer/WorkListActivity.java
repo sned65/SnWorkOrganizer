@@ -115,9 +115,12 @@ public class WorkListActivity extends AppCompatActivity
         });
 */
 
-        View workListView = findViewById(R.id.work_list);
-        assert workListView != null;
-        setupRecyclerView((RecyclerView) workListView);
+        if (savedInstanceState == null)
+        {
+            View workListView = findViewById(R.id.work_list);
+            assert workListView != null;
+            setupRecyclerView((RecyclerView) workListView);
+        }
 
         if (findViewById(R.id.work_detail_container) != null)
         {
@@ -145,7 +148,12 @@ public class WorkListActivity extends AppCompatActivity
         long date = savedInstanceState.getLong(WoConstants.ARG_CURRENT_DATE, -1);
         if (date > 0)
         {
+            Log.i(TAG, "onRestoreInstanceState() set date "+(new Date(date)));
             _calendarView.setDate(date);
+
+            View workListView = findViewById(R.id.work_list);
+            assert workListView != null;
+            setupRecyclerView((RecyclerView) workListView);
         }
     }
 
@@ -395,6 +403,7 @@ public class WorkListActivity extends AppCompatActivity
 
         public void removeWork(int position)
         {
+            Log.i(TAG, "removeWork("+position+") called");
             _projects.remove(position);
 
             if (_twoPane)
@@ -405,11 +414,15 @@ public class WorkListActivity extends AppCompatActivity
 
         public int updateWork(Project work, int position)
         {
+            Log.i(TAG, "updateWork("+work+", "+position+") called");
             int new_position = -1;
             Project old = _projects.get(position);
+            Log.i(TAG, "updateWork() compare dates for "+old+" and "+work);
+            Log.i(TAG, "updateWork() compare dates "+(new Date(old.getDate()))+" and "+(new Date(work.getDate())));
             boolean sameDate = Mix.sameDate(old.getDate(), work.getDate());
             if (sameDate)
             {
+                Log.i(TAG, "updateWork() the same dates");
                 boolean sameTime = Mix.sameTime(old.getDate(), work.getDate());
                 _projects.set(position, work);
                 if (!sameTime)
@@ -439,6 +452,7 @@ public class WorkListActivity extends AppCompatActivity
             }
             else
             {
+                Log.i(TAG, "updateWork() the different dates");
                 removeWork(position);
             }
 

@@ -96,7 +96,8 @@ public class WorkActionsFragment extends DialogFragment
             if (activity.isTwoPane())
             {
                 Bundle arguments = new Bundle();
-                arguments.putParcelable(WoConstants.ARG_WORK, _work);
+                Project work_clone = _work.clone();
+                arguments.putParcelable(WoConstants.ARG_WORK, work_clone);
                 arguments.putString(WoConstants.ARG_CLIENT_NAME, _clientName);
                 arguments.putInt(WoConstants.ARG_POSITION, _position);
                 EditWorkFragment fragment = new EditWorkFragment();

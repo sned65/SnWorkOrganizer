@@ -2,6 +2,7 @@ package sne.workorganizer.db;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -11,8 +12,9 @@ import java.util.UUID;
 /**
  * Single row in the Projects table.
  */
-public class Project implements Parcelable
+public class Project implements Parcelable, Cloneable
 {
+    private static final String TAG = Project.class.getName();
     private static final String DATETIME_FORMAT = "dd MMM yyyy HH:mm";
     private static final String TIME_FORMAT = "HH:mm";
 
@@ -41,6 +43,26 @@ public class Project implements Parcelable
         _status = status;
         _design = design;
         _price = price;
+    }
+
+    @Override
+    public Project clone()
+    {
+        try
+        {
+            return (Project) super.clone();
+        }
+        catch (CloneNotSupportedException e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Work["+_id + ", " + _name + ", " + (new Date(_date)) + " for " + _clientId + "]";
     }
 
     /**
@@ -73,6 +95,7 @@ public class Project implements Parcelable
 
     protected Project(Parcel in)
     {
+        Log.i(TAG, "*** Project(Parcel in) called ***");
         _id = in.readString();
         _clientId = in.readString();
         _name = in.readString();

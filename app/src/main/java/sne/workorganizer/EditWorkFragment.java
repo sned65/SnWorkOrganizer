@@ -113,6 +113,7 @@ public class EditWorkFragment extends Fragment
                 @Override
                 public void onClick(View v)
                 {
+                    // Note: buttons are present in two-pane mode only of WorkListActivity
                     if (save())
                     {
                         WorkListActivity activity = (WorkListActivity) getActivity();
