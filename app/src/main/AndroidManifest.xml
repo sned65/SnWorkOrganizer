@@ -43,6 +43,7 @@
             android:name=".EditWorkActivity"
             android:label="@string/edit"
             android:parentActivityName=".WorkListActivity"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -62,6 +63,7 @@
             android:name=".WorkDetailActivity"
             android:label="@string/title_work_detail"
             android:parentActivityName=".WorkListActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

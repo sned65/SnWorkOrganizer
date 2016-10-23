@@ -69,7 +69,7 @@ public class CreateWorkActivity extends AppCompatActivity
 
         initWorkDate();
 
-        _timePicker = (TimePicker) findViewById(R.id.work_time);
+        _timePicker = (TimePicker) findViewById(R.id.work_time_picker);
         _timePicker.setIs24HourView(true);
 
         initClientSelector();
@@ -270,6 +270,11 @@ public class CreateWorkActivity extends AppCompatActivity
 //                    Log.i(TAG, String.format("Size: %d",
 //                            c.getInt(sizeColumn)));
 //                }
+
+                if (c != null)
+                {
+                    c.close();
+                }
 
                 _designUri = uri;
                 _designView.setText(displayName);

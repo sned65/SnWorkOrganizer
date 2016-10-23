@@ -46,6 +46,7 @@ public class WorkListActivity extends AppCompatActivity
 {
     private static final String TAG = WorkListActivity.class.getName();
     private static final String FRG_DETAILS = "FRG_DETAILS";
+    public static final String FRG_WORK_EDIT = "FRG_WORK_EDIT";
     private static final int RC_CREATE_WORK = 100;
     public static final int RC_EDIT_WORK = 101;
 
@@ -93,7 +94,7 @@ public class WorkListActivity extends AppCompatActivity
         _calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener()
         {
             @Override
-            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth)
+            public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth)
             {
                 //Log.i(TAG, "onSelectedDayChange(" + year + "-" + month + "-" + dayOfMonth + ") called");
 
@@ -184,9 +185,19 @@ public class WorkListActivity extends AppCompatActivity
     {
         RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list);
         WorkListViewAdapter adapter = (WorkListViewAdapter) workListView.getAdapter();
-        //_updateDetailPane = adapter.updateWork(work, position);
         adapter.updateWork(work, position);
         adapter.notifyDataSetChanged();
+    }
+
+    public void removeWorkEditFragment()
+    {
+        if (_twoPane)
+        {
+            Fragment frg = getSupportFragmentManager().findFragmentByTag(FRG_WORK_EDIT);
+            getSupportFragmentManager().beginTransaction()
+                    .remove(frg)
+                    .commit();
+        }
     }
 
     @Override
@@ -301,14 +312,22 @@ public class WorkListActivity extends AppCompatActivity
         workListView.getAdapter().notifyDataSetChanged();
     }
 
+    public boolean isTwoPane()
+    {
+        return _twoPane;
+    }
+
+    public void resetDetailPane(int position)
+    {
+        // TODO resetDetailPane
+    }
+
     public class WorkListViewAdapter
             extends RecyclerView.Adapter<WorkListViewAdapter.ViewHolder>
     {
         private Activity _activity;
         private Date _date;
         private List<Project> _projects;
-
-        //private final List<DummyContent.DummyItem> mValues;
 
         public WorkListViewAdapter(Activity activity, Date date)
         {

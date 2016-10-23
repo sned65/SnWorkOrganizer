@@ -21,7 +21,7 @@ import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 
 /**
- * Created by Nikolay_Smirnov on 19.10.2016.
+ * Popup dialog to select actions on Work.
  */
 public class WorkActionsFragment extends DialogFragment
 {
@@ -92,16 +92,32 @@ public class WorkActionsFragment extends DialogFragment
                     .show(getFragmentManager(), "confirm_del_work");
             break;
         case 1: // Edit
-            Intent i = new Intent(getActivity(), EditWorkActivity.class);
-            i.putExtra(WoConstants.ARG_WORK, _work);
-            i.putExtra(WoConstants.ARG_CLIENT_NAME, _clientName);
-            i.putExtra(WoConstants.ARG_POSITION, _position);
-            // Contrary to documentation
-            // this.startActivityForResult(Intent, int);
-            // does NOT call startActivityForResult() from the fragment's containing Activity.
-            // Explicit call is needed to get control back to onActivityResult().
-            getActivity().startActivityForResult(i, WorkListActivity.RC_EDIT_WORK);
-            //EditWorkActivity.newInstance(_work, _clientName, _position).show(getFragmentManager(), "edit_work");
+            WorkListActivity activity = (WorkListActivity) getActivity();
+            if (activity.isTwoPane())
+            {
+                Bundle arguments = new Bundle();
+                arguments.putParcelable(WoConstants.ARG_WORK, _work);
+                arguments.putString(WoConstants.ARG_CLIENT_NAME, _clientName);
+                arguments.putInt(WoConstants.ARG_POSITION, _position);
+                EditWorkFragment fragment = new EditWorkFragment();
+                fragment.setArguments(arguments);
+                activity.getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.work_detail_container, fragment, WorkListActivity.FRG_WORK_EDIT)
+                        .commit();
+
+            }
+            else
+            {
+                Intent i = new Intent(getActivity(), EditWorkActivity.class);
+                i.putExtra(WoConstants.ARG_WORK, _work);
+                i.putExtra(WoConstants.ARG_CLIENT_NAME, _clientName);
+                i.putExtra(WoConstants.ARG_POSITION, _position);
+                // Contrary to documentation
+                // this.startActivityForResult(Intent, int);
+                // does NOT call startActivityForResult() from the fragment's containing Activity.
+                // Explicit call is needed to get control back to onActivityResult().
+                getActivity().startActivityForResult(i, WorkListActivity.RC_EDIT_WORK);
+            }
             break;
         }
     }

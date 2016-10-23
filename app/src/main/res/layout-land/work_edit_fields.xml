@@ -6,56 +6,64 @@
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:layout_marginStart="4dp"
+    android:layout_marginStart="10dp"
     android:layout_marginEnd="4dp">
 
+
+    <LinearLayout
+        android:id="@+id/button_panel"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginBottom="5dp"
+        tools:visibility="gone"
+        tools:ignore="RtlHardcoded">
+
+        <Button
+            android:text="@string/cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_cancel"
+            android:layout_weight="1"/>
+
+        <Button
+            android:text="@string/save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_save"
+            android:layout_weight="1"
+            />
+    </LinearLayout>
+
+
     <TextView
-        tools:text="01 Jan 2016"
+        tools:text="Client"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/work_date"
+        android:id="@+id/client_name"
         android:textAppearance="@style/TextAppearance.AppCompat.Title"
         android:gravity="center"/>
-
-    <TimePicker
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/work_time_picker"
-        android:timePickerMode="spinner"/>
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="100">
+    <CalendarView
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/calendar_height"
+        android:id="@+id/work_date"
+        android:nestedScrollingEnabled="true"
+        android:layout_weight="1"/>
 
-            <AutoCompleteTextView
-                android:hint="@string/client"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/select_client"
-                android:layout_weight="1"
-                android:inputType="textImeMultiLine|textNoSuggestions"
-                android:imeOptions="actionDone"
-                android:imeActionLabel="@string/ok"
-                />
+    <TimePicker
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/work_time_picker"
+        android:timePickerMode="spinner"
+        android:layout_weight="1"/>
 
-        </android.support.design.widget.TextInputLayout>
-
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:srcCompat="@drawable/ic_person_add_black_24dp"
-            android:id="@+id/btn_new_client"
-            android:layout_weight="1"
-            android:layout_marginStart="5dp"
-            android:layout_marginEnd="5dp"
-            android:layout_gravity="center"
-            android:onClick="onCreateClient"/>
     </LinearLayout>
 
     <android.support.design.widget.TextInputLayout
