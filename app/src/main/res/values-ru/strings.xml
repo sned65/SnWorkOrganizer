@@ -36,4 +36,5 @@
     <string name="error_field_required">Это поле обязательно</string>
     <string name="project_edit_dlg_title">Изменить</string>
     <string name="project_delete_dlg_title">Удалить работу</string>
+    <string name="result">Результат</string>
 </resources>

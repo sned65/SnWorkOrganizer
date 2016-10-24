@@ -53,6 +53,9 @@ public class EditWorkFragment extends Fragment
     private Uri _designUri;
     private ImageButton _designImageBtn;
     private ImageButton _designClearBtn;
+    private ImageButton _resultClearBtn;
+    private ImageButton _cameraBtn;
+    private Uri _resultUri;
 
     private Project _work;
     private int _position;
@@ -206,6 +209,18 @@ public class EditWorkFragment extends Fragment
             String imageName = Mix.setScaledBitmap(getActivity(), _designImageBtn, designStr, BITMAP_WIDTH);
             _designView.setText(imageName);
         }
+
+        _resultClearBtn = (ImageButton) rootView.findViewById(R.id.btn_clear_result);
+        _resultClearBtn.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                changeResult(null);
+            }
+        });
+
+        _cameraBtn = (ImageButton) rootView.findViewById(R.id.btn_camera);
     }
 
     private void onSelectDesign()
@@ -307,6 +322,21 @@ public class EditWorkFragment extends Fragment
             _designClearBtn.setVisibility(View.VISIBLE);
             String imageName = Mix.setScaledBitmap(getActivity(), _designImageBtn, uri.toString(), BITMAP_WIDTH);
             _designView.setText(imageName);
+        }
+    }
+
+    public void changeResult(Uri uri)
+    {
+        _resultUri = uri;
+        if (uri == null)
+        {
+            _resultClearBtn.setVisibility(View.GONE);
+            _cameraBtn.setImageResource(R.drawable.ic_photo_camera_black_24dp);
+        }
+        else
+        {
+            _resultClearBtn.setVisibility(View.VISIBLE);
+            Mix.setScaledBitmap(getActivity(), _cameraBtn, uri.toString(), BITMAP_WIDTH);
         }
     }
 }

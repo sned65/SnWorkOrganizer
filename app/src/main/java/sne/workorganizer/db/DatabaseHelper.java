@@ -78,7 +78,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private static final String PICTURES_PK = "pict_id";
     private static final String PICTURES_TYPED_COLUMNS =
             "pict_id TEXT PRIMARY KEY, proj_id TEXT, photo TEXT," +
-            " FOREIGN KEY(proj_id) REFERENCES projects(proj_id) ON DELETE CASCADE";
+            " FOREIGN KEY(proj_id) REFERENCES projects(proj_id) ON DELETE SET NULL";
     private static final String PICTURES_COLUMNS =
             "pict_id, proj_id, photo";
     private static final String PICTURES_VALUE_PLACEHOLDERS =
