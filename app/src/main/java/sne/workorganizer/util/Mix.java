@@ -1,16 +1,25 @@
 package sne.workorganizer.util;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.provider.OpenableColumns;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.CalendarView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -257,6 +266,57 @@ public class Mix
                 Mix.sendEmail(ctx, email);
             }
         });
+    }
 
+    /**
+     *
+     * @param ctx the context to use.
+     * @param imageView {@link ImageView} to load an image into.
+     * @param imageUri image location as an encoded URI string.
+     *                 URI should point to a publishing content available for {@link ContentResolver},
+     *                 i.e., should start with {@code "content://"}.
+     * @param bitmapWidth the new bitmap's desired width. The image will be scaled proportionally.
+     * @return image display name, if any.
+     */
+    public static String setScaledBitmap(Context ctx, ImageView imageView, String imageUri, int bitmapWidth)
+    {
+        String displayName = null;
+        Uri designUri = Uri.parse(imageUri);
+        ContentResolver resolver = ctx.getContentResolver();
+        String[] projection = new String[] { OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE };
+        Cursor c = resolver.query(designUri, projection, null, null, null);
+        while (c.moveToNext())
+        {
+            int name_idx = c.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+            displayName = c.getString(name_idx);
+            int size_idx = c.getColumnIndex(OpenableColumns.SIZE);
+            Long size = c.getLong(size_idx);
+            Log.i(TAG, "setScaledBitmap() name = "+displayName+", size = "+size);
+        }
+        c.close();
+        //Log.i(TAG, "setScaledBitmap() path = "+path);
+        //imageView.setImageURI(designUri);
+
+        try
+        {
+            InputStream is = resolver.openInputStream(designUri);
+            Bitmap bm = BitmapFactory.decodeStream(is);
+            assert is != null;
+            is.close();
+            int nh = (int) (bm.getHeight() * ((float) bitmapWidth / bm.getWidth()));
+            Bitmap scaled = Bitmap.createScaledBitmap(bm, bitmapWidth, nh, true);
+            imageView.setImageBitmap(scaled);
+        }
+        catch (FileNotFoundException e)
+        {
+            Toast.makeText(ctx, "File not found: "+imageUri, Toast.LENGTH_LONG).show();
+        }
+        catch (IOException e)
+        {
+            Log.e(TAG, "setScaledBitmap() Close stream error for "+imageUri);
+            e.printStackTrace();
+        }
+
+        return displayName;
     }
 }

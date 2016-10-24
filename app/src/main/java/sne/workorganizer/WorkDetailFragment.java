@@ -108,42 +108,8 @@ public class WorkDetailFragment extends Fragment
         Log.i(TAG, "onCreateView() designStr = "+designStr);
         if (designStr != null)
         {
-            Uri designUri = Uri.parse(designStr);
-            ContentResolver resolver = getActivity().getContentResolver();
-            String[] projection = new String[] { OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE };
-            Cursor c = resolver.query(designUri, projection, null, null, null);
-            while (c.moveToNext())
-            {
-                int name_idx = c.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                String name = c.getString(name_idx);
-                int size_idx = c.getColumnIndex(OpenableColumns.SIZE);
-                Long size = c.getLong(size_idx);
-                Log.i(TAG, "onCreateView() name = "+name+", size = "+size);
-            }
-            c.close();
-            //Log.i(TAG, "onCreateView() path = "+path);
-            //designView.setImageURI(designUri);
-
-            try
-            {
-                final int BITMAP_WIDTH = 256;
-                InputStream is = resolver.openInputStream(designUri);
-                Bitmap bm = BitmapFactory.decodeStream(is);
-                assert is != null;
-                is.close();
-                int nh = (int) (bm.getHeight() * ((float) BITMAP_WIDTH / bm.getWidth()));
-                Bitmap scaled = Bitmap.createScaledBitmap(bm, BITMAP_WIDTH, nh, true);
-                designView.setImageBitmap(scaled);
-            }
-            catch (FileNotFoundException e)
-            {
-                Toast.makeText(getActivity(), "File not found: "+designStr, Toast.LENGTH_LONG).show();
-            }
-            catch (IOException e)
-            {
-                Log.e(TAG, "onCreateView() Close stream error for "+designStr);
-                e.printStackTrace();
-            }
+            final int BITMAP_WIDTH = 256;
+            Mix.setScaledBitmap(getActivity(), designView, designStr, BITMAP_WIDTH);
         }
     }
 

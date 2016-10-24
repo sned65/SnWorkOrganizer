@@ -1,8 +1,11 @@
 package sne.workorganizer;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -35,6 +38,7 @@ import static sne.workorganizer.util.WoConstants.ARG_POSITION;
  */
 public class EditWorkActivity extends AppCompatActivity
 {
+    private static final String TAG = EditWorkActivity.class.getName();
     private int _position;
 
     @Override
@@ -115,6 +119,24 @@ public class EditWorkActivity extends AppCompatActivity
                 cancel();
             }
         });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode,
+                                 Intent resultData)
+    {
+        Log.i(TAG, "onActivityResult("+requestCode+", "+requestCode+") called");
+        if (resultCode != Activity.RESULT_OK) return;
+        if (resultData == null) return;
+
+        if (requestCode == WoConstants.RC_OPEN_DOCUMENT)
+        {
+            Uri uri = resultData.getData();
+            Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
+            frg.changeDesign(uri);
+        }
     }
 
     private void cancel()

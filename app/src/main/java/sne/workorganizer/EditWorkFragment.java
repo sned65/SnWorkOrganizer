@@ -1,8 +1,11 @@
 package sne.workorganizer;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
@@ -14,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
@@ -22,6 +26,7 @@ import java.util.Calendar;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.util.Mix;
+import sne.workorganizer.util.WoConstants;
 
 import static sne.workorganizer.util.WoConstants.ARG_CLIENT_NAME;
 import static sne.workorganizer.util.WoConstants.ARG_HIDE_BUTTONS;
@@ -37,6 +42,7 @@ import static sne.workorganizer.util.WoConstants.ARG_WORK;
 public class EditWorkFragment extends Fragment
 {
     private static final String TAG = EditWorkFragment.class.getName();
+    private static final int BITMAP_WIDTH = 256;
 
     //private View _rootView;
     private CalendarView _dateView;
@@ -45,6 +51,8 @@ public class EditWorkFragment extends Fragment
     private EditText _priceView;
     private TextView _designView;
     private Uri _designUri;
+    private ImageButton _designImageBtn;
+    private ImageButton _designClearBtn;
 
     private Project _work;
     private int _position;
@@ -167,6 +175,44 @@ public class EditWorkFragment extends Fragment
         }
 
         _designView = (TextView) rootView.findViewById(R.id.work_design);
+        _designImageBtn = (ImageButton) rootView.findViewById(R.id.btn_select_design);
+        _designImageBtn.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                onSelectDesign();
+            }
+        });
+
+        _designClearBtn = (ImageButton) rootView.findViewById(R.id.btn_clear_design);
+        _designClearBtn.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                changeDesign(null);
+            }
+        });
+
+        String designStr = _work.getDesign();
+        if (designStr == null)
+        {
+            _designClearBtn.setVisibility(View.GONE);
+        }
+        else
+        {
+            _designClearBtn.setVisibility(View.VISIBLE);
+            String imageName = Mix.setScaledBitmap(getActivity(), _designImageBtn, designStr, BITMAP_WIDTH);
+            _designView.setText(imageName);
+        }
+    }
+
+    private void onSelectDesign()
+    {
+        Intent i = new Intent().setType("image/*");
+        i.setAction(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE);
+        getActivity().startActivityForResult(i, WoConstants.RC_OPEN_DOCUMENT);
     }
 
     public boolean save()
@@ -232,38 +278,11 @@ public class EditWorkFragment extends Fragment
             }
         }
 
-/*
-        int hh;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        if (_designUri == null)
         {
-            hh = _timePicker.getHour();
+            _work.setDesign(null);
         }
         else
-        {
-            hh = _timePicker.getCurrentHour();
-        }
-
-        int mm;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-        {
-            mm = _timePicker.getMinute();
-        }
-        else
-        {
-            mm = _timePicker.getCurrentMinute();
-        }
-
-
-        Calendar cal = GregorianCalendar.getInstance();
-        cal.setTime(_workDate);
-        int yyyy = cal.get(Calendar.YEAR);
-        int MM = cal.get(Calendar.MONTH);
-        int dd = cal.get(Calendar.DAY_OF_MONTH);
-        cal.set(yyyy, MM, dd, hh, mm);
-        project.setDate(cal.getTimeInMillis());
-*/
-
-        if (_designUri != null)
         {
             _work.setDesign(_designUri.toString());
         }
@@ -272,5 +291,22 @@ public class EditWorkFragment extends Fragment
     public Project getWork()
     {
         return _work;
+    }
+
+    public void changeDesign(Uri uri)
+    {
+        _designUri = uri;
+        if (uri == null)
+        {
+            _designClearBtn.setVisibility(View.GONE);
+            _designImageBtn.setImageResource(R.drawable.ic_local_florist_black_24dp);
+            _designView.setText(getString(R.string.select_design));
+        }
+        else
+        {
+            _designClearBtn.setVisibility(View.VISIBLE);
+            String imageName = Mix.setScaledBitmap(getActivity(), _designImageBtn, uri.toString(), BITMAP_WIDTH);
+            _designView.setText(imageName);
+        }
     }
 }

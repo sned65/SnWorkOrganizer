@@ -20,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.CursorAdapter;
 import android.widget.FilterQueryProvider;
+import android.widget.ImageButton;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -43,7 +44,7 @@ public class CreateWorkActivity extends AppCompatActivity
 {
     private static final String TAG = CreateWorkActivity.class.getSimpleName();
     public static final String EXTRA_DATE = "work_date";
-    private static final int RC_OPEN = 123;
+    private static final int RC_OPEN_DOCUMENT = 123;
     private static final int RC_CREATE_CLIENT = 124;
 
     private TimePicker _timePicker;
@@ -79,6 +80,16 @@ public class CreateWorkActivity extends AppCompatActivity
 
         _priceView = (TextInputEditText) findViewById(R.id.work_price);
         _designView = (TextView) findViewById(R.id.work_design);
+
+        ImageButton btnSelectDesign = (ImageButton) findViewById(R.id.btn_select_design);
+        btnSelectDesign.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                onSelectDesign(v);
+            }
+        });
     }
 
     private void initActionMode()
@@ -227,11 +238,11 @@ public class CreateWorkActivity extends AppCompatActivity
         if (c != null) c.close();
     }
 
-    public void onSelectDesign(View view)
+    private void onSelectDesign(View view)
     {
         Intent i = new Intent().setType("image/*");
         i.setAction(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(i, RC_OPEN);
+        startActivityForResult(i, RC_OPEN_DOCUMENT);
    }
 
     @Override
@@ -242,7 +253,7 @@ public class CreateWorkActivity extends AppCompatActivity
         if (resultCode != Activity.RESULT_OK) return;
         if (resultData == null) return;
 
-        if (requestCode == RC_OPEN)
+        if (requestCode == RC_OPEN_DOCUMENT)
         {
             Uri uri = resultData.getData();
             Log.i(TAG, uri.toString());

@@ -93,6 +93,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_clear_black_24dp"
+            android:id="@+id/btn_clear_design"
+            android:layout_weight="1"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_gravity="center"/>
+
         <TextView
             android:text="@string/select_design"
             android:layout_width="wrap_content"
@@ -111,8 +121,7 @@
             android:layout_weight="1"
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
-            android:layout_gravity="center"
-            android:onClick="onSelectDesign"/>
+            android:layout_gravity="center"/>
 
     </LinearLayout>
 

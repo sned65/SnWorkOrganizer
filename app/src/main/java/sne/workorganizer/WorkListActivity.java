@@ -3,6 +3,7 @@ package sne.workorganizer;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -294,6 +295,15 @@ public class WorkListActivity extends AppCompatActivity
             {
                 wdf.setWork(work);
             }
+        }
+
+        else if (requestCode == WoConstants.RC_OPEN_DOCUMENT)
+        {
+            Uri uri = data.getData();
+            Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
+            frg.changeDesign(uri);
         }
     }
 
