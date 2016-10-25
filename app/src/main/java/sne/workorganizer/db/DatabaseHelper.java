@@ -76,11 +76,15 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     private static final int PICTURES_NCOLS = 3;
     private static final String PICTURES_PK = "pict_id";
+    private static final String PICTURES_COL_WORK_ID = "proj_id";
+    private static final String PICTURES_COL_PHOTO = "photo";
     private static final String PICTURES_TYPED_COLUMNS =
-            "pict_id TEXT PRIMARY KEY, proj_id TEXT, photo TEXT," +
-            " FOREIGN KEY(proj_id) REFERENCES projects(proj_id) ON DELETE SET NULL";
+            PICTURES_PK + " TEXT PRIMARY KEY, " +
+                    PICTURES_COL_WORK_ID + " TEXT, " +
+                    PICTURES_COL_PHOTO + " TEXT," +
+                    " FOREIGN KEY(" + PICTURES_COL_WORK_ID + ") REFERENCES projects(proj_id) ON DELETE SET NULL";
     private static final String PICTURES_COLUMNS =
-            "pict_id, proj_id, photo";
+            PICTURES_PK + ", " + PICTURES_COL_WORK_ID + ", " + PICTURES_COL_PHOTO;
     private static final String PICTURES_VALUE_PLACEHOLDERS =
             "?, ?, ?";
 
@@ -255,6 +259,15 @@ public class DatabaseHelper extends SQLiteOpenHelper
         proj.setPrice(c.getInt(5));
         proj.setDesign(c.getString(6));
         return proj;
+    }
+
+    private Picture createPictureFromCursor(Cursor c)
+    {
+        Picture p = new Picture();
+        p.setId(c.getString(0));
+        p.setWorkId(c.getString(1));
+        p.setResultPhoto(c.getString(2));
+        return p;
     }
 
     /**
@@ -443,11 +456,101 @@ public class DatabaseHelper extends SQLiteOpenHelper
     }
 
     /**
+     * Insert new picture in a separate thread.
+     *
+     * @param picture picture to be inserted
+     */
+    public void createPicture(Picture picture)
+    {
+        new UpdateThread(picture).start();
+    }
+
+    /**
+     * Delete picture in a separate thread.
+     *
+     * @param id id of {@link Picture}
+     */
+    public void deletePicture(String id)
+    {
+        new DeleteThread(Table.PICTURES, id).start();
+    }
+
+    /**
+     * Update picture in a separate thread.
+     *
+     * @param picture
+     */
+    public void updatePicture(Picture picture)
+    {
+        new UpdateThread(picture).start();
+    }
+
+    /**
+     * Synchronously selects {@code Picture} by its id.
+     *
+     * @param pictureId
+     * @return {@link Picture} corresponding the given id, or {@code null}
+     */
+    public Picture findPictureById(String pictureId)
+    {
+        Picture picture = null;
+        String sql = "SELECT " + PICTURES_COLUMNS + " FROM " + Table.PICTURES +
+                " WHERE " + PICTURES_PK + " = ?";
+
+        SQLiteDatabase db = getReadableDatabase();
+        Log.i(TAG, sql+", using "+pictureId);
+        String[] args = new String[] { pictureId };
+        Cursor c = db.rawQuery(sql, args);
+
+        while (c.moveToNext())
+        {
+            if (picture != null)
+            {
+                throw new SQLiteDatabaseCorruptException("Too many pictures for id "+pictureId);
+            }
+            picture = createPictureFromCursor(c);
+        }
+
+        c.close();
+        return picture;
+    }
+
+    /**
+     * Synchronously selects {@code Picture} by its id.
+     *
+     * @param workId {@link Project} id
+     * @return {@link Picture} corresponding the given work id, or {@code null}
+     */
+    public Picture findPictureByWorkId(String workId)
+    {
+        Picture picture = null;
+        String sql = "SELECT " + PICTURES_COLUMNS + " FROM " + Table.PICTURES +
+                " WHERE " + PICTURES_COL_WORK_ID + " = ?";
+
+        SQLiteDatabase db = getReadableDatabase();
+        Log.i(TAG, sql+", using "+workId);
+        String[] args = new String[] { workId };
+        Cursor c = db.rawQuery(sql, args);
+
+        while (c.moveToNext())
+        {
+            if (picture != null)
+            {
+                throw new SQLiteDatabaseCorruptException("Too many pictures for work id "+workId);
+            }
+            picture = createPictureFromCursor(c);
+        }
+
+        c.close();
+        return picture;
+    }
+
+    /**
      * SQL INSERT or UPDATE
      */
     private class UpdateThread extends Thread
     {
-        private Object _row;
+        private DbRow _row;
 
         UpdateThread(Client row)
         {
@@ -456,6 +559,12 @@ public class DatabaseHelper extends SQLiteOpenHelper
         }
 
         UpdateThread(Project row)
+        {
+            super();
+            _row = row;
+        }
+
+        UpdateThread(Picture row)
         {
             super();
             _row = row;
@@ -499,6 +608,22 @@ public class DatabaseHelper extends SQLiteOpenHelper
                         args[0], args[1], args[2], new Date(project.getDate()).toString(),
                         args[4], args[5], args[6]));
             }
+            else if (_row instanceof Picture)
+            {
+                sql = "INSERT OR REPLACE INTO " + Table.PICTURES + "(" + PICTURES_COLUMNS +
+                        ") VALUES (" + PICTURES_VALUE_PLACEHOLDERS + ")";
+                Picture picture = (Picture) _row;
+                args = new Object[PICTURES_NCOLS];
+                args[0] = picture.getId();
+                args[1] = picture.getWorkId();
+                args[2] = picture.getResultPhoto();
+                Log.i(TAG, String.format("UpdateThread: %s, using  %s, %s, %s", sql,
+                        args[0], args[1], args[2]));
+            }
+            else
+            {
+                Log.e(TAG, "UpdateThread.run() Unknown database object "+_row.getClass().getName());
+            }
 
             getWritableDatabase().execSQL(sql, args);
         }
@@ -524,7 +649,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
 
-            String sql = null;
+            String sql;
             Object[] args = { _id };
 
             if (_table == Table.CLIENTS)

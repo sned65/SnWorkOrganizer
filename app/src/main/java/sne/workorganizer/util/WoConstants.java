@@ -15,4 +15,5 @@ public class WoConstants
 
     // Request codes
     public static final int RC_OPEN_DOCUMENT = 123;
+    public static final int RC_TAKE_PICTURE = 124;
 }

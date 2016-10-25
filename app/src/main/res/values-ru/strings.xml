@@ -37,4 +37,6 @@
     <string name="project_edit_dlg_title">Изменить</string>
     <string name="project_delete_dlg_title">Удалить работу</string>
     <string name="result">Результат</string>
+    <string name="error_permissions">Не получено разрешение на</string>
+    <string name="app_will_be_stopped">Приложение будет остановлено.</string>
 </resources>

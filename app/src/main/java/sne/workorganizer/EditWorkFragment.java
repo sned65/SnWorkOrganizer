@@ -2,10 +2,9 @@ package sne.workorganizer;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.OpenableColumns;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
@@ -177,6 +176,8 @@ public class EditWorkFragment extends Fragment
             _priceView.setText(_work.getPrice().toString());
         }
 
+        // Design
+
         _designView = (TextView) rootView.findViewById(R.id.work_design);
         _designImageBtn = (ImageButton) rootView.findViewById(R.id.btn_select_design);
         _designImageBtn.setOnClickListener(new View.OnClickListener()
@@ -205,10 +206,13 @@ public class EditWorkFragment extends Fragment
         }
         else
         {
+            _designUri = Uri.parse(designStr);
             _designClearBtn.setVisibility(View.VISIBLE);
-            String imageName = Mix.setScaledBitmap(getActivity(), _designImageBtn, designStr, BITMAP_WIDTH);
+            String imageName = Mix.setScaledBitmap(getActivity(), _designImageBtn, _designUri, BITMAP_WIDTH);
             _designView.setText(imageName);
         }
+
+        // Result
 
         _resultClearBtn = (ImageButton) rootView.findViewById(R.id.btn_clear_result);
         _resultClearBtn.setOnClickListener(new View.OnClickListener()
@@ -221,6 +225,14 @@ public class EditWorkFragment extends Fragment
         });
 
         _cameraBtn = (ImageButton) rootView.findViewById(R.id.btn_camera);
+        _cameraBtn.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                makePhoto();
+            }
+        });
     }
 
     private void onSelectDesign()
@@ -228,6 +240,24 @@ public class EditWorkFragment extends Fragment
         Intent i = new Intent().setType("image/*");
         i.setAction(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE);
         getActivity().startActivityForResult(i, WoConstants.RC_OPEN_DOCUMENT);
+    }
+
+    private void makePhoto()
+    {
+        Log.i(TAG, "makePhoto() called");
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        _resultUri = Mix.getOutputMediaFileUri(_work.getName()); // create a file to save the image
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, _resultUri); // set the image file name
+        // The following option is ignored. Apparently, bug in SDK.
+        //takePictureIntent.putExtra(MediaStore.EXTRA_SCREEN_ORIENTATION, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+        // Notice that the startActivityForResult() method is protected
+        // by a condition that calls resolveActivity() as recommended by
+        // https://developer.android.com/training/camera/photobasics.html
+        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null)
+        {
+            getActivity().startActivityForResult(takePictureIntent, WoConstants.RC_TAKE_PICTURE);
+        }
     }
 
     public boolean save()
@@ -306,6 +336,11 @@ public class EditWorkFragment extends Fragment
     public Project getWork()
     {
         return _work;
+    }
+
+    public Uri getResultUri()
+    {
+        return _resultUri;
     }
 
     public void changeDesign(Uri uri)

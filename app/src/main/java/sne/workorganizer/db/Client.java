@@ -11,7 +11,7 @@ import java.util.UUID;
 /**
  * Single row in the Clients table.
  */
-public class Client implements Parcelable
+public class Client implements Parcelable, DbRow
 {
     private String _id;
     private String _name;

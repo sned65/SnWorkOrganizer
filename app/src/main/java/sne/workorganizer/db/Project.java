@@ -12,7 +12,7 @@ import java.util.UUID;
 /**
  * Single row in the Projects table.
  */
-public class Project implements Parcelable, Cloneable
+public class Project implements Parcelable, Cloneable, DbRow
 {
     private static final String TAG = Project.class.getName();
     private static final String DATETIME_FORMAT = "dd MMM yyyy HH:mm";

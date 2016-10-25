@@ -1,5 +1,6 @@
 package sne.workorganizer.util;
 
+import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -7,7 +8,9 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.OpenableColumns;
+import android.support.annotation.RequiresPermission;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
@@ -17,12 +20,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 import sne.workorganizer.R;
 
@@ -280,11 +286,26 @@ public class Mix
      */
     public static String setScaledBitmap(Context ctx, ImageView imageView, String imageUri, int bitmapWidth)
     {
+        Uri uri = Uri.parse(imageUri);
+        return setScaledBitmap(ctx, imageView, uri, bitmapWidth);
+    }
+
+    /**
+     *
+     * @param ctx the context to use.
+     * @param imageView {@link ImageView} to load an image into.
+     * @param imageUri {@code Uri} of image location.
+     *                 URI should point to a publishing content available for {@link ContentResolver}.
+     * @param bitmapWidth the new bitmap's desired width. The image will be scaled proportionally.
+     * @return image display name, if any.
+     */
+    public static String setScaledBitmap(Context ctx, ImageView imageView, Uri imageUri, int bitmapWidth)
+    {
         String displayName = null;
-        Uri designUri = Uri.parse(imageUri);
+
         ContentResolver resolver = ctx.getContentResolver();
         String[] projection = new String[] { OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE };
-        Cursor c = resolver.query(designUri, projection, null, null, null);
+        Cursor c = resolver.query(imageUri, projection, null, null, null);
         while (c.moveToNext())
         {
             int name_idx = c.getColumnIndex(OpenableColumns.DISPLAY_NAME);
@@ -299,7 +320,7 @@ public class Mix
 
         try
         {
-            InputStream is = resolver.openInputStream(designUri);
+            InputStream is = resolver.openInputStream(imageUri);
             Bitmap bm = BitmapFactory.decodeStream(is);
             assert is != null;
             is.close();
@@ -318,5 +339,50 @@ public class Mix
         }
 
         return displayName;
+    }
+
+    /**
+     * Create a file for saving a jpeg-image.
+     *
+     * @param basename   base filename
+     * @return {@code Uri} of created file
+     */
+    public static Uri getOutputMediaFileUri(String basename)
+    {
+        return Uri.fromFile(getOutputMediaFile(basename));
+    }
+
+    /**
+     * Create a File for saving an jpeg-image.
+     * <br/>
+     * Pattern for filename: {@code basename_timestamp.jpg}
+     *
+     * @param basename   base filename
+     * @return created {@code File}
+     */
+    private static File getOutputMediaFile(String basename)
+    {
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "WorkOrganizer");
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
+        if (!mediaStorageDir.exists())
+        {
+            if (!mediaStorageDir.mkdirs())
+            {
+                return null;
+            }
+        }
+
+        // Create a media file name
+        SimpleDateFormat sdf = new SimpleDateFormat("_yyyyMMdd_HHmmss", Locale.US);
+        String today = sdf.format(new Date());
+        String file_name = basename + today + ".jpg";
+        return new File(mediaStorageDir.getPath() + File.separator + file_name);
     }
 }

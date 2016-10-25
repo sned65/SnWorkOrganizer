@@ -127,15 +127,22 @@ public class EditWorkActivity extends AppCompatActivity
     {
         Log.i(TAG, "onActivityResult("+requestCode+", "+requestCode+") called");
         if (resultCode != Activity.RESULT_OK) return;
-        if (resultData == null) return;
 
         if (requestCode == WoConstants.RC_OPEN_DOCUMENT)
         {
+            if (resultData == null) return;
             Uri uri = resultData.getData();
             Log.i(TAG, "onActivityResult() uri = "+uri.toString());
 
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
             frg.changeDesign(uri);
+        }
+
+        else if (requestCode == WoConstants.RC_TAKE_PICTURE)
+        {
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
+            Uri uri = frg.getResultUri();
+            frg.changeResult(uri);
         }
     }
 

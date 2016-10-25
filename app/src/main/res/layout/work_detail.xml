@@ -130,6 +130,28 @@
                 android:layout_margin="8dp"
                 android:scaleType="fitCenter"/>
         </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:id="@+id/detail_row_result">
+
+            <TextView android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:paddingStart="@dimen/client_attr_padding_start"
+                      android:paddingEnd="@dimen/client_attr_padding_end"
+                      android:text="@string/result"
+                      android:gravity="center_vertical"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ic_photo_camera_black_24dp"
+                android:id="@+id/work_result"
+                android:layout_margin="8dp"
+                android:scaleType="fitCenter"/>
+        </TableRow>
     </TableLayout>
 
 </ScrollView>

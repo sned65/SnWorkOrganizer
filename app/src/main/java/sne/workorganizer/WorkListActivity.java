@@ -1,11 +1,16 @@
 package sne.workorganizer;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -50,6 +55,7 @@ public class WorkListActivity extends AppCompatActivity
     public static final String FRG_WORK_EDIT = "FRG_WORK_EDIT";
     private static final int RC_CREATE_WORK = 100;
     public static final int RC_EDIT_WORK = 101;
+    private static final int RC_PERMISSIONS = 2;
 
     private Menu _menu;
     private CalendarView _calendarView;
@@ -131,7 +137,79 @@ public class WorkListActivity extends AppCompatActivity
             // activity should be in two-pane mode.
             _twoPane = true;
         }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+        {
+            String[] permissions = new String[] {
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.CAMERA
+            };
+            ActivityCompat.requestPermissions(this, permissions, RC_PERMISSIONS);
+        }
     }
+
+
+    /**
+     * Callback for the result from requesting permissions. This method
+     * is invoked for every call on {@link #requestPermissions(String[], int)}.
+     * <p>
+     * <strong>Note:</strong> It is possible that the permissions request interaction
+     * with the user is interrupted. In this case you will receive empty permissions
+     * and results arrays which should be treated as a cancellation.
+     * </p>
+     *
+     * @param requestCode  The request code passed in {@link #requestPermissions(String[], int)}.
+     * @param permissions  The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *                     which is either {@link PackageManager#PERMISSION_GRANTED}
+     *                     or {@link PackageManager#PERMISSION_DENIED}. Never null.
+     * @see #requestPermissions(String[], int)
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults)
+    {
+        //Log.i(TAG, "onRequestPermissionsResult() called");
+        if (requestCode != RC_PERMISSIONS)
+        {
+            Log.d(TAG, "Got unexpected permission result: " + requestCode);
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            return;
+        }
+
+        for (int i = 0; i < grantResults.length; ++i)
+        {
+            if (grantResults[i] != PackageManager.PERMISSION_GRANTED)
+            {
+                String msg = getString(R.string.error_permissions)+" " + permissions[i]
+                        + "\n" + getString(R.string.app_will_be_stopped);
+                Log.e(TAG, msg);
+
+                DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener()
+                {
+                    public void onClick(DialogInterface dialog, int id)
+                    {
+                        finish();
+                    }
+                };
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(R.string.app_name)
+                        .setMessage(msg)
+                        .setPositiveButton(R.string.ok, listener)
+                        .show();
+                return;
+            }
+            else
+            {
+                Log.i(TAG, "onRequestPermissionsResult() Permission "+permissions[i]+" granted");
+            }
+        }
+    }
+
 
     @Override
     protected void onSaveInstanceState(Bundle state)
@@ -304,6 +382,13 @@ public class WorkListActivity extends AppCompatActivity
 
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
             frg.changeDesign(uri);
+        }
+
+        else if (requestCode == WoConstants.RC_TAKE_PICTURE)
+        {
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
+            Uri uri = frg.getResultUri();
+            frg.changeResult(uri);
         }
     }
 

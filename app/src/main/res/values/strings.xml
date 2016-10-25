@@ -13,8 +13,10 @@
     <string name="price">Price</string>
     <string name="title">Title</string>
 
+    <string name="error_permissions">Permission not granted for</string>
     <string name="error_no_camera_permission">Application does not have permission to work with the camera.</string>
     <string name="permission_camera_rationale">Необходим доступ к камере</string>
+    <string name="app_will_be_stopped">Application will be stopped.</string>
 
     <string name="menu_settings">Settings</string>
     <string name="menu_about">About</string>

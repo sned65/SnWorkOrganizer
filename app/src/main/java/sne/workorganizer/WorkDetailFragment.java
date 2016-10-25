@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,6 +25,7 @@ import java.io.InputStream;
 
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
+import sne.workorganizer.db.Picture;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
@@ -37,6 +39,8 @@ import sne.workorganizer.util.WoConstants;
 public class WorkDetailFragment extends Fragment
 {
     private static final String TAG = WorkDetailFragment.class.getName();
+    private static final int BITMAP_WIDTH = 256;
+
     /**
      * The content this fragment is presenting.
      */
@@ -105,11 +109,22 @@ public class WorkDetailFragment extends Fragment
 
         ImageView designView = (ImageView) _rootView.findViewById(R.id.work_design);
         String designStr = _project.getDesign();
-        Log.i(TAG, "onCreateView() designStr = "+designStr);
+        //Log.i(TAG, "onCreateView() designStr = "+designStr);
         if (designStr != null)
         {
-            final int BITMAP_WIDTH = 256;
             Mix.setScaledBitmap(getActivity(), designView, designStr, BITMAP_WIDTH);
+        }
+
+        Picture resultPhoto = db.findPictureByWorkId(_project.getId());
+        if (resultPhoto == null || resultPhoto.getResultPhoto() == null)
+        {
+            View result = _rootView.findViewById(R.id.detail_row_result);
+            result.setVisibility(View.GONE);
+        }
+        else
+        {
+            ImageView result = (ImageView) _rootView.findViewById(R.id.work_result);
+            Mix.setScaledBitmap(getActivity(), result, resultPhoto.getResultPhoto(), BITMAP_WIDTH);
         }
     }
 
