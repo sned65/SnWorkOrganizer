@@ -2,33 +2,15 @@ package sne.workorganizer;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.OpenableColumns;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.CalendarView;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.TimePicker;
 
-import java.util.Calendar;
-
-import sne.workorganizer.db.DatabaseHelper;
-import sne.workorganizer.db.Project;
-import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
-
-import static sne.workorganizer.util.WoConstants.ARG_CLIENT_NAME;
-import static sne.workorganizer.util.WoConstants.ARG_POSITION;
 
 /**
  * An activity representing a single Work Edit screen. This
@@ -128,7 +110,7 @@ public class EditWorkActivity extends AppCompatActivity
         Log.i(TAG, "onActivityResult("+requestCode+", "+requestCode+") called");
         if (resultCode != Activity.RESULT_OK) return;
 
-        if (requestCode == WoConstants.RC_OPEN_DOCUMENT)
+        if (requestCode == WoConstants.RC_OPEN_DESIGN_DOCUMENT)
         {
             if (resultData == null) return;
             Uri uri = resultData.getData();
@@ -138,11 +120,21 @@ public class EditWorkActivity extends AppCompatActivity
             frg.changeDesign(uri);
         }
 
+        else if (requestCode == WoConstants.RC_OPEN_RESULT_DOCUMENT)
+        {
+            if (resultData == null) return;
+            Uri uri = resultData.getData();
+            Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
+            frg.setResultUri(uri);
+            frg.changeResult();
+        }
+
         else if (requestCode == WoConstants.RC_TAKE_PICTURE)
         {
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
-            Uri uri = frg.getResultUri();
-            frg.changeResult(uri);
+            frg.changeResult();
         }
     }
 

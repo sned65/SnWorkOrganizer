@@ -39,4 +39,6 @@
     <string name="result">Результат</string>
     <string name="error_permissions">Не получено разрешение на</string>
     <string name="app_will_be_stopped">Приложение будет остановлено.</string>
+    <string name="menu_gallery">Галерея</string>
+    <string name="gallery">Галерея</string>
 </resources>

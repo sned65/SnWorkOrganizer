@@ -131,6 +131,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
         void onSelectFinished(ArrayList<Project> records);
     }
 
+    public interface DbSelectPicturesCallback
+    {
+        void onSelectFinished(ArrayList<Picture> records);
+    }
+
     private DatabaseHelper(Context ctx)
     {
         super(ctx, DATABASE_NAME, null, SCHEMA_VERSION);
@@ -216,6 +221,25 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
         c.close();
         return projects;
+    }
+
+    private ArrayList<Picture> selectPictures()
+    {
+        ArrayList<Picture> pictures = new ArrayList<>();
+        String sql = "SELECT " + PICTURES_COLUMNS + " FROM " + Table.PICTURES;
+
+        SQLiteDatabase db = getReadableDatabase();
+        Log.i(TAG, sql);
+        Cursor c = db.rawQuery(sql, null);
+
+        while (c.moveToNext())
+        {
+            Picture p = createPictureFromCursor(c);
+            pictures.add(p);
+        }
+
+        c.close();
+        return pictures;
     }
 
     private Client createClientFromCursor(Cursor c)
@@ -360,6 +384,47 @@ public class DatabaseHelper extends SQLiteOpenHelper
         new SelectProjectsTask(callback, date).execute();
     }
 
+    /**
+     * Synchronously selects {@link Project} by its id.
+     *
+     * @param workId
+     * @return {@link Project} corresponding the given id, or {@code null}
+     */
+    public Project findProjectById(String workId)
+    {
+        Project work = null;
+        String sql = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS +
+                " WHERE " + PROJECTS_PK + " = ?";
+
+        SQLiteDatabase db = getReadableDatabase();
+        Log.i(TAG, sql+", using "+workId);
+        String[] args = new String[] { workId };
+        Cursor c = db.rawQuery(sql, args);
+
+        while (c.moveToNext())
+        {
+            if (work != null)
+            {
+                throw new SQLiteDatabaseCorruptException("Too many works for id "+workId);
+            }
+            work = createProjectFromCursor(c);
+        }
+
+        c.close();
+        return work;
+    }
+
+    /**
+     * Finds all pictures asynchronously.
+     * Calls {@code callback} when the query is finished.
+     *
+     * @param callback
+     */
+    public void findAllPictures(DbSelectPicturesCallback callback)
+    {
+        new SelectPicturesTask(callback).execute();
+    }
+
     public int getInsertPosition()
     {
         return INSERT_POSITION;
@@ -449,9 +514,14 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * Update work in a separate thread.
      *
      * @param work
+     * @param clearPictureRef {@code true} to clear references from {@code Picture} table.
      */
-    public void updateWork(Project work)
+    public void updateWork(Project work, boolean clearPictureRef)
     {
+        if (clearPictureRef)
+        {
+            new ClearPictureWorkRefThread(work.getId()).start();
+        }
         new UpdateThread(work).start();
     }
 
@@ -539,6 +609,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 throw new SQLiteDatabaseCorruptException("Too many pictures for work id "+workId);
             }
             picture = createPictureFromCursor(c);
+            break; // FIXME workaround of "Too many pictures for work id "
         }
 
         c.close();
@@ -610,20 +681,46 @@ public class DatabaseHelper extends SQLiteOpenHelper
             }
             else if (_row instanceof Picture)
             {
+                Picture picture = (Picture) _row;
                 sql = "INSERT OR REPLACE INTO " + Table.PICTURES + "(" + PICTURES_COLUMNS +
                         ") VALUES (" + PICTURES_VALUE_PLACEHOLDERS + ")";
-                Picture picture = (Picture) _row;
                 args = new Object[PICTURES_NCOLS];
                 args[0] = picture.getId();
                 args[1] = picture.getWorkId();
                 args[2] = picture.getResultPhoto();
-                Log.i(TAG, String.format("UpdateThread: %s, using  %s, %s, %s", sql,
+                Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s", sql,
                         args[0], args[1], args[2]));
             }
             else
             {
                 Log.e(TAG, "UpdateThread.run() Unknown database object "+_row.getClass().getName());
             }
+
+            getWritableDatabase().execSQL(sql, args);
+        }
+    }
+
+    private class ClearPictureWorkRefThread extends Thread
+    {
+        private String _workId;
+
+        ClearPictureWorkRefThread(String workId)
+        {
+            super();
+            _workId = workId;
+        }
+
+        @Override
+        public void run()
+        {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+
+            String sql = "UPDATE " + Table.PICTURES +
+                    " SET " + PICTURES_COL_WORK_ID + " = NULL" +
+                    " WHERE " + PICTURES_COL_WORK_ID + " = ?";
+            Object[] args = new Object[1];
+            args[0] = _workId;
+            Log.i(TAG, String.format("ClearWorkRefThread: %s, using %s", sql, args[0]));
 
             getWritableDatabase().execSQL(sql, args);
         }
@@ -768,6 +865,32 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
         @Override
         protected void onPostExecute(ArrayList<Project> result)
+        {
+            if (_callback != null)
+            {
+                _callback.onSelectFinished(result);
+            }
+        }
+    }
+
+    private class SelectPicturesTask extends AsyncTask<Void, Void, ArrayList<Picture>>
+    {
+        private DbSelectPicturesCallback _callback = null;
+
+        SelectPicturesTask(DbSelectPicturesCallback callback)
+        {
+            super();
+            _callback = callback;
+        }
+
+        @Override
+        protected ArrayList<Picture> doInBackground(Void... params)
+        {
+            return selectPictures();
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<Picture> result)
         {
             if (_callback != null)
             {

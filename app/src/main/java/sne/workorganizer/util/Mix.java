@@ -1,6 +1,7 @@
 package sne.workorganizer.util;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +9,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.OpenableColumns;
 import android.support.annotation.RequiresPermission;
@@ -171,6 +173,24 @@ public class Mix
     }
 
     /**
+     * Display the dialog with error/warning/info message.
+     *
+     * @param activity parent activity
+     * @param message the message to display
+     * @param severity message severity as defined by {@code InfoDialogFragment.Severity}
+     */
+    public static void showError(Activity activity, String message,
+                                 InfoDialogFragment.Severity severity)
+    {
+        InfoDialogFragment about = new InfoDialogFragment();
+        Bundle args = new Bundle();
+        args.putString(InfoDialogFragment.ARG_MESSAGE, message);
+        args.putString(InfoDialogFragment.ARG_SEVERITY, severity.toString());
+        about.setArguments(args);
+        about.show(activity.getFragmentManager(), "error");
+    }
+
+    /**
      * Dial a number as specified by the {@code phone}.
      *
      * @param ctx The context to use.
@@ -275,6 +295,26 @@ public class Mix
     }
 
     /**
+     * Closes the given stream suppressing an error than can occur while closing this stream.
+     *
+     * @param is {@link InputStream}
+     */
+    public static void close(InputStream is)
+    {
+        if (is != null)
+        {
+            try
+            {
+                is.close();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
      *
      * @param ctx the context to use.
      * @param imageView {@link ImageView} to load an image into.
@@ -283,8 +323,10 @@ public class Mix
      *                 i.e., should start with {@code "content://"}.
      * @param bitmapWidth the new bitmap's desired width. The image will be scaled proportionally.
      * @return image display name, if any.
+     * @throws FileNotFoundException
      */
     public static String setScaledBitmap(Context ctx, ImageView imageView, String imageUri, int bitmapWidth)
+            throws FileNotFoundException
     {
         Uri uri = Uri.parse(imageUri);
         return setScaledBitmap(ctx, imageView, uri, bitmapWidth);
@@ -298,47 +340,71 @@ public class Mix
      *                 URI should point to a publishing content available for {@link ContentResolver}.
      * @param bitmapWidth the new bitmap's desired width. The image will be scaled proportionally.
      * @return image display name, if any.
+     * @throws FileNotFoundException
      */
     public static String setScaledBitmap(Context ctx, ImageView imageView, Uri imageUri, int bitmapWidth)
+            throws FileNotFoundException
     {
         String displayName = null;
 
-        ContentResolver resolver = ctx.getContentResolver();
-        String[] projection = new String[] { OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE };
-        Cursor c = resolver.query(imageUri, projection, null, null, null);
-        while (c.moveToNext())
-        {
-            int name_idx = c.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-            displayName = c.getString(name_idx);
-            int size_idx = c.getColumnIndex(OpenableColumns.SIZE);
-            Long size = c.getLong(size_idx);
-            Log.i(TAG, "setScaledBitmap() name = "+displayName+", size = "+size);
-        }
-        c.close();
-        //Log.i(TAG, "setScaledBitmap() path = "+path);
-        //imageView.setImageURI(designUri);
-
         try
         {
+            ContentResolver resolver = ctx.getContentResolver();
+            String[] projection = new String[]{OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE};
+            Cursor c = resolver.query(imageUri, projection, null, null, null);
+            if (c == null)
+            {
+                throw new FileNotFoundException(imageUri.toString());
+            }
+            while (c.moveToNext())
+            {
+                int name_idx = c.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                displayName = c.getString(name_idx);
+                int size_idx = c.getColumnIndex(OpenableColumns.SIZE);
+                Long size = c.getLong(size_idx);
+                Log.i(TAG, "setScaledBitmap() name = " + displayName + ", size = " + size);
+            }
+            c.close();
+            //Log.i(TAG, "setScaledBitmap() path = "+path);
+            //imageView.setImageURI(designUri);
+
             InputStream is = resolver.openInputStream(imageUri);
             Bitmap bm = BitmapFactory.decodeStream(is);
             assert is != null;
-            is.close();
+            close(is);
             int nh = (int) (bm.getHeight() * ((float) bitmapWidth / bm.getWidth()));
             Bitmap scaled = Bitmap.createScaledBitmap(bm, bitmapWidth, nh, true);
             imageView.setImageBitmap(scaled);
         }
-        catch (FileNotFoundException e)
+        catch (SecurityException e)
         {
-            Toast.makeText(ctx, "File not found: "+imageUri, Toast.LENGTH_LONG).show();
-        }
-        catch (IOException e)
-        {
-            Log.e(TAG, "setScaledBitmap() Close stream error for "+imageUri);
-            e.printStackTrace();
+            throw new FileNotFoundException(e.getMessage());
         }
 
         return displayName;
+    }
+
+    /**
+     * Returns the bitmap of the given size
+     *
+     * @param path path to original image
+     * @param thumbnailSize
+     * @return thumbnail image
+     */
+    public static Bitmap getThumbnailBitmap(String path, int thumbnailSize)
+    {
+        BitmapFactory.Options bounds = new BitmapFactory.Options();
+        bounds.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, bounds);
+        if ((bounds.outWidth == -1) || (bounds.outHeight == -1))
+        {
+            return null;
+        }
+        int originalSize = (bounds.outHeight > bounds.outWidth) ? bounds.outHeight
+                : bounds.outWidth;
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inSampleSize = originalSize / thumbnailSize;
+        return BitmapFactory.decodeFile(path, opts);
     }
 
     /**

@@ -27,6 +27,7 @@ import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Picture;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.util.InfoDialogFragment;
 import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
 
@@ -112,7 +113,16 @@ public class WorkDetailFragment extends Fragment
         //Log.i(TAG, "onCreateView() designStr = "+designStr);
         if (designStr != null)
         {
-            Mix.setScaledBitmap(getActivity(), designView, designStr, BITMAP_WIDTH);
+            try
+            {
+                Mix.setScaledBitmap(getActivity(), designView, designStr, BITMAP_WIDTH);
+            }
+            catch (FileNotFoundException e)
+            {
+                Uri uri = Uri.parse(designStr);
+                String msg = e.getMessage() + "\n" + designStr + "; path = " + uri.getPath();
+                Mix.showError(getActivity(), msg, InfoDialogFragment.Severity.ERROR);
+            }
         }
 
         Picture resultPhoto = db.findPictureByWorkId(_project.getId());
@@ -124,7 +134,16 @@ public class WorkDetailFragment extends Fragment
         else
         {
             ImageView result = (ImageView) _rootView.findViewById(R.id.work_result);
-            Mix.setScaledBitmap(getActivity(), result, resultPhoto.getResultPhoto(), BITMAP_WIDTH);
+            try
+            {
+                Mix.setScaledBitmap(getActivity(), result, resultPhoto.getResultPhoto(), BITMAP_WIDTH);
+            }
+            catch (FileNotFoundException e)
+            {
+                Uri uri = Uri.parse(resultPhoto.getResultPhoto());
+                String msg = e.getMessage() + "\n" + resultPhoto.getResultPhoto() + "; path = " + uri.getPath();
+                Mix.showError(getActivity(), msg, InfoDialogFragment.Severity.ERROR);
+            }
         }
     }
 

@@ -33,11 +33,9 @@ import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -327,9 +325,10 @@ public class WorkListActivity extends AppCompatActivity
             return true;
         }
 
-        case R.id.menu_examples:
+        case R.id.menu_gallery:
         {
-            // TODO
+            Intent gallery = new Intent(this, GalleryActivity.class);
+            startActivity(gallery);
             return true;
         }
 
@@ -375,7 +374,7 @@ public class WorkListActivity extends AppCompatActivity
             }
         }
 
-        else if (requestCode == WoConstants.RC_OPEN_DOCUMENT)
+        else if (requestCode == WoConstants.RC_OPEN_DESIGN_DOCUMENT)
         {
             Uri uri = data.getData();
             Log.i(TAG, "onActivityResult() uri = "+uri.toString());
@@ -384,11 +383,20 @@ public class WorkListActivity extends AppCompatActivity
             frg.changeDesign(uri);
         }
 
+        else if (requestCode == WoConstants.RC_OPEN_RESULT_DOCUMENT)
+        {
+            Uri uri = data.getData();
+            Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
+            frg.setResultUri(uri);
+            frg.changeResult();
+        }
+
         else if (requestCode == WoConstants.RC_TAKE_PICTURE)
         {
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
-            Uri uri = frg.getResultUri();
-            frg.changeResult(uri);
+            frg.changeResult();
         }
     }
 

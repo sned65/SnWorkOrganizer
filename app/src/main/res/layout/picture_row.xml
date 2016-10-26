@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:cardview="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    cardview:cardCornerRadius="4dp"
+    tools:context=".GalleryActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            cardview:srcCompat="@drawable/ic_local_florist_black_24dp"
+            android:id="@+id/photo"
+            android:minWidth="256dp"
+            android:minHeight="179dp"/>
+
+        <TextView
+            android:id="@+id/work_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="Work title"/>
+
+    </LinearLayout>
+
+</android.support.v7.widget.CardView>

@@ -2,6 +2,7 @@ package sne.workorganizer;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -20,10 +21,13 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import java.io.FileNotFoundException;
 import java.util.Calendar;
 
 import sne.workorganizer.db.DatabaseHelper;
+import sne.workorganizer.db.Picture;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.util.InfoDialogFragment;
 import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
 
@@ -48,11 +52,14 @@ public class EditWorkFragment extends Fragment
     private TimePicker _timeView;
     private EditText _titleView;
     private EditText _priceView;
+
     private TextView _designView;
     private Uri _designUri;
     private ImageButton _designImageBtn;
     private ImageButton _designClearBtn;
+
     private ImageButton _resultClearBtn;
+    private ImageButton _resultSelectBtn;
     private ImageButton _cameraBtn;
     private Uri _resultUri;
 
@@ -208,7 +215,16 @@ public class EditWorkFragment extends Fragment
         {
             _designUri = Uri.parse(designStr);
             _designClearBtn.setVisibility(View.VISIBLE);
-            String imageName = Mix.setScaledBitmap(getActivity(), _designImageBtn, _designUri, BITMAP_WIDTH);
+            String imageName;
+            try
+            {
+                imageName = Mix.setScaledBitmap(getActivity(), _designImageBtn, _designUri, BITMAP_WIDTH);
+            }
+            catch (FileNotFoundException e)
+            {
+                imageName = _designUri.toString();
+                Mix.showError(getActivity(), e.getMessage(), InfoDialogFragment.Severity.ERROR);
+            }
             _designView.setText(imageName);
         }
 
@@ -220,7 +236,18 @@ public class EditWorkFragment extends Fragment
             @Override
             public void onClick(View v)
             {
-                changeResult(null);
+                _resultUri = null;
+                changeResult();
+            }
+        });
+
+        _resultSelectBtn = (ImageButton) rootView.findViewById(R.id.btn_select_result);
+        _resultSelectBtn.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                onSelectResult();
             }
         });
 
@@ -239,7 +266,14 @@ public class EditWorkFragment extends Fragment
     {
         Intent i = new Intent().setType("image/*");
         i.setAction(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE);
-        getActivity().startActivityForResult(i, WoConstants.RC_OPEN_DOCUMENT);
+        getActivity().startActivityForResult(i, WoConstants.RC_OPEN_DESIGN_DOCUMENT);
+    }
+
+    private void onSelectResult()
+    {
+        Intent i = new Intent().setType("image/*");
+        i.setAction(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE);
+        getActivity().startActivityForResult(i, WoConstants.RC_OPEN_RESULT_DOCUMENT);
     }
 
     private void makePhoto()
@@ -267,8 +301,21 @@ public class EditWorkFragment extends Fragment
 
         fillWork();
 
+        Picture pict = new Picture();
+        pict.setWorkId(_work.getId());
+        if (_resultUri == null)
+        {
+            pict.setResultPhoto(null);
+        }
+        else
+        {
+            pict.setResultPhoto(_resultUri.toString());
+        }
+
         // Update DB
-        DatabaseHelper.getInstance(getActivity()).updateWork(_work);
+        DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
+        db.updateWork(_work, true);
+        db.updatePicture(pict);
 
         return true;
     }
@@ -329,6 +376,7 @@ public class EditWorkFragment extends Fragment
         }
         else
         {
+            Log.i(TAG, "fillWork() _designUri = "+_designUri+"; path = "+_designUri.getPath());
             _work.setDesign(_designUri.toString());
         }
     }
@@ -336,11 +384,6 @@ public class EditWorkFragment extends Fragment
     public Project getWork()
     {
         return _work;
-    }
-
-    public Uri getResultUri()
-    {
-        return _resultUri;
     }
 
     public void changeDesign(Uri uri)
@@ -355,15 +398,28 @@ public class EditWorkFragment extends Fragment
         else
         {
             _designClearBtn.setVisibility(View.VISIBLE);
-            String imageName = Mix.setScaledBitmap(getActivity(), _designImageBtn, uri.toString(), BITMAP_WIDTH);
+            String imageName;
+            try
+            {
+                imageName = Mix.setScaledBitmap(getActivity(), _designImageBtn, uri.toString(), BITMAP_WIDTH);
+            }
+            catch (FileNotFoundException e)
+            {
+                imageName = _designUri.toString();
+                Mix.showError(getActivity(), e.getMessage(), InfoDialogFragment.Severity.ERROR);
+            }
             _designView.setText(imageName);
         }
     }
 
-    public void changeResult(Uri uri)
+    public void setResultUri(Uri uri)
     {
         _resultUri = uri;
-        if (uri == null)
+    }
+
+    public void changeResult()
+    {
+        if (_resultUri == null)
         {
             _resultClearBtn.setVisibility(View.GONE);
             _cameraBtn.setImageResource(R.drawable.ic_photo_camera_black_24dp);
@@ -371,7 +427,8 @@ public class EditWorkFragment extends Fragment
         else
         {
             _resultClearBtn.setVisibility(View.VISIBLE);
-            Mix.setScaledBitmap(getActivity(), _cameraBtn, uri.toString(), BITMAP_WIDTH);
+            Bitmap thumbnail = Mix.getThumbnailBitmap(_resultUri.getPath(), BITMAP_WIDTH);
+            _cameraBtn.setImageBitmap(thumbnail);
         }
     }
 }
