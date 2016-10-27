@@ -3,6 +3,7 @@ package sne.workorganizer;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -34,7 +35,9 @@ import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.IdNamePair;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.util.FileUtils;
 import sne.workorganizer.util.Mix;
+import sne.workorganizer.util.PhotoUtils;
 import sne.workorganizer.util.WoConstants;
 
 /**
@@ -44,15 +47,15 @@ public class CreateWorkActivity extends AppCompatActivity
 {
     private static final String TAG = CreateWorkActivity.class.getSimpleName();
     public static final String EXTRA_DATE = "work_date";
-    private static final int RC_OPEN_DOCUMENT = 123;
-    private static final int RC_CREATE_CLIENT = 124;
 
     private TimePicker _timePicker;
     private AutoCompleteTextView _selectClientView;
     private TextInputEditText _titleView;
     private TextInputEditText _priceView;
+
     private TextView _designView;
-    private Uri _designUri;
+    private String _designPath;
+    private ImageButton _designSelectBtn;
 
     private Cursor _currentCursor;
     private AsyncTask _loadClientsTask;
@@ -81,8 +84,8 @@ public class CreateWorkActivity extends AppCompatActivity
         _priceView = (TextInputEditText) findViewById(R.id.work_price);
         _designView = (TextView) findViewById(R.id.work_design);
 
-        ImageButton btnSelectDesign = (ImageButton) findViewById(R.id.btn_select_design);
-        btnSelectDesign.setOnClickListener(new View.OnClickListener()
+        _designSelectBtn = (ImageButton) findViewById(R.id.btn_select_design);
+        _designSelectBtn.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
@@ -242,7 +245,7 @@ public class CreateWorkActivity extends AppCompatActivity
     {
         Intent i = new Intent().setType("image/*");
         i.setAction(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(i, RC_OPEN_DOCUMENT);
+        startActivityForResult(i, WoConstants.RC_OPEN_DESIGN_DOCUMENT);
    }
 
     @Override
@@ -253,7 +256,7 @@ public class CreateWorkActivity extends AppCompatActivity
         if (resultCode != Activity.RESULT_OK) return;
         if (resultData == null) return;
 
-        if (requestCode == RC_OPEN_DOCUMENT)
+        if (requestCode == WoConstants.RC_OPEN_DESIGN_DOCUMENT)
         {
             Uri uri = resultData.getData();
             Log.i(TAG, uri.toString());
@@ -271,24 +274,26 @@ public class CreateWorkActivity extends AppCompatActivity
                     displayName = c.getString(displayNameColumn);
                     Log.i(TAG, "Display name: " + displayName);
                 }
-//                int sizeColumn = c.getColumnIndex(OpenableColumns.SIZE);
-//                if (sizeColumn < 0 || c.isNull(sizeColumn))
-//                {
-//                    Log.i(TAG, "Size not available");
-//                }
-//                else
-//                {
-//                    Log.i(TAG, String.format("Size: %d",
-//                            c.getInt(sizeColumn)));
-//                }
 
                 if (c != null)
                 {
                     c.close();
                 }
 
-                _designUri = uri;
+                _designPath = FileUtils.getPath(this, uri);
+                Log.i(TAG, "onActivityResult() uri ("+uri+") -> _designPath ("+_designPath+")");
                 _designView.setText(displayName);
+
+                //int thumbnailWidth = getResources().getDimensionPixelSize(android.R.dimen.thumbnail_width);
+                //Log.i(TAG, "onActivityResult() thumbnailWidth = "+thumbnailWidth);
+                if (!TextUtils.isEmpty(_designPath))
+                {
+                    Bitmap design = PhotoUtils.getThumbnailBitmap(_designPath, WoConstants.WIDTH_THUMBNAIL);
+                    if (design != null)
+                    {
+                        _designSelectBtn.setImageBitmap(design);
+                    }
+                }
             }
             else
             {
@@ -296,7 +301,7 @@ public class CreateWorkActivity extends AppCompatActivity
             }
         }
 
-        else if (requestCode == RC_CREATE_CLIENT)
+        else if (requestCode == WoConstants.RC_CREATE_CLIENT)
         {
             Client client = resultData.getParcelableExtra(WoConstants.ARG_CLIENT);
             _selectedClient = new IdNamePair(client.getId(), client.getName());
@@ -418,9 +423,9 @@ public class CreateWorkActivity extends AppCompatActivity
         cal.set(yyyy, MM, dd, hh, mm);
         project.setDate(cal.getTimeInMillis());
 
-        if (_designUri != null)
+        if (_designPath != null)
         {
-            project.setDesign(_designUri.toString());
+            project.setDesign(_designPath.toString());
         }
 
         return project;
@@ -429,7 +434,7 @@ public class CreateWorkActivity extends AppCompatActivity
     public void onCreateClient(View view)
     {
         Intent cc = new Intent(this, CreateClientActivity.class);
-        startActivityForResult(cc, RC_CREATE_CLIENT);
+        startActivityForResult(cc, WoConstants.RC_CREATE_CLIENT);
     }
 
     private class LoadCursorTask extends BaseTask<Void>

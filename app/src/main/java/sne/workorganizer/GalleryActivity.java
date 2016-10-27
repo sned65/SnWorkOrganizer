@@ -8,7 +8,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +22,8 @@ import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Picture;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.util.Mix;
+import sne.workorganizer.util.PhotoUtils;
+import sne.workorganizer.util.WoConstants;
 
 /**
  * The activity provides an interface for managing a collection of images.
@@ -68,12 +69,20 @@ public class GalleryActivity extends AppCompatActivity
         findViewById(R.id.photo_gallery).setVisibility(View.VISIBLE);
     }
 
+    public void removeItem(int position)
+    {
+        RecyclerView rv = (RecyclerView) findViewById(R.id.photo_gallery);
+        GalleryAdapter adapter = (GalleryAdapter) rv.getAdapter();
+        adapter.removePicture(position);
+        adapter.notifyItemRemoved(position);
+    }
+
     private class GalleryAdapter extends RecyclerView.Adapter<RowHolder>
     {
         private Activity _activity;
         private List<Picture> _pictures;
 
-        public GalleryAdapter(Activity activity)
+        GalleryAdapter(Activity activity)
         {
             _activity = activity;
             DatabaseHelper db = DatabaseHelper.getInstance(_activity);
@@ -114,6 +123,11 @@ public class GalleryActivity extends AppCompatActivity
         {
             return _pictures.size();
         }
+
+        void removePicture(int position)
+        {
+            _pictures.remove(position);
+        }
     }
 
     static class RowHolder extends RecyclerView.ViewHolder
@@ -125,7 +139,7 @@ public class GalleryActivity extends AppCompatActivity
         private ImageView _imageView;
         private TextView _workTitle;
 
-        public RowHolder(View itemView, Activity activity)
+        RowHolder(View itemView, Activity activity)
         {
             super(itemView);
 
@@ -137,7 +151,7 @@ public class GalleryActivity extends AppCompatActivity
             itemView.setOnLongClickListener(this);
         }
 
-        public void bindModel(Picture picture)
+        void bindModel(Picture picture)
         {
             _picture = picture;
 
@@ -148,12 +162,9 @@ public class GalleryActivity extends AppCompatActivity
         public void onClick(View v)
         {
             Log.i(TAG, "onClick() called " + getAdapterPosition() + "; " + _picture);
-            if (_picture == null)
-            {
-                return;
-            }
+            if (_picture == null) return;
 
-            // TODO show big picture
+            Mix.showPhoto(_activity, _picture.getResultPhoto());
         }
 
         @Override
@@ -165,8 +176,7 @@ public class GalleryActivity extends AppCompatActivity
                 return true;
             }
 
-            // TODO picture actions
-            //PictureActionsFragment.newInstance(_picture, getAdapterPosition()).show(_activity.getFragmentManager(), "picture_actions");
+            PictureActionsFragment.newInstance(_picture, getAdapterPosition()).show(_activity.getFragmentManager(), "picture_actions");
             return true;
         }
 
@@ -175,7 +185,7 @@ public class GalleryActivity extends AppCompatActivity
             private Project _project;
             private Bitmap _bitmap;
 
-            public FillPicture()
+            FillPicture()
             {
                 super();
             }
@@ -190,7 +200,7 @@ public class GalleryActivity extends AppCompatActivity
                     _project = db.findProjectById(workId);
                 }
 
-                _bitmap = Mix.getThumbnailBitmap(_picture.getResultPhoto(), 256);
+                _bitmap = PhotoUtils.getThumbnailBitmap(_picture.getResultPhoto(), WoConstants.WIDTH_MEDIUM);
                 return null;
             }
 

@@ -1,27 +1,15 @@
 package sne.workorganizer;
 
 import android.app.Activity;
-import android.content.ContentResolver;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.provider.OpenableColumns;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
@@ -29,6 +17,7 @@ import sne.workorganizer.db.Picture;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.util.InfoDialogFragment;
 import sne.workorganizer.util.Mix;
+import sne.workorganizer.util.PhotoUtils;
 import sne.workorganizer.util.WoConstants;
 
 /**
@@ -40,7 +29,6 @@ import sne.workorganizer.util.WoConstants;
 public class WorkDetailFragment extends Fragment
 {
     private static final String TAG = WorkDetailFragment.class.getName();
-    private static final int BITMAP_WIDTH = 256;
 
     /**
      * The content this fragment is presenting.
@@ -113,15 +101,16 @@ public class WorkDetailFragment extends Fragment
         //Log.i(TAG, "onCreateView() designStr = "+designStr);
         if (designStr != null)
         {
-            try
+            //PhotoUtils.setScaledBitmap(getActivity(), designView, designStr, BITMAP_WIDTH);
+            Bitmap bm = PhotoUtils.getThumbnailBitmap(designStr, WoConstants.WIDTH_THUMBNAIL);
+            if (bm != null)
             {
-                Mix.setScaledBitmap(getActivity(), designView, designStr, BITMAP_WIDTH);
+                designView.setImageBitmap(bm);
             }
-            catch (FileNotFoundException e)
+            else
             {
-                Uri uri = Uri.parse(designStr);
-                String msg = e.getMessage() + "\n" + designStr + "; path = " + uri.getPath();
-                Mix.showError(getActivity(), msg, InfoDialogFragment.Severity.ERROR);
+                String msg = getString(R.string.design)+" "+getString(R.string.error_file_not_found) + ":" + designStr;
+                Mix.showError(getActivity(), msg, InfoDialogFragment.Severity.WARNING);
             }
         }
 
@@ -133,16 +122,16 @@ public class WorkDetailFragment extends Fragment
         }
         else
         {
-            ImageView result = (ImageView) _rootView.findViewById(R.id.work_result);
-            try
+            ImageView resultView = (ImageView) _rootView.findViewById(R.id.work_result);
+            Bitmap bm = PhotoUtils.getThumbnailBitmap(resultPhoto.getResultPhoto(), WoConstants.WIDTH_THUMBNAIL);
+            if (bm != null)
             {
-                Mix.setScaledBitmap(getActivity(), result, resultPhoto.getResultPhoto(), BITMAP_WIDTH);
+                resultView.setImageBitmap(bm);
             }
-            catch (FileNotFoundException e)
+            else
             {
-                Uri uri = Uri.parse(resultPhoto.getResultPhoto());
-                String msg = e.getMessage() + "\n" + resultPhoto.getResultPhoto() + "; path = " + uri.getPath();
-                Mix.showError(getActivity(), msg, InfoDialogFragment.Severity.ERROR);
+                String msg = getString(R.string.error_file_not_found) + ":" + resultPhoto.getResultPhoto();
+                Mix.showError(getActivity(), msg, InfoDialogFragment.Severity.WARNING);
             }
         }
     }

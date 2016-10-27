@@ -29,6 +29,7 @@ import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.help.AboutAppDialogFragment;
+import sne.workorganizer.util.FileUtils;
 import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
 
@@ -378,25 +379,27 @@ public class WorkListActivity extends AppCompatActivity
         {
             Uri uri = data.getData();
             Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+            String path = FileUtils.getPath(this, uri);
 
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
-            frg.changeDesign(uri);
+            frg.changeDesign(path);
         }
 
         else if (requestCode == WoConstants.RC_OPEN_RESULT_DOCUMENT)
         {
             Uri uri = data.getData();
             Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+            String path = FileUtils.getPath(this, uri);
 
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
-            frg.setResultUri(uri);
-            frg.changeResult();
+            frg.setResultPath(path);
+            frg.refreshResult();
         }
 
         else if (requestCode == WoConstants.RC_TAKE_PICTURE)
         {
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
-            frg.changeResult();
+            frg.refreshResult();
         }
     }
 
@@ -440,7 +443,7 @@ public class WorkListActivity extends AppCompatActivity
         private Date _date;
         private List<Project> _projects;
 
-        public WorkListViewAdapter(Activity activity, Date date)
+        WorkListViewAdapter(Activity activity, Date date)
         {
             _activity = activity;
             _date = date;

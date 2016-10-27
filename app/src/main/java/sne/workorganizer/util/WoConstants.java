@@ -5,6 +5,9 @@ package sne.workorganizer.util;
  */
 public class WoConstants
 {
+    public static final int WIDTH_THUMBNAIL = 64;
+    public static final int WIDTH_MEDIUM = 256;
+
     // Bundle arguments
     public static final String ARG_CLIENT = "arg_client";
     public static final String ARG_POSITION = "arg_position";
@@ -17,4 +20,5 @@ public class WoConstants
     public static final int RC_OPEN_RESULT_DOCUMENT = 122;
     public static final int RC_OPEN_DESIGN_DOCUMENT = 123;
     public static final int RC_TAKE_PICTURE = 124;
+    public static final int RC_CREATE_CLIENT = 125;
 }

@@ -10,6 +10,7 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import sne.workorganizer.util.FileUtils;
 import sne.workorganizer.util.WoConstants;
 
 /**
@@ -115,9 +116,10 @@ public class EditWorkActivity extends AppCompatActivity
             if (resultData == null) return;
             Uri uri = resultData.getData();
             Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+            String path = FileUtils.getPath(this, uri);
 
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
-            frg.changeDesign(uri);
+            frg.changeDesign(path);
         }
 
         else if (requestCode == WoConstants.RC_OPEN_RESULT_DOCUMENT)
@@ -125,16 +127,17 @@ public class EditWorkActivity extends AppCompatActivity
             if (resultData == null) return;
             Uri uri = resultData.getData();
             Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+            String path = FileUtils.getPath(this, uri);
 
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
-            frg.setResultUri(uri);
-            frg.changeResult();
+            frg.setResultPath(path);
+            frg.refreshResult();
         }
 
         else if (requestCode == WoConstants.RC_TAKE_PICTURE)
         {
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
-            frg.changeResult();
+            frg.refreshResult();
         }
     }
 

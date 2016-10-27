@@ -1,36 +1,24 @@
 package sne.workorganizer.util;
 
-import android.Manifest;
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.OpenableColumns;
-import android.support.annotation.RequiresPermission;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.CalendarView;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Locale;
 
 import sne.workorganizer.R;
 
@@ -124,10 +112,10 @@ public class Mix
      * This function is workaround which should be called in
      * {@code OnDateChangeListener} of {@link CalendarView}.
      *
-     * @param view
-     * @param year
-     * @param month
-     * @param dayOfMonth
+     * @param view {@link CalendarView}
+     * @param year year
+     * @param month month. The month value is 0-based.
+     * @param dayOfMonth day of month
      * @see <a href="http://stackoverflow.com/questions/31602849/calendarview-returns-always-current-day-ignoring-what-user-selects">
      *     http://stackoverflow.com/questions/31602849/calendarview-returns-always-current-day-ignoring-what-user-selects</a>
      */
@@ -202,7 +190,16 @@ public class Mix
         Intent callIntent = new Intent(Intent.ACTION_DIAL);
         callIntent.setData(Uri.parse("tel:"+ Uri.encode(phone.trim())));
         callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        ctx.startActivity(callIntent);
+        try
+        {
+            ctx.startActivity(callIntent);
+        }
+        catch (android.content.ActivityNotFoundException e)
+        {
+            Toast.makeText(ctx,
+                    "No phone installed.",
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     /**
@@ -228,7 +225,7 @@ public class Mix
         {
             Toast.makeText(ctx,
                     "No email clients installed.",
-                    Toast.LENGTH_SHORT).show();
+                    Toast.LENGTH_LONG).show();
         }
     }
 
@@ -249,6 +246,26 @@ public class Mix
         if (browserIntent.resolveActivity(ctx.getPackageManager()) != null)
         {
             ctx.startActivity(browserIntent);
+        }
+    }
+
+    /**
+     * Display a photo.
+     *
+     * @param ctx The context to use.
+     * @param path The path of the file to be shown.
+     */
+    public static void showPhoto(Context ctx, String path)
+    {
+        if (TextUtils.isEmpty(path)) return;
+        File file = new File(path);
+        Uri uri = Uri.fromFile(file);
+        Intent showPhotoIntent = new Intent(Intent.ACTION_VIEW);
+        //showPhotoIntent.setData(uri);
+        showPhotoIntent.setDataAndType(uri, "image/jpeg");
+        if (showPhotoIntent.resolveActivity(ctx.getPackageManager()) != null)
+        {
+            ctx.startActivity(showPhotoIntent);
         }
     }
 
@@ -312,143 +329,5 @@ public class Mix
                 e.printStackTrace();
             }
         }
-    }
-
-    /**
-     *
-     * @param ctx the context to use.
-     * @param imageView {@link ImageView} to load an image into.
-     * @param imageUri image location as an encoded URI string.
-     *                 URI should point to a publishing content available for {@link ContentResolver},
-     *                 i.e., should start with {@code "content://"}.
-     * @param bitmapWidth the new bitmap's desired width. The image will be scaled proportionally.
-     * @return image display name, if any.
-     * @throws FileNotFoundException
-     */
-    public static String setScaledBitmap(Context ctx, ImageView imageView, String imageUri, int bitmapWidth)
-            throws FileNotFoundException
-    {
-        Uri uri = Uri.parse(imageUri);
-        return setScaledBitmap(ctx, imageView, uri, bitmapWidth);
-    }
-
-    /**
-     *
-     * @param ctx the context to use.
-     * @param imageView {@link ImageView} to load an image into.
-     * @param imageUri {@code Uri} of image location.
-     *                 URI should point to a publishing content available for {@link ContentResolver}.
-     * @param bitmapWidth the new bitmap's desired width. The image will be scaled proportionally.
-     * @return image display name, if any.
-     * @throws FileNotFoundException
-     */
-    public static String setScaledBitmap(Context ctx, ImageView imageView, Uri imageUri, int bitmapWidth)
-            throws FileNotFoundException
-    {
-        String displayName = null;
-
-        try
-        {
-            ContentResolver resolver = ctx.getContentResolver();
-            String[] projection = new String[]{OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE};
-            Cursor c = resolver.query(imageUri, projection, null, null, null);
-            if (c == null)
-            {
-                throw new FileNotFoundException(imageUri.toString());
-            }
-            while (c.moveToNext())
-            {
-                int name_idx = c.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                displayName = c.getString(name_idx);
-                int size_idx = c.getColumnIndex(OpenableColumns.SIZE);
-                Long size = c.getLong(size_idx);
-                Log.i(TAG, "setScaledBitmap() name = " + displayName + ", size = " + size);
-            }
-            c.close();
-            //Log.i(TAG, "setScaledBitmap() path = "+path);
-            //imageView.setImageURI(designUri);
-
-            InputStream is = resolver.openInputStream(imageUri);
-            Bitmap bm = BitmapFactory.decodeStream(is);
-            assert is != null;
-            close(is);
-            int nh = (int) (bm.getHeight() * ((float) bitmapWidth / bm.getWidth()));
-            Bitmap scaled = Bitmap.createScaledBitmap(bm, bitmapWidth, nh, true);
-            imageView.setImageBitmap(scaled);
-        }
-        catch (SecurityException e)
-        {
-            throw new FileNotFoundException(e.getMessage());
-        }
-
-        return displayName;
-    }
-
-    /**
-     * Returns the bitmap of the given size
-     *
-     * @param path path to original image
-     * @param thumbnailSize
-     * @return thumbnail image
-     */
-    public static Bitmap getThumbnailBitmap(String path, int thumbnailSize)
-    {
-        BitmapFactory.Options bounds = new BitmapFactory.Options();
-        bounds.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(path, bounds);
-        if ((bounds.outWidth == -1) || (bounds.outHeight == -1))
-        {
-            return null;
-        }
-        int originalSize = (bounds.outHeight > bounds.outWidth) ? bounds.outHeight
-                : bounds.outWidth;
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inSampleSize = originalSize / thumbnailSize;
-        return BitmapFactory.decodeFile(path, opts);
-    }
-
-    /**
-     * Create a file for saving a jpeg-image.
-     *
-     * @param basename   base filename
-     * @return {@code Uri} of created file
-     */
-    public static Uri getOutputMediaFileUri(String basename)
-    {
-        return Uri.fromFile(getOutputMediaFile(basename));
-    }
-
-    /**
-     * Create a File for saving an jpeg-image.
-     * <br/>
-     * Pattern for filename: {@code basename_timestamp.jpg}
-     *
-     * @param basename   base filename
-     * @return created {@code File}
-     */
-    private static File getOutputMediaFile(String basename)
-    {
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "WorkOrganizer");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists())
-        {
-            if (!mediaStorageDir.mkdirs())
-            {
-                return null;
-            }
-        }
-
-        // Create a media file name
-        SimpleDateFormat sdf = new SimpleDateFormat("_yyyyMMdd_HHmmss", Locale.US);
-        String today = sdf.format(new Date());
-        String file_name = basename + today + ".jpg";
-        return new File(mediaStorageDir.getPath() + File.separator + file_name);
     }
 }

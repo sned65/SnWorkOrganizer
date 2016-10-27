@@ -1,11 +1,14 @@
 package sne.workorganizer.db;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.UUID;
 
 /**
  * Single row in the Pictures table.
  */
-public class Picture implements DbRow
+public class Picture implements DbRow, Parcelable
 {
     private String _id;
     private String _workId;
@@ -22,6 +25,43 @@ public class Picture implements DbRow
         _workId = workId;
         _resultPhoto = resultPhoto;
     }
+
+    protected Picture(Parcel in)
+    {
+        _id = in.readString();
+        _workId = in.readString();
+        _resultPhoto = in.readString();
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeString(_id);
+        dest.writeString(_workId);
+        dest.writeString(_resultPhoto);
+    }
+
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<Picture> CREATOR = new Parcelable.Creator<Picture>()
+    {
+        @Override
+        public Picture createFromParcel(Parcel in)
+        {
+            return new Picture(in);
+        }
+
+        @Override
+        public Picture[] newArray(int size)
+        {
+            return new Picture[size];
+        }
+    };
 
     public String getId()
     {

@@ -41,4 +41,5 @@
     <string name="app_will_be_stopped">Приложение будет остановлено.</string>
     <string name="menu_gallery">Галерея</string>
     <string name="gallery">Галерея</string>
+    <string name="error_file_not_found">Файл не найден</string>
 </resources>
