@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import sne.workorganizer.db.Client;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.util.WoConstants;
 
@@ -19,7 +20,7 @@ import sne.workorganizer.util.WoConstants;
  * item details are presented side-by-side with a list of items
  * in a {@link WorkListActivity}.
  */
-public class WorkDetailActivity extends AppCompatActivity
+public class WorkDetailActivity extends AppCompatActivity implements EditClientDialog.EditClientDialogCallback
 {
     private static final String TAG = WorkDetailActivity.class.getSimpleName();
     private static final String FRG_DETAILS = "FRG_DETAILS";
@@ -107,8 +108,8 @@ public class WorkDetailActivity extends AppCompatActivity
 
         case R.id.menu_edit_client:
         {
-            // TODO edit client
-            Log.i(TAG, "*** edit client");
+            WorkDetailFragment wdf = (WorkDetailFragment) getSupportFragmentManager().findFragmentByTag(FRG_DETAILS);
+            EditClientDialog.newInstance(wdf.getClient(), -1).show(getFragmentManager(), "edit_client");
             return true;
         }
 
@@ -151,5 +152,12 @@ public class WorkDetailActivity extends AppCompatActivity
                 wdf.setWork(work);
             }
         }
+    }
+
+    @Override
+    public void onEditClientFinished(Client client, int position)
+    {
+        WorkDetailFragment wdf = (WorkDetailFragment) getSupportFragmentManager().findFragmentByTag(FRG_DETAILS);
+        wdf.updateClient(client);
     }
 }

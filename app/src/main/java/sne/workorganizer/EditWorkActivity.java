@@ -180,7 +180,7 @@ public class EditWorkActivity extends AppCompatActivity
 //        return super.onOptionsItemSelected(item);
 //    }
 
-//    private static final String TAG = EditClientFragment.class.getSimpleName();
+//    private static final String TAG = EditClientDialog.class.getSimpleName();
 //    private CalendarView _dateView;
 //    private TimePicker _timeView;
 //    private EditText _titleView;

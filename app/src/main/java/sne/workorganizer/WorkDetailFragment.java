@@ -88,14 +88,7 @@ public class WorkDetailFragment extends Fragment
 
         DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
         _client = db.findClientById(_project.getClientId());
-        ((TextView) _rootView.findViewById(R.id.work_client_name)).setText(_client.getName());
-        TextView phoneView = (TextView) _rootView.findViewById(R.id.client_phone);
-        phoneView.setText(_client.getPhone());
-        TextView emailView = (TextView) _rootView.findViewById(R.id.client_email);
-        emailView.setText(_client.getEmail());
-        TextView socialView = (TextView) _rootView.findViewById(R.id.client_social);
-        socialView.setText(_client.getSocial());
-        Mix.setupClientCommunications(getActivity(), phoneView, emailView, socialView);
+        fillClient();
 
         ImageView designView = (ImageView) _rootView.findViewById(R.id.work_design);
         final String designStr = _project.getDesign();
@@ -157,6 +150,19 @@ public class WorkDetailFragment extends Fragment
         }
     }
 
+    private void fillClient()
+    {
+        ((TextView) _rootView.findViewById(R.id.work_client_name)).setText(_client.getName());
+        TextView phoneView = (TextView) _rootView.findViewById(R.id.client_phone);
+        phoneView.setText(_client.getPhone());
+        TextView emailView = (TextView) _rootView.findViewById(R.id.client_email);
+        emailView.setText(_client.getEmail());
+        TextView socialView = (TextView) _rootView.findViewById(R.id.client_social);
+        socialView.setText(_client.getSocial());
+
+        Mix.setupClientCommunications(getActivity(), phoneView, emailView, socialView);
+    }
+
     public Project getWork()
     {
         return _project;
@@ -171,5 +177,11 @@ public class WorkDetailFragment extends Fragment
     public Client getClient()
     {
         return _client;
+    }
+
+    public void updateClient(Client client)
+    {
+        _client = client;
+        fillClient();
     }
 }

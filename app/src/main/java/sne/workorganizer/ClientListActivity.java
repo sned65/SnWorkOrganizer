@@ -2,13 +2,11 @@ package sne.workorganizer;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -19,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.silencedut.expandablelayout.ExpandableLayout;
 
@@ -35,14 +32,10 @@ import sne.workorganizer.util.WoConstants;
 /**
  * An activity representing a list of Clients.
  */
-public class ClientListActivity extends AppCompatActivity
+public class ClientListActivity extends AppCompatActivity implements EditClientDialog.EditClientDialogCallback
 {
     private static final String TAG = ClientListActivity.class.getName();
     private static final int RC_CREATE_CLIENT = 101;
-    private static final int RC_UPDATE_CLIENT = 102;
-    private static final int RC_DELETE_CLIENT = 103;
-
-    //private RecyclerView _clientListView;
 
     private static Client _EMPTY = new Client();
     static {
@@ -179,6 +172,12 @@ public class ClientListActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void onEditClientFinished(Client client, int position)
+    {
+        updateClient(client, position);
+    }
+
     private class ClientListAdapter extends RecyclerView.Adapter<RowHolder>
     {
         private Activity _activity;
@@ -207,7 +206,6 @@ public class ClientListActivity extends AppCompatActivity
             View v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.client_row, parent, false);
 
-            // TODO set the view's size, margins, paddings and layout parameters
             return new RowHolder(v, _activity);
         }
 
@@ -260,11 +258,10 @@ public class ClientListActivity extends AppCompatActivity
     }
 
     static class RowHolder extends RecyclerView.ViewHolder
-            implements View.OnClickListener, View.OnLongClickListener
+            implements View.OnLongClickListener
     {
         private Activity _activity;
         private Client _client;
-        private View _tblClientDetails;
         private TextView _clientName;
         private TextView _clientPhone;
         private TextView _clientSocial;
@@ -276,7 +273,6 @@ public class ClientListActivity extends AppCompatActivity
             super(itemView);
 
             _activity = activity;
-            _tblClientDetails = itemView.findViewById(R.id.tbl_client_details);
             _clientName = (TextView) itemView.findViewById(R.id.client_name);
             _clientPhone = (TextView) itemView.findViewById(R.id.client_phone);
             _clientSocial = (TextView) itemView.findViewById(R.id.client_social);
@@ -285,14 +281,9 @@ public class ClientListActivity extends AppCompatActivity
 
             Mix.setupClientCommunications(_activity, _clientPhone, _clientEmail, _clientSocial);
 
-            //itemView.setOnClickListener(this);
-            //Log.i(TAG, "RowHolder() itemView "+itemView.getClass());
-            //itemView.setOnLongClickListener(this);
             // set onLongClickListener for ExpandableLayout
             View content = itemView.findViewById(R.id.client_content);
             content.setOnLongClickListener(this);
-
-            //content.setOnClickListener(this);  // FIXME test
         }
 
         public void bindModel(Client client)
@@ -304,7 +295,6 @@ public class ClientListActivity extends AppCompatActivity
                 _clientPhone.setText(null);
                 _clientSocial.setText(null);
                 _clientEmail.setText(null);
-                //_tblClientDetails.setVisibility(View.GONE); // FIXME
                 _projTable.setVisibility(View.GONE);
                 return;
             }
@@ -314,7 +304,6 @@ public class ClientListActivity extends AppCompatActivity
             _clientPhone.setText(_client.getPhone());
             _clientSocial.setText(_client.getSocial());
             _clientEmail.setText(_client.getEmail());
-            //_tblClientDetails.setVisibility(View.VISIBLE); // FIXME
             _projTable.setVisibility(View.VISIBLE);
 
             List<Project> projects = _client.getProjects();
@@ -334,15 +323,6 @@ public class ClientListActivity extends AppCompatActivity
             row.addView(nameView);
             row.addView(dateView);
             row.addView(statusView);
-//            row.setOnClickListener(new View.OnClickListener()
-//            {
-//                @Override
-//                public void onClick(View v)
-//                {
-//                    onClickRow(v);
-//                }
-//            });
-//            _trMap.put(row, nr);
 
             _projTable.addView(row);
         }
@@ -354,28 +334,6 @@ public class ClientListActivity extends AppCompatActivity
             view.setGravity(Gravity.CENTER_HORIZONTAL);
             view.setPadding(25, 0, 25, 0);
             return view;
-        }
-
-//        public void onClickRow(View v)
-//        {
-//            onClick(v);
-//        }
-
-        @Override
-        public void onClick(View v)
-        {
-            Log.i(TAG, "onClick() called "+getAdapterPosition()+"; "+_client);
-            if (_client == null)
-            {
-                return;
-            }
-            //Log.i(TAG, "onClick() called "+getAdapterPosition());
-//            Intent main = new Intent(v.getContext(), MainActivity.class);
-//            main.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//            main.putExtra(MainActivity.ARG_BOOK_DIR, _bookmark.getDir());
-//            main.putExtra(MainActivity.ARG_BOOK_FILE, _bookmark.getFilename());
-//            main.putExtra(MainActivity.ARG_BOOK_PAGE_NUMBER, _bookmark.getPosition());
-//            v.getContext().startActivity(main);
         }
 
         @Override

@@ -80,7 +80,7 @@ public class ClientActionsFragment extends DialogFragment
             ConfirmDeleteClientFragment.newInstance(_client, _position).show(getFragmentManager(), "confirm_del_client");
             break;
         case 1: // Edit
-            EditClientFragment.newInstance(_client, _position).show(getFragmentManager(), "edit_client");
+            EditClientDialog.newInstance(_client, _position).show(getFragmentManager(), "edit_client");
             break;
         }
     }

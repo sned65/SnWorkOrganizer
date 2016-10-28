@@ -1,5 +1,6 @@
 package sne.workorganizer;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -14,10 +15,15 @@ import sne.workorganizer.db.DatabaseHelper;
 /**
  * Edit client dialog
  */
-public class EditClientFragment extends DialogFragment
+public class EditClientDialog extends DialogFragment
         implements DialogInterface.OnClickListener
 {
-    private static final String TAG = EditClientFragment.class.getSimpleName();
+    interface EditClientDialogCallback
+    {
+        void onEditClientFinished(Client client, int position);
+    }
+
+    private static final String TAG = EditClientDialog.class.getSimpleName();
     private static final String KEY_CLIENT = "key_client";
     private static final String KEY_POSITION = "key_position";
     private EditText _clientNameView;
@@ -32,9 +38,9 @@ public class EditClientFragment extends DialogFragment
     //    a static factory method (typically named newInstance()) that will create the
     //    Fragment and provide the parameters to it by updating the fragment’s “arguments”
     //    (a Bundle)"
-    public static EditClientFragment newInstance(Client client, int position)
+    public static EditClientDialog newInstance(Client client, int position)
     {
-        EditClientFragment f = new EditClientFragment();
+        EditClientDialog f = new EditClientDialog();
 
         Bundle args = new Bundle();
         args.putParcelable(KEY_CLIENT, client);
@@ -85,8 +91,11 @@ public class EditClientFragment extends DialogFragment
         DatabaseHelper.getInstance(getActivity()).updateClient(_client);
 
         // Update UI
-        //MainActivity mainActivity = (MainActivity) getActivity();
-        ClientListActivity mainActivity = (ClientListActivity) getActivity();
-        mainActivity.updateClient(_client, _position);
+        Activity a = getActivity();
+        if (a instanceof EditClientDialogCallback)
+        {
+            EditClientDialogCallback mainActivity = (EditClientDialogCallback) getActivity();
+            mainActivity.onEditClientFinished(_client, _position);
+        }
     }
 }
