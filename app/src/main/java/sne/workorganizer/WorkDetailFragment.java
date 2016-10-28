@@ -34,6 +34,7 @@ public class WorkDetailFragment extends Fragment
      * The content this fragment is presenting.
      */
     private Project _project;
+    private Client _client;
 
     private View _rootView;
 
@@ -86,14 +87,14 @@ public class WorkDetailFragment extends Fragment
         ((TextView) _rootView.findViewById(R.id.work_price)).setText(price);
 
         DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
-        Client client = db.findClientById(_project.getClientId());
-        ((TextView) _rootView.findViewById(R.id.work_client_name)).setText(client.getName());
+        _client = db.findClientById(_project.getClientId());
+        ((TextView) _rootView.findViewById(R.id.work_client_name)).setText(_client.getName());
         TextView phoneView = (TextView) _rootView.findViewById(R.id.client_phone);
-        phoneView.setText(client.getPhone());
+        phoneView.setText(_client.getPhone());
         TextView emailView = (TextView) _rootView.findViewById(R.id.client_email);
-        emailView.setText(client.getEmail());
+        emailView.setText(_client.getEmail());
         TextView socialView = (TextView) _rootView.findViewById(R.id.client_social);
-        socialView.setText(client.getSocial());
+        socialView.setText(_client.getSocial());
         Mix.setupClientCommunications(getActivity(), phoneView, emailView, socialView);
 
         ImageView designView = (ImageView) _rootView.findViewById(R.id.work_design);
@@ -130,6 +131,9 @@ public class WorkDetailFragment extends Fragment
         }
         else
         {
+            View result = _rootView.findViewById(R.id.detail_row_result);
+            result.setVisibility(View.VISIBLE);
+
             ImageView resultView = (ImageView) _rootView.findViewById(R.id.work_result);
             final String photo = resultPhoto.getResultPhoto();
             Bitmap bm = PhotoUtils.getThumbnailBitmap(photo, WoConstants.WIDTH_THUMBNAIL);
@@ -153,15 +157,19 @@ public class WorkDetailFragment extends Fragment
         }
     }
 
+    public Project getWork()
+    {
+        return _project;
+    }
+
     public void setWork(Project work)
     {
         _project = work;
-        if (_project == null)
-        {
-            // TODO
-            return;
-        }
-
         fillViews();
+    }
+
+    public Client getClient()
+    {
+        return _client;
     }
 }

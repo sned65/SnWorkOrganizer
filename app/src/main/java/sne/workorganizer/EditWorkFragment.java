@@ -333,8 +333,7 @@ public class EditWorkFragment extends Fragment
 
         // Update DB
         DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
-        db.updateWork(_work, true);
-        db.updatePicture(pict);
+        db.updateWork(_work, pict);
 
         return true;
     }

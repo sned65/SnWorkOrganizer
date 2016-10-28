@@ -514,15 +514,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * Update work in a separate thread.
      *
      * @param work
-     * @param clearPictureRef {@code true} to clear references from {@code Picture} table.
+     * @param picture update a reference in {@code Picture} table.
      */
-    public void updateWork(Project work, boolean clearPictureRef)
+    public void updateWork(Project work, Picture picture)
     {
-        if (clearPictureRef)
-        {
-            new ClearPictureWorkRefThread(work.getId()).start();
-        }
-        new UpdateThread(work).start();
+        new UpdateThread(work, picture).start();
     }
 
     /**
@@ -621,24 +617,33 @@ public class DatabaseHelper extends SQLiteOpenHelper
      */
     private class UpdateThread extends Thread
     {
-        private DbRow _row;
+        private Client _client;
+        private Project _work;
+        private Picture _picture;
 
-        UpdateThread(Client row)
+        UpdateThread(Client client)
         {
             super();
-            _row = row;
+            _client = client;
         }
 
-        UpdateThread(Project row)
+        UpdateThread(Project work)
         {
             super();
-            _row = row;
+            _work = work;
         }
 
-        UpdateThread(Picture row)
+        UpdateThread(Picture picture)
         {
             super();
-            _row = row;
+            _picture = picture;
+        }
+
+        UpdateThread(Project work, Picture picture)
+        {
+            super();
+            _work = work;
+            _picture = picture;
         }
 
         @Override
@@ -648,58 +653,74 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
             String sql = null;
             Object[] args = null;
-            if (_row instanceof Client)
+            if (_client != null)
             {
                 sql = "INSERT OR REPLACE INTO " + Table.CLIENTS + "(" + CLIENTS_COLUMNS +
                         ") VALUES (" + CLIENTS_VALUE_PLACEHOLDERS + ")";
-                Client client = (Client) _row;
                 args = new Object[CLIENTS_NCOLS];
-                args[0] = client.getId();
-                args[1] = client.getName();
-                args[2] = client.getPhone();
-                args[3] = client.getEmail();
-                args[4] = client.getSocial();
+                args[0] = _client.getId();
+                args[1] = _client.getName();
+                args[2] = _client.getPhone();
+                args[3] = _client.getEmail();
+                args[4] = _client.getSocial();
                 Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s, %s", sql,
                         args[0], args[1], args[2], args[3], args[4]));
             }
-            else if (_row instanceof Project)
+
+            if (_work != null)
             {
                 sql = "INSERT OR REPLACE INTO " + Table.PROJECTS + "(" + PROJECTS_COLUMNS +
                         ") VALUES (" + PROJECTS_VALUE_PLACEHOLDERS + ")";
-                Project project = (Project) _row;
                 args = new Object[PROJECTS_NCOLS];
-                args[0] = project.getId();
-                args[1] = project.getClientId();
-                args[2] = project.getName();
-                args[3] = project.getDate();
-                args[4] = project.getStatus();
-                args[5] = project.getPrice();
-                args[6] = project.getDesign();
+                args[0] = _work.getId();
+                args[1] = _work.getClientId();
+                args[2] = _work.getName();
+                args[3] = _work.getDate();
+                args[4] = _work.getStatus();
+                args[5] = _work.getPrice();
+                args[6] = _work.getDesign();
                 Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s, %s, %s, %s", sql,
-                        args[0], args[1], args[2], new Date(project.getDate()).toString(),
+                        args[0], args[1], args[2], new Date(_work.getDate()).toString(),
                         args[4], args[5], args[6]));
             }
-            else if (_row instanceof Picture)
+
+            if (_picture != null)
             {
-                Picture picture = (Picture) _row;
+                clearResultPictures(_picture.getWorkId());
+
                 sql = "INSERT OR REPLACE INTO " + Table.PICTURES + "(" + PICTURES_COLUMNS +
                         ") VALUES (" + PICTURES_VALUE_PLACEHOLDERS + ")";
                 args = new Object[PICTURES_NCOLS];
-                args[0] = picture.getId();
-                args[1] = picture.getWorkId();
-                args[2] = picture.getResultPhoto();
+                args[0] = _picture.getId();
+                args[1] = _picture.getWorkId();
+                args[2] = _picture.getResultPhoto();
                 Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s", sql,
                         args[0], args[1], args[2]));
             }
+
             else
             {
-                Log.e(TAG, "UpdateThread.run() Unknown database object "+_row.getClass().getName());
+                Log.e(TAG, "UpdateThread.run() Nothing to update.");
+                return;
             }
+
+            getWritableDatabase().execSQL(sql, args);
+        }
+
+        private void clearResultPictures(String workId)
+        {
+            String sql = "UPDATE " + Table.PICTURES +
+                    " SET " + PICTURES_COL_WORK_ID + " = NULL" +
+                    " WHERE " + PICTURES_COL_WORK_ID + " = ?";
+            Object[] args = new Object[1];
+            args[0] = workId;
+            Log.i(TAG, String.format("clearResultPictures: %s, using %s", sql, args[0]));
 
             getWritableDatabase().execSQL(sql, args);
         }
     }
 
+/*
     private class ClearPictureWorkRefThread extends Thread
     {
         private String _workId;
@@ -725,6 +746,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
             getWritableDatabase().execSQL(sql, args);
         }
     }
+*/
 
     /**
      * SQL DELETE

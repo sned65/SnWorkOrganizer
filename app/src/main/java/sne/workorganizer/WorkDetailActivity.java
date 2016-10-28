@@ -1,10 +1,13 @@
 package sne.workorganizer;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
+import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import sne.workorganizer.db.Project;
@@ -18,6 +21,8 @@ import sne.workorganizer.util.WoConstants;
  */
 public class WorkDetailActivity extends AppCompatActivity
 {
+    private static final String TAG = WorkDetailActivity.class.getSimpleName();
+    private static final String FRG_DETAILS = "FRG_DETAILS";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -66,16 +71,26 @@ public class WorkDetailActivity extends AppCompatActivity
             WorkDetailFragment fragment = new WorkDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.work_detail_container, fragment)
+                    .add(R.id.work_detail_container, fragment, FRG_DETAILS)
                     .commit();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_detail_actions, menu);
+        return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
         int id = item.getItemId();
-        if (id == android.R.id.home)
+        switch (id)
+        {
+        case android.R.id.home:
         {
             // This ID represents the Home or Up button. In the case of this
             // activity, the Up button is shown. For
@@ -89,6 +104,50 @@ public class WorkDetailActivity extends AppCompatActivity
             navigateUpTo(i);
             return true;
         }
+
+        case R.id.menu_edit_client:
+        {
+            // TODO edit client
+            Log.i(TAG, "*** edit client");
+            return true;
+        }
+
+        case R.id.menu_edit_work:
+        {
+            WorkDetailFragment wdf = (WorkDetailFragment) getSupportFragmentManager().findFragmentByTag(FRG_DETAILS);
+            Intent i = new Intent(this, EditWorkActivity.class);
+            i.putExtra(WoConstants.ARG_WORK, wdf.getWork());
+            i.putExtra(WoConstants.ARG_CLIENT_NAME, wdf.getClient().getName());
+            startActivityForResult(i, WorkListActivity.RC_EDIT_WORK);
+            return true;
+        }
+
+        case R.id.menu_delete:
+        {
+            Log.i(TAG, "*** delete");
+            return true;
+        }
+        }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,
+                                    Intent data)
+    {
+        Log.i(TAG, "requestCode = " + requestCode
+                + ", resultCode = " + (resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
+        if (resultCode != Activity.RESULT_OK) return;
+
+        if (requestCode == WorkListActivity.RC_EDIT_WORK)
+        {
+            Project work = data.getParcelableExtra(WoConstants.ARG_WORK);
+
+            WorkDetailFragment wdf = (WorkDetailFragment) getSupportFragmentManager().findFragmentByTag(FRG_DETAILS);
+            if (wdf != null)
+            {
+                wdf.setWork(work);
+            }
+        }
     }
 }

@@ -42,4 +42,6 @@
     <string name="menu_gallery">Галерея</string>
     <string name="gallery">Галерея</string>
     <string name="error_file_not_found">Файл не найден</string>
+    <string name="edit_client">Изменить данные о клиенте</string>
+    <string name="edit_work">Изменить данные о работе</string>
 </resources>

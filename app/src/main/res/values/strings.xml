@@ -6,6 +6,8 @@
     <string name="cancel">Cancel</string>
     <string name="create">Create</string>
     <string name="edit">Edit</string>
+    <string name="edit_client">Edit Client Data</string>
+    <string name="edit_work">Edit Work Data</string>
     <string name="delete">Delete</string>
     <string name="gallery">Gallery</string>
     <string name="result">Result</string>
