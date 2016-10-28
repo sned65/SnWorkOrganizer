@@ -124,7 +124,9 @@ public class WorkDetailActivity extends AppCompatActivity
 
         case R.id.menu_delete:
         {
-            Log.i(TAG, "*** delete");
+            WorkDetailFragment wdf = (WorkDetailFragment) getSupportFragmentManager().findFragmentByTag(FRG_DETAILS);
+            ConfirmDeleteWorkFragment.newInstance(wdf.getWork(), wdf.getClient().getName())
+                    .show(getFragmentManager(), "confirm_del_work");
             return true;
         }
         }

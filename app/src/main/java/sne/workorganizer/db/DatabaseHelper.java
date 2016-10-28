@@ -665,6 +665,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 args[4] = _client.getSocial();
                 Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s, %s", sql,
                         args[0], args[1], args[2], args[3], args[4]));
+                getWritableDatabase().execSQL(sql, args);
             }
 
             if (_work != null)
@@ -682,6 +683,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s, %s, %s, %s", sql,
                         args[0], args[1], args[2], new Date(_work.getDate()).toString(),
                         args[4], args[5], args[6]));
+                getWritableDatabase().execSQL(sql, args);
             }
 
             if (_picture != null)
@@ -696,15 +698,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 args[2] = _picture.getResultPhoto();
                 Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s", sql,
                         args[0], args[1], args[2]));
+                getWritableDatabase().execSQL(sql, args);
             }
-
-            else
-            {
-                Log.e(TAG, "UpdateThread.run() Nothing to update.");
-                return;
-            }
-
-            getWritableDatabase().execSQL(sql, args);
         }
 
         private void clearResultPictures(String workId)

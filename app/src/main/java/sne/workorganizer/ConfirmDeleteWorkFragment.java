@@ -4,12 +4,14 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.util.WoConstants;
 
 /**
  * Created by Nikolay_Smirnov on 19.10.2016.
@@ -40,6 +42,11 @@ public class ConfirmDeleteWorkFragment extends DialogFragment
         f.setArguments(args);
 
         return f;
+    }
+
+    public static ConfirmDeleteWorkFragment newInstance(Project project, String clientName)
+    {
+        return newInstance(project, clientName, -1);
     }
 
     @Override
@@ -75,7 +82,16 @@ public class ConfirmDeleteWorkFragment extends DialogFragment
         DatabaseHelper.getInstance(getActivity()).deleteWork(_project.getId());
 
         // Remove from UI
-        WorkListActivity mainActivity = (WorkListActivity) getActivity();
-        mainActivity.removeWork(_position);
+        if (_position >= 0)
+        {
+            WorkListActivity mainActivity = (WorkListActivity) getActivity();
+            mainActivity.removeWork(_position);
+        }
+        else
+        {
+            Intent i = new Intent(getActivity(), WorkListActivity.class);
+            i.putExtra(WoConstants.ARG_CURRENT_DATE, _project.getDate());
+            getActivity().navigateUpTo(i);
+        }
     }
 }
