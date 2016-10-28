@@ -97,7 +97,7 @@ public class WorkDetailFragment extends Fragment
         Mix.setupClientCommunications(getActivity(), phoneView, emailView, socialView);
 
         ImageView designView = (ImageView) _rootView.findViewById(R.id.work_design);
-        String designStr = _project.getDesign();
+        final String designStr = _project.getDesign();
         //Log.i(TAG, "onCreateView() designStr = "+designStr);
         if (designStr != null)
         {
@@ -106,6 +106,14 @@ public class WorkDetailFragment extends Fragment
             if (bm != null)
             {
                 designView.setImageBitmap(bm);
+                designView.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        Mix.showPhoto(getActivity(), designStr);
+                    }
+                });
             }
             else
             {
@@ -123,10 +131,19 @@ public class WorkDetailFragment extends Fragment
         else
         {
             ImageView resultView = (ImageView) _rootView.findViewById(R.id.work_result);
-            Bitmap bm = PhotoUtils.getThumbnailBitmap(resultPhoto.getResultPhoto(), WoConstants.WIDTH_THUMBNAIL);
+            final String photo = resultPhoto.getResultPhoto();
+            Bitmap bm = PhotoUtils.getThumbnailBitmap(photo, WoConstants.WIDTH_THUMBNAIL);
             if (bm != null)
             {
                 resultView.setImageBitmap(bm);
+                resultView.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        Mix.showPhoto(getActivity(), photo);
+                    }
+                });
             }
             else
             {

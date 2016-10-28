@@ -109,9 +109,8 @@ public class EditWorkActivity extends AppCompatActivity
                                  Intent resultData)
     {
         Log.i(TAG, "onActivityResult("+requestCode+", "+requestCode+") called");
-        if (resultCode != Activity.RESULT_OK) return;
 
-        if (requestCode == WoConstants.RC_OPEN_DESIGN_DOCUMENT)
+        if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_OPEN_DESIGN_DOCUMENT)
         {
             if (resultData == null) return;
             Uri uri = resultData.getData();
@@ -122,7 +121,7 @@ public class EditWorkActivity extends AppCompatActivity
             frg.changeDesign(path);
         }
 
-        else if (requestCode == WoConstants.RC_OPEN_RESULT_DOCUMENT)
+        else if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_OPEN_RESULT_DOCUMENT)
         {
             if (resultData == null) return;
             Uri uri = resultData.getData();
@@ -137,7 +136,7 @@ public class EditWorkActivity extends AppCompatActivity
         else if (requestCode == WoConstants.RC_TAKE_PICTURE)
         {
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
-            frg.refreshResult();
+            frg.acceptPhoto(resultCode == Activity.RESULT_OK);
         }
     }
 

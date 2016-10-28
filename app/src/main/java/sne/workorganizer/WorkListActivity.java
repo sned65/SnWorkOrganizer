@@ -355,14 +355,13 @@ public class WorkListActivity extends AppCompatActivity
         //super.onActivityResult(requestCode, resultCode, data);
         Log.i(TAG, "requestCode = "+(requestCode == RC_CREATE_WORK ? "CREATE_PROJECT" : requestCode)
                 +", resultCode = "+(resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
-        if (resultCode != RESULT_OK) return;
 
-        if (requestCode == RC_CREATE_WORK)
+        if (resultCode == Activity.RESULT_OK && requestCode == RC_CREATE_WORK)
         {
             resetWorkList();
         }
 
-        else if (requestCode == RC_EDIT_WORK)
+        else if (resultCode == Activity.RESULT_OK && requestCode == RC_EDIT_WORK)
         {
             Project work = data.getParcelableExtra(WoConstants.ARG_WORK);
             int position = data.getIntExtra(WoConstants.ARG_POSITION, -1);
@@ -375,7 +374,7 @@ public class WorkListActivity extends AppCompatActivity
             }
         }
 
-        else if (requestCode == WoConstants.RC_OPEN_DESIGN_DOCUMENT)
+        else if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_OPEN_DESIGN_DOCUMENT)
         {
             Uri uri = data.getData();
             Log.i(TAG, "onActivityResult() uri = "+uri.toString());
@@ -385,7 +384,7 @@ public class WorkListActivity extends AppCompatActivity
             frg.changeDesign(path);
         }
 
-        else if (requestCode == WoConstants.RC_OPEN_RESULT_DOCUMENT)
+        else if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_OPEN_RESULT_DOCUMENT)
         {
             Uri uri = data.getData();
             Log.i(TAG, "onActivityResult() uri = "+uri.toString());
@@ -399,7 +398,7 @@ public class WorkListActivity extends AppCompatActivity
         else if (requestCode == WoConstants.RC_TAKE_PICTURE)
         {
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
-            frg.refreshResult();
+            frg.acceptPhoto(resultCode == Activity.RESULT_OK);
         }
     }
 

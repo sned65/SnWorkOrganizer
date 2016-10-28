@@ -27,6 +27,7 @@ import java.util.Calendar;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Picture;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.util.FileUtils;
 import sne.workorganizer.util.InfoDialogFragment;
 import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.PhotoUtils;
@@ -62,6 +63,7 @@ public class EditWorkFragment extends Fragment
     private ImageButton _resultSelectBtn;
     private ImageButton _cameraBtn;
     private String _resultPath;
+    private String _photoPath;
 
     private Project _work;
     private int _position;
@@ -80,6 +82,7 @@ public class EditWorkFragment extends Fragment
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        //setRetainInstance(true);
 
         if (getArguments().containsKey(ARG_WORK))
         {
@@ -312,6 +315,7 @@ public class EditWorkFragment extends Fragment
         // https://developer.android.com/training/camera/photobasics.html
         if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null)
         {
+            _photoPath = FileUtils.getPath(getActivity(), resultUri);
             getActivity().startActivityForResult(takePictureIntent, WoConstants.RC_TAKE_PICTURE);
         }
     }
@@ -423,6 +427,17 @@ public class EditWorkFragment extends Fragment
     public void setResultPath(String path)
     {
         _resultPath = path;
+    }
+
+    public void acceptPhoto(boolean flag)
+    {
+        Log.i(TAG, "acceptPhoto("+flag+") called for "+_photoPath);
+        if (flag)
+        {
+            _resultPath = _photoPath;
+            refreshResult();
+        }
+        _photoPath = null;
     }
 
     public void refreshResult()
