@@ -155,7 +155,7 @@ public class ClientsFragment extends Fragment
             _projTable = (TableLayout) itemView.findViewById(R.id.tbl_client_proj);
 
             //itemView.setOnClickListener(this);
-            //Log.i(TAG, "RowHolder() itemView "+itemView.getClass());
+            //Log.i(TAG, "RowHolderResult() itemView "+itemView.getClass());
             //itemView.setOnLongClickListener(this);
 
             // set onLongClickListener for ExpandableLayout

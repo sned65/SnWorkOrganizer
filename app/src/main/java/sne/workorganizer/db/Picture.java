@@ -33,6 +33,11 @@ public class Picture implements DbRow, Parcelable
         _resultPhoto = in.readString();
     }
 
+    public String toString()
+    {
+        return "Picture["+_id+", "+_workId+", "+_resultPhoto+"]";
+    }
+
     @Override
     public int describeContents()
     {

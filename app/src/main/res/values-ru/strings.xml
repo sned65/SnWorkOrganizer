@@ -39,9 +39,10 @@
     <string name="result">Результат</string>
     <string name="error_permissions">Не получено разрешение на</string>
     <string name="app_will_be_stopped">Приложение будет остановлено.</string>
-    <string name="menu_gallery">Галерея</string>
     <string name="gallery">Галерея</string>
     <string name="error_file_not_found">Файл не найден</string>
     <string name="edit_client">Изменить данные о клиенте</string>
     <string name="edit_work">Изменить данные о работе</string>
+    <string name="menu_gallery_design">Галерея эскизов</string>
+    <string name="menu_gallery_work">Галерея работ</string>
 </resources>

@@ -61,11 +61,13 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     private static final int PROJECTS_NCOLS = 7;
     private static final String PROJECTS_PK = "proj_id";
+    private static final String PROJECTS_COL_DESIGN = "design";
     private static final String PROJECTS_TYPED_COLUMNS =
-            "proj_id TEXT PRIMARY KEY, client_id TEXT, proj_name TEXT, work_date INTEGER, status TEXT, price NUMERIC, design TEXT," +
+            "proj_id TEXT PRIMARY KEY, client_id TEXT, proj_name TEXT, work_date INTEGER, status TEXT, price NUMERIC, " +
+                    PROJECTS_COL_DESIGN + " TEXT," +
             " FOREIGN KEY(client_id) REFERENCES clients(client_id) ON DELETE CASCADE";
     private static final String PROJECTS_COLUMNS =
-            "proj_id, client_id, proj_name, work_date, status, price, design";
+            "proj_id, client_id, proj_name, work_date, status, price, "+PROJECTS_COL_DESIGN;
     private static final String PROJECTS_VALUE_PLACEHOLDERS =
             "?, ?, ?, ?, ?, ?, ?";
 
@@ -198,16 +200,27 @@ public class DatabaseHelper extends SQLiteOpenHelper
 //        return _clients;
 //    }
 
-    private ArrayList<Project> selectProjects(Date date)
+    private ArrayList<Project> selectProjects(Date date, String where)
     {
         ArrayList<Project> projects = new ArrayList<>();
-        String sql = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS +
-                " WHERE work_date > ? AND work_date < ?" +
-                " ORDER BY work_date";
+        String sql;
+        String[] args = null;
+        if (date == null)
+        {
+            sql = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS +
+                    (where == null ? "" : " WHERE "+where) +
+                    " ORDER BY work_date";
+        }
+        else
+        {
+            sql = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS +
+                    " WHERE work_date > ? AND work_date < ?" +
+                    " ORDER BY work_date";
 
-        long from = date.getTime();
-        long to = from + 24 * 60 * 60 * 1000;
-        String[] args = new String[] { String.valueOf(from), String.valueOf(to) };
+            long from = date.getTime();
+            long to = from + 24 * 60 * 60 * 1000;
+            args = new String[] { String.valueOf(from), String.valueOf(to) };
+        }
 
         SQLiteDatabase db = getReadableDatabase();
         Log.i(TAG, sql+", using "+date);
@@ -382,6 +395,17 @@ public class DatabaseHelper extends SQLiteOpenHelper
     public void findAllProjects(DbSelectProjectsCallback callback, Date date)
     {
         new SelectProjectsTask(callback, date).execute();
+    }
+
+    /**
+     * Finds all projects with filled design column.
+     * Calls {@code callback} when the query is finished.
+     *
+     * @param callback
+     */
+    public void findAllProjectsWithDesign(DbSelectProjectsCallback callback)
+    {
+        new SelectProjectsTask(callback, PROJECTS_COL_DESIGN+" IS NOT NULL").execute();
     }
 
     /**
@@ -688,17 +712,23 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
             if (_picture != null)
             {
-                clearResultPictures(_picture.getWorkId());
-
-                sql = "INSERT OR REPLACE INTO " + Table.PICTURES + "(" + PICTURES_COLUMNS +
-                        ") VALUES (" + PICTURES_VALUE_PLACEHOLDERS + ")";
-                args = new Object[PICTURES_NCOLS];
-                args[0] = _picture.getId();
-                args[1] = _picture.getWorkId();
-                args[2] = _picture.getResultPhoto();
-                Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s", sql,
-                        args[0], args[1], args[2]));
-                getWritableDatabase().execSQL(sql, args);
+                String photo = _picture.getResultPhoto();
+                if (TextUtils.isEmpty(photo))
+                {
+                    deleteResultPictures(_picture.getWorkId());
+                }
+                else
+                {
+                    sql = "INSERT OR REPLACE INTO " + Table.PICTURES + "(" + PICTURES_COLUMNS +
+                            ") VALUES (" + PICTURES_VALUE_PLACEHOLDERS + ")";
+                    args = new Object[PICTURES_NCOLS];
+                    args[0] = _picture.getId();
+                    args[1] = _picture.getWorkId();
+                    args[2] = photo;
+                    Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s", sql,
+                            args[0], args[1], args[2]));
+                    getWritableDatabase().execSQL(sql, args);
+                }
             }
         }
 
@@ -710,6 +740,17 @@ public class DatabaseHelper extends SQLiteOpenHelper
             Object[] args = new Object[1];
             args[0] = workId;
             Log.i(TAG, String.format("clearResultPictures: %s, using %s", sql, args[0]));
+
+            getWritableDatabase().execSQL(sql, args);
+        }
+
+        private void deleteResultPictures(String workId)
+        {
+            String sql = "DELETE FROM " + Table.PICTURES +
+                    " WHERE " + PICTURES_COL_WORK_ID + " = ?";
+            Object[] args = new Object[1];
+            args[0] = workId;
+            Log.i(TAG, String.format("deleteResultPictures: %s, using %s", sql, args[0]));
 
             getWritableDatabase().execSQL(sql, args);
         }
@@ -866,18 +907,29 @@ public class DatabaseHelper extends SQLiteOpenHelper
     {
         private DbSelectProjectsCallback _callback = null;
         private Date _date;
+        private String _where;
 
         SelectProjectsTask(DbSelectProjectsCallback callback, Date date)
         {
             super();
             _callback = callback;
-            _date = Mix.truncateDate(date);
+            if (date != null)
+            {
+                _date = Mix.truncateDate(date);
+            }
+        }
+
+        SelectProjectsTask(DbSelectProjectsCallback callback, String where)
+        {
+            super();
+            _callback = callback;
+            _where = where;
         }
 
         @Override
         protected ArrayList<Project> doInBackground(Void... params)
         {
-            return selectProjects(_date);
+            return selectProjects(_date, _where);
         }
 
         @Override

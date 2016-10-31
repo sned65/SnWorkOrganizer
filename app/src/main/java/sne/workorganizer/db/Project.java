@@ -62,7 +62,7 @@ public class Project implements Parcelable, Cloneable, DbRow
     @Override
     public String toString()
     {
-        return "Work["+_id + ", " + _name + ", " + (new Date(_date)) + " for " + _clientId + "]";
+        return "Work["+_id + ", " + _name + ", " + (new Date(_date)) + " for " + _clientId + ", design " + _design + "]";
     }
 
     /**

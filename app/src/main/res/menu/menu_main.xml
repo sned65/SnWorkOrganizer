@@ -17,8 +17,12 @@
           android:title="@string/clients"
           app:showAsAction="never"/>
 
-    <item android:id="@+id/menu_gallery"
-          android:title="@string/menu_gallery"
+    <item android:id="@+id/menu_gallery_work"
+          android:title="@string/menu_gallery_work"
+          app:showAsAction="never"/>
+
+    <item android:id="@+id/menu_gallery_design"
+          android:title="@string/menu_gallery_design"
           app:showAsAction="never"/>
 
     <item

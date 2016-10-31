@@ -326,9 +326,18 @@ public class WorkListActivity extends AppCompatActivity
             return true;
         }
 
-        case R.id.menu_gallery:
+        case R.id.menu_gallery_work:
         {
             Intent gallery = new Intent(this, GalleryActivity.class);
+            gallery.putExtra(GalleryActivity.ARG_PICT_TYPE, GalleryActivity.PICT_AFTER);
+            startActivity(gallery);
+            return true;
+        }
+
+        case R.id.menu_gallery_design:
+        {
+            Intent gallery = new Intent(this, GalleryActivity.class);
+            gallery.putExtra(GalleryActivity.ARG_PICT_TYPE, GalleryActivity.PICT_BEFORE);
             startActivity(gallery);
             return true;
         }
