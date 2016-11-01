@@ -68,7 +68,6 @@ public class ConfirmDeleteClientFragment extends DialogFragment
         DatabaseHelper.getInstance(getActivity()).deleteClient(_client.getId());
 
         // Remove from UI
-        //MainActivity mainActivity = (MainActivity) getActivity();
         ClientListActivity mainActivity = (ClientListActivity) getActivity();
         mainActivity.removeClient(_position);
     }
