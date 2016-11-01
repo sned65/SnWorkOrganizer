@@ -103,7 +103,7 @@ public class GalleryActivity extends AppCompatActivity
     }
 
     /////////////////////////////////////////////////////////////////////////////////
-    private static abstract class GalleryAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH>
+    private static abstract class GalleryAdapter<VH extends RowHolder> extends RecyclerView.Adapter<VH>
     {
         protected Activity _activity;
 
@@ -114,7 +114,79 @@ public class GalleryActivity extends AppCompatActivity
     }
 
     /////////////////////////////////////////////////////////////////////////////////
-    private class GalleryAdapterResult extends GalleryAdapter<RowHolder>
+    static abstract class RowHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener
+    {
+        protected Activity _activity;
+
+        protected ImageView _imageView;
+        protected TextView _workTitle;
+
+        RowHolder(View itemView, Activity activity)
+        {
+            super(itemView);
+
+            _activity = activity;
+            _imageView = (ImageView) itemView.findViewById(R.id.photo);
+            _workTitle = (TextView) itemView.findViewById(R.id.work_title);
+
+            itemView.setOnClickListener(this);
+        }
+
+        protected abstract class FillPicture extends AsyncTask<Void, Void, Void>
+        {
+            private Project _work;
+            private Bitmap _bitmap;
+
+            FillPicture()
+            {
+                super();
+            }
+
+            FillPicture(Project work)
+            {
+                super();
+                _work = work;
+            }
+
+            @Override
+            protected void onPostExecute(Void result)
+            {
+                if (_work != null)
+                {
+                    _workTitle.setText(_work.getName());
+                }
+
+                if (_bitmap != null)
+                {
+                    _imageView.setImageBitmap(_bitmap);
+                }
+            }
+
+            protected Project getWork()
+            {
+                return _work;
+            }
+
+            protected void setWork(Project work)
+            {
+                _work = work;
+            }
+
+            protected Bitmap getBitmap()
+            {
+                return _bitmap;
+            }
+
+            protected void setBitmap(Bitmap bitmap)
+            {
+                _bitmap = bitmap;
+            }
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////
+    private class GalleryAdapterResult extends GalleryAdapter<RowHolderResult>
     {
         private List<Picture> _pictures;
 
@@ -135,7 +207,7 @@ public class GalleryActivity extends AppCompatActivity
         }
 
         @Override
-        public RowHolder onCreateViewHolder(ViewGroup parent, int viewType)
+        public RowHolderResult onCreateViewHolder(ViewGroup parent, int viewType)
         {
             // create a new view
             View v = LayoutInflater.from(parent.getContext())
@@ -144,11 +216,11 @@ public class GalleryActivity extends AppCompatActivity
             //GridLayoutManager.LayoutParams params = new GridLayoutManager.LayoutParams(parent.getContext(), attrs);
             //v.setLayoutParams(params);
             // TODO set the view's size, margins, paddings and layout parameters
-            return new RowHolder(v, _activity);
+            return new RowHolderResult(v, _activity);
         }
 
         @Override
-        public void onBindViewHolder(RowHolder holder, int position)
+        public void onBindViewHolder(RowHolderResult holder, int position)
         {
             Log.i(TAG, "onBindViewHolder("+position+") "+_pictures.get(position));
             holder.bindModel(_pictures.get(position));
@@ -167,24 +239,15 @@ public class GalleryActivity extends AppCompatActivity
     }
 
     /////////////////////////////////////////////////////////////////////////////////
-    static class RowHolder extends RecyclerView.ViewHolder
-            implements View.OnClickListener, View.OnLongClickListener
+    static class RowHolderResult extends RowHolder
+            implements View.OnLongClickListener
     {
-        private Activity _activity;
         private Picture _picture;
 
-        private ImageView _imageView;
-        private TextView _workTitle;
-
-        RowHolder(View itemView, Activity activity)
+        RowHolderResult(View itemView, Activity activity)
         {
-            super(itemView);
+            super(itemView, activity);
 
-            _activity = activity;
-            _imageView = (ImageView) itemView.findViewById(R.id.photo);
-            _workTitle = (TextView) itemView.findViewById(R.id.work_title);
-
-            itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
         }
 
@@ -192,7 +255,7 @@ public class GalleryActivity extends AppCompatActivity
         {
             _picture = picture;
 
-            new FillPicture().execute();
+            new FillPictureResult().execute();
         }
 
         @Override
@@ -217,12 +280,9 @@ public class GalleryActivity extends AppCompatActivity
             return true;
         }
 
-        private class FillPicture extends AsyncTask<Void, Void, Void>
+        private class FillPictureResult extends FillPicture
         {
-            private Project _project;
-            private Bitmap _bitmap;
-
-            FillPicture()
+            FillPictureResult()
             {
                 super();
             }
@@ -234,28 +294,14 @@ public class GalleryActivity extends AppCompatActivity
                 String workId = _picture.getWorkId();
                 if (workId != null)
                 {
-                    _project = db.findProjectById(workId);
+                    setWork(db.findProjectById(workId));
                 }
 
                 if (_picture.getResultPhoto() != null)
                 {
-                    _bitmap = PhotoUtils.getThumbnailBitmap(_picture.getResultPhoto(), WoConstants.WIDTH_MEDIUM);
+                    setBitmap(PhotoUtils.getThumbnailBitmap(_picture.getResultPhoto(), WoConstants.WIDTH_MEDIUM));
                 }
                 return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result)
-            {
-                if (_project != null)
-                {
-                    _workTitle.setText(_project.getName());
-                }
-
-                if (_bitmap != null)
-                {
-                    _imageView.setImageBitmap(_bitmap);
-                }
             }
         }
     }
@@ -309,31 +355,20 @@ public class GalleryActivity extends AppCompatActivity
     }
 
     //////////////////////////////////////////////////////////////////////
-    static class RowHolderDesign extends RecyclerView.ViewHolder
-            implements View.OnClickListener
+    static class RowHolderDesign extends RowHolder
     {
-        private Activity _activity;
         private Project _work;
-
-        private ImageView _imageView;
-        private TextView _workTitle;
 
         RowHolderDesign(View itemView, Activity activity)
         {
-            super(itemView);
-
-            _activity = activity;
-            _imageView = (ImageView) itemView.findViewById(R.id.photo);
-            _workTitle = (TextView) itemView.findViewById(R.id.work_title);
-
-            itemView.setOnClickListener(this);
+            super(itemView, activity);
         }
 
         void bindModel(Project work)
         {
             _work = work;
 
-            new FillPicture().execute();
+            new FillPictureDesign(_work).execute();
         }
 
         @Override
@@ -345,13 +380,11 @@ public class GalleryActivity extends AppCompatActivity
             Mix.showPhoto(_activity, _work.getDesign());
         }
 
-        private class FillPicture extends AsyncTask<Void, Void, Void>
+        private class FillPictureDesign extends FillPicture
         {
-            private Bitmap _bitmap;
-
-            FillPicture()
+            FillPictureDesign(Project work)
             {
-                super();
+                super(work);
             }
 
             @Override
@@ -359,23 +392,9 @@ public class GalleryActivity extends AppCompatActivity
             {
                 if (_work.getDesign() != null)
                 {
-                    _bitmap = PhotoUtils.getThumbnailBitmap(_work.getDesign(), WoConstants.WIDTH_MEDIUM);
+                    setBitmap(PhotoUtils.getThumbnailBitmap(_work.getDesign(), WoConstants.WIDTH_MEDIUM));
                 }
                 return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result)
-            {
-                if (_work != null)
-                {
-                    _workTitle.setText(_work.getName());
-                }
-
-                if (_bitmap != null)
-                {
-                    _imageView.setImageBitmap(_bitmap);
-                }
             }
         }
     }
