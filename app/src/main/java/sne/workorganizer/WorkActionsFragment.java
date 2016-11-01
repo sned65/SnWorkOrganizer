@@ -103,7 +103,7 @@ public class WorkActionsFragment extends DialogFragment
                 EditWorkFragment fragment = new EditWorkFragment();
                 fragment.setArguments(arguments);
                 activity.getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.work_detail_container, fragment, WorkListActivity.FRG_WORK_EDIT)
+                        .replace(R.id.work_detail_container, fragment, WoConstants.FRG_WORK_EDIT)
                         .commit();
 
             }
@@ -117,7 +117,7 @@ public class WorkActionsFragment extends DialogFragment
                 // this.startActivityForResult(Intent, int);
                 // does NOT call startActivityForResult() from the fragment's containing Activity.
                 // Explicit call is needed to get control back to onActivityResult().
-                getActivity().startActivityForResult(i, WorkListActivity.RC_EDIT_WORK);
+                getActivity().startActivityForResult(i, WoConstants.RC_EDIT_WORK);
             }
             break;
         }

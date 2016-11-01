@@ -57,7 +57,7 @@ public class EditWorkActivity extends AppCompatActivity
             EditWorkFragment fragment = new EditWorkFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.work_detail_container, fragment, WorkListActivity.FRG_WORK_EDIT)
+                    .replace(R.id.work_detail_container, fragment, WoConstants.FRG_WORK_EDIT)
                     .commit();
         }
 
@@ -117,7 +117,7 @@ public class EditWorkActivity extends AppCompatActivity
             Log.i(TAG, "onActivityResult() uri = "+uri.toString());
             String path = FileUtils.getPath(this, uri);
 
-            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
             frg.changeDesign(path);
         }
 
@@ -128,14 +128,14 @@ public class EditWorkActivity extends AppCompatActivity
             Log.i(TAG, "onActivityResult() uri = "+uri.toString());
             String path = FileUtils.getPath(this, uri);
 
-            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
             frg.setResultPath(path);
             frg.refreshResult();
         }
 
         else if (requestCode == WoConstants.RC_TAKE_PICTURE)
         {
-            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
             frg.acceptPhoto(resultCode == Activity.RESULT_OK);
         }
     }
@@ -149,7 +149,7 @@ public class EditWorkActivity extends AppCompatActivity
 
     private void save()
     {
-        EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
+        EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
         if (!frg.save()) return;
 
         Intent result = new Intent();

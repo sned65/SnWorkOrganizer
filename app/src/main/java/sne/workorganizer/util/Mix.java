@@ -1,10 +1,14 @@
 package sne.workorganizer.util;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
@@ -67,6 +71,21 @@ public class Mix
         c.set(Calendar.MINUTE, c.getActualMinimum(Calendar.MINUTE));
         c.set(Calendar.SECOND, c.getActualMinimum(Calendar.SECOND));
         c.set(Calendar.MILLISECOND, c.getActualMinimum(Calendar.MILLISECOND));
+        return c.getTime();
+    }
+
+    /**
+     * Adds one month and subtracts one day to/from the given date.
+     *
+     * @param date date to be incremented
+     * @return new date
+     */
+    public static Date plusMonth(Date date)
+    {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.add(Calendar.MONTH, 1);
+        c.add(Calendar.DAY_OF_MONTH, -1);
         return c.getTime();
     }
 
@@ -327,6 +346,50 @@ public class Mix
             catch (IOException e)
             {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Checks that all permissions are granted.
+     * If at least one permission was not granted the activity will be finished.
+     *
+     * @param activity activity which requested permissions.
+     * @param permissions The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *                     which is either {@link PackageManager#PERMISSION_GRANTED}
+     *                     or {@link PackageManager#PERMISSION_DENIED}. Never null.
+     */
+    public static void checkGrantedPermissions(final Activity activity,
+                                               @NonNull String[] permissions,
+                                               @NonNull int[] grantResults)
+    {
+        for (int i = 0; i < grantResults.length; ++i)
+        {
+            if (grantResults[i] != PackageManager.PERMISSION_GRANTED)
+            {
+                String msg = activity.getString(R.string.error_permissions)+" " + permissions[i]
+                        + "\n" + activity.getString(R.string.app_will_be_stopped);
+                Log.e(TAG, msg);
+
+                DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener()
+                {
+                    public void onClick(DialogInterface dialog, int id)
+                    {
+                        activity.finish();
+                    }
+                };
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                builder.setTitle(R.string.app_name)
+                        .setMessage(msg)
+                        .setPositiveButton(R.string.ok, listener)
+                        .show();
+                return;
+            }
+            else
+            {
+                Log.i(TAG, "checkGrantedPermissions() Permission "+permissions[i]+" granted");
             }
         }
     }

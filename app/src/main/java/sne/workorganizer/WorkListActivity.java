@@ -40,7 +40,8 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * An activity representing a list of Works. This activity
+ * An activity representing a list of Works with calendar.
+ * This activity
  * has different presentations for handset and tablet-size devices. On
  * handsets, the activity presents a list of items, which when touched,
  * lead to a {@link WorkDetailActivity} representing
@@ -50,10 +51,6 @@ import java.util.List;
 public class WorkListActivity extends AppCompatActivity
 {
     private static final String TAG = WorkListActivity.class.getName();
-    private static final String FRG_DETAILS = "FRG_DETAILS";
-    public static final String FRG_WORK_EDIT = "FRG_WORK_EDIT";
-    private static final int RC_CREATE_WORK = 100;
-    public static final int RC_EDIT_WORK = 101;
     private static final int RC_PERMISSIONS = 2;
 
     private Menu _menu;
@@ -64,18 +61,6 @@ public class WorkListActivity extends AppCompatActivity
      * device.
      */
     private boolean _twoPane;
-
-    /*
-     * Whether or not it is necessary to update detail pane in two-pane mode
-     * onRestoreInstanceState.
-     * <br/>
-     * Possible values:
-     * <ul>
-     *     <li>&lt;=0 - index of modified work</li>
-     *     <li>-1 - do nothing</li>
-     * </ul>
-     */
-    //private int _updateDetailPane = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -179,36 +164,8 @@ public class WorkListActivity extends AppCompatActivity
             return;
         }
 
-        for (int i = 0; i < grantResults.length; ++i)
-        {
-            if (grantResults[i] != PackageManager.PERMISSION_GRANTED)
-            {
-                String msg = getString(R.string.error_permissions)+" " + permissions[i]
-                        + "\n" + getString(R.string.app_will_be_stopped);
-                Log.e(TAG, msg);
-
-                DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener()
-                {
-                    public void onClick(DialogInterface dialog, int id)
-                    {
-                        finish();
-                    }
-                };
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(R.string.app_name)
-                        .setMessage(msg)
-                        .setPositiveButton(R.string.ok, listener)
-                        .show();
-                return;
-            }
-            else
-            {
-                Log.i(TAG, "onRequestPermissionsResult() Permission "+permissions[i]+" granted");
-            }
-        }
+        Mix.checkGrantedPermissions(this, permissions, grantResults);
     }
-
 
     @Override
     protected void onSaveInstanceState(Bundle state)
@@ -244,7 +201,7 @@ public class WorkListActivity extends AppCompatActivity
         Log.i(TAG, "onPostCreate() _twoPane = "+_twoPane+"; _updateDetailPane = "+_updateDetailPane);
         if (_twoPane && _updateDetailPane >= 0)
         {
-            RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list);
+            RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list_daily);
             // TODO update detail part, if any
             boolean done = workListView.getChildAt(_updateDetailPane).performClick();
             if (done) Log.i(TAG, "onRestoreInstanceState() click successful");
@@ -279,7 +236,7 @@ public class WorkListActivity extends AppCompatActivity
     {
         if (_twoPane)
         {
-            Fragment frg = getSupportFragmentManager().findFragmentByTag(FRG_WORK_EDIT);
+            Fragment frg = getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
             getSupportFragmentManager().beginTransaction()
                     .remove(frg)
                     .commit();
@@ -290,7 +247,7 @@ public class WorkListActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu)
     {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_work_list_daily, menu);
         return true;
     }
 
@@ -342,12 +299,19 @@ public class WorkListActivity extends AppCompatActivity
             return true;
         }
 
+        case R.id.menu_journal:
+        {
+            Intent m = new Intent(this, MainActivity.class);
+            startActivity(m);
+            return true;
+        }
+
         case R.id.menu_create_project:
         {
             Intent createProject = new Intent(this, CreateWorkActivity.class);
             long msec = _calendarView.getDate();
             createProject.putExtra(CreateWorkActivity.EXTRA_DATE, msec);
-            startActivityForResult(createProject, RC_CREATE_WORK);
+            startActivityForResult(createProject, WoConstants.RC_CREATE_WORK);
 //            Snackbar.make(findViewById(R.id.frameLayout), "Create new project", Snackbar.LENGTH_LONG)
 //                    .setAction("Action", null).show();
             return true;
@@ -362,21 +326,21 @@ public class WorkListActivity extends AppCompatActivity
                                     Intent data)
     {
         //super.onActivityResult(requestCode, resultCode, data);
-        Log.i(TAG, "requestCode = "+(requestCode == RC_CREATE_WORK ? "CREATE_PROJECT" : requestCode)
+        Log.i(TAG, "requestCode = "+(requestCode == WoConstants.RC_CREATE_WORK ? "CREATE_PROJECT" : requestCode)
                 +", resultCode = "+(resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
 
-        if (resultCode == Activity.RESULT_OK && requestCode == RC_CREATE_WORK)
+        if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_CREATE_WORK)
         {
             resetWorkList();
         }
 
-        else if (resultCode == Activity.RESULT_OK && requestCode == RC_EDIT_WORK)
+        else if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_EDIT_WORK)
         {
             Project work = data.getParcelableExtra(WoConstants.ARG_WORK);
             int position = data.getIntExtra(WoConstants.ARG_POSITION, -1);
             updateWork(work, position);
 
-            WorkDetailFragment wdf = (WorkDetailFragment) getSupportFragmentManager().findFragmentByTag(FRG_DETAILS);
+            WorkDetailFragment wdf = (WorkDetailFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_DETAILS);
             if (wdf != null)
             {
                 wdf.setWork(work);
@@ -389,7 +353,7 @@ public class WorkListActivity extends AppCompatActivity
             Log.i(TAG, "onActivityResult() uri = "+uri.toString());
             String path = FileUtils.getPath(this, uri);
 
-            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
             frg.changeDesign(path);
         }
 
@@ -399,14 +363,14 @@ public class WorkListActivity extends AppCompatActivity
             Log.i(TAG, "onActivityResult() uri = "+uri.toString());
             String path = FileUtils.getPath(this, uri);
 
-            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
             frg.setResultPath(path);
             frg.refreshResult();
         }
 
         else if (requestCode == WoConstants.RC_TAKE_PICTURE)
         {
-            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WorkListActivity.FRG_WORK_EDIT);
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
             frg.acceptPhoto(resultCode == Activity.RESULT_OK);
         }
     }
@@ -493,7 +457,7 @@ public class WorkListActivity extends AppCompatActivity
                         WorkDetailFragment fragment = new WorkDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.work_detail_container, fragment, FRG_DETAILS)
+                                .replace(R.id.work_detail_container, fragment, WoConstants.FRG_DETAILS)
                                 .commit();
                     }
                     else
@@ -552,17 +516,6 @@ public class WorkListActivity extends AppCompatActivity
                         }
                     }
                 }
-
-/*
-                // FIXME experimental code
-                Bundle arguments = new Bundle();
-                arguments.putParcelable(WoConstants.ARG_WORK, work);
-                WorkDetailFragment fragment = new WorkDetailFragment();
-                fragment.setArguments(arguments);
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.work_detail_container, fragment)
-                        .commit();wdwdwd
-*/
             }
             else
             {
@@ -585,6 +538,31 @@ public class WorkListActivity extends AppCompatActivity
             });
         }
 
+        public class ViewHolder extends WorkViewBaseHolder
+            implements View.OnLongClickListener
+        {
+            public ViewHolder(View view)
+            {
+                super(view);
+
+                _itemView.setOnLongClickListener(this);
+            }
+
+            @Override
+            public boolean onLongClick(View v)
+            {
+                Log.i(TAG, "onLongClick() called "+getAdapterPosition()+"; "+_project);
+                if (_project == null)
+                {
+                    return true;
+                }
+
+                WorkActionsFragment.newInstance(_project, _clientName, getAdapterPosition())
+                        .show(_activity.getFragmentManager(), "project_actions");
+                return true;
+            }
+        }
+/*
         public class ViewHolder extends RecyclerView.ViewHolder
             implements View.OnLongClickListener
         {
@@ -642,5 +620,6 @@ public class WorkListActivity extends AppCompatActivity
                 return true;
             }
         }
+*/
     }
 }

@@ -119,7 +119,7 @@ public class WorkDetailActivity extends AppCompatActivity implements EditClientD
             Intent i = new Intent(this, EditWorkActivity.class);
             i.putExtra(WoConstants.ARG_WORK, wdf.getWork());
             i.putExtra(WoConstants.ARG_CLIENT_NAME, wdf.getClient().getName());
-            startActivityForResult(i, WorkListActivity.RC_EDIT_WORK);
+            startActivityForResult(i, WoConstants.RC_EDIT_WORK);
             return true;
         }
 
@@ -142,7 +142,7 @@ public class WorkDetailActivity extends AppCompatActivity implements EditClientD
                 + ", resultCode = " + (resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
         if (resultCode != Activity.RESULT_OK) return;
 
-        if (requestCode == WorkListActivity.RC_EDIT_WORK)
+        if (requestCode == WoConstants.RC_EDIT_WORK)
         {
             Project work = data.getParcelableExtra(WoConstants.ARG_WORK);
 

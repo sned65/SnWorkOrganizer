@@ -200,12 +200,12 @@ public class DatabaseHelper extends SQLiteOpenHelper
 //        return _clients;
 //    }
 
-    private ArrayList<Project> selectProjects(Date date, String where)
+    private ArrayList<Project> selectProjects(Date dateFrom, Date dateTo, String where)
     {
         ArrayList<Project> projects = new ArrayList<>();
         String sql;
         String[] args = null;
-        if (date == null)
+        if (dateFrom == null)
         {
             sql = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS +
                     (where == null ? "" : " WHERE "+where) +
@@ -217,13 +217,21 @@ public class DatabaseHelper extends SQLiteOpenHelper
                     " WHERE work_date > ? AND work_date < ?" +
                     " ORDER BY work_date";
 
-            long from = date.getTime();
-            long to = from + 24 * 60 * 60 * 1000;
+            long from = dateFrom.getTime();
+            long to;
+            if (dateTo == null)
+            {
+                to = from + 24 * 60 * 60 * 1000;
+            }
+            else
+            {
+                to = dateTo.getTime() + 24 * 60 * 60 * 1000;
+            }
             args = new String[] { String.valueOf(from), String.valueOf(to) };
         }
 
         SQLiteDatabase db = getReadableDatabase();
-        Log.i(TAG, sql+", using "+date);
+        Log.i(TAG, sql+", using "+dateFrom);
         Cursor c = db.rawQuery(sql, args);
 
         while (c.moveToNext())
@@ -390,11 +398,24 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * Calls {@code callback} when the query is finished.
      *
      * @param callback
+     * @param dateFrom
+     * @param dateTo
+     */
+    public void findAllProjects(DbSelectProjectsCallback callback, Date dateFrom, Date dateTo)
+    {
+        new SelectProjectsTask(callback, dateFrom, dateTo).execute();
+    }
+
+    /**
+     * Finds all projects for the given date asynchronously.
+     * Calls {@code callback} when the query is finished.
+     *
+     * @param callback
      * @param date
      */
     public void findAllProjects(DbSelectProjectsCallback callback, Date date)
     {
-        new SelectProjectsTask(callback, date).execute();
+        findAllProjects(callback, date, null);
     }
 
     /**
@@ -906,16 +927,21 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private class SelectProjectsTask extends AsyncTask<Void, Void, ArrayList<Project>>
     {
         private DbSelectProjectsCallback _callback = null;
-        private Date _date;
+        private Date _dateFrom;
+        private Date _dateTo;
         private String _where;
 
-        SelectProjectsTask(DbSelectProjectsCallback callback, Date date)
+        SelectProjectsTask(DbSelectProjectsCallback callback, Date dateFrom, Date dateTo)
         {
             super();
             _callback = callback;
-            if (date != null)
+            if (dateFrom != null)
             {
-                _date = Mix.truncateDate(date);
+                _dateFrom = Mix.truncateDate(dateFrom);
+            }
+            if (dateTo != null)
+            {
+                _dateTo = Mix.truncateDate(dateTo);
             }
         }
 
@@ -929,7 +955,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         @Override
         protected ArrayList<Project> doInBackground(Void... params)
         {
-            return selectProjects(_date, _where);
+            return selectProjects(_dateFrom, _dateTo, _where);
         }
 
         @Override

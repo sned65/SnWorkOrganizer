@@ -7,19 +7,7 @@
                                                  android:fitsSystemWindows="true"
                                                  tools:context="sne.workorganizer.WorkListActivity">
 
-    <android.support.design.widget.AppBarLayout
-        android:id="@+id/app_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
-
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:popupTheme="@style/AppTheme.PopupOverlay"/>
-
-    </android.support.design.widget.AppBarLayout>
+    <include layout="@layout/app_bar_layout"/>
 
 <!--
     <LinearLayout
@@ -33,7 +21,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/calendarView"/>
 
-        <include layout="@layout/work_list"/>
+        <include layout="@layout/work_list_daily"/>
     </LinearLayout>
 -->
 
@@ -43,7 +31,7 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <include layout="@layout/work_list"/>
+        <include layout="@layout/work_list_daily"/>
     </FrameLayout>
 
 <!--

@@ -49,4 +49,5 @@
     <string name="send_email_title">Send email using &#8230;</string>
     <string name="error_field_required">Mandatory field</string>
     <string name="error_file_not_found">File not found</string>
+    <string name="journal">Journal</string>
 </resources>

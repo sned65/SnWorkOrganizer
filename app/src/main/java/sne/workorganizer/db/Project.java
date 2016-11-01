@@ -16,6 +16,7 @@ public class Project implements Parcelable, Cloneable, DbRow
 {
     private static final String TAG = Project.class.getName();
     private static final String DATETIME_FORMAT = "dd MMM yyyy HH:mm";
+    private static final String DATETIME_FORMAT_2 = "dd MMM yyyy HH:mm,   EEE";
     private static final String TIME_FORMAT = "HH:mm";
 
     private String _id;
@@ -76,6 +77,20 @@ public class Project implements Parcelable, Cloneable, DbRow
 
         Date date = new Date(_date);
         SimpleDateFormat sdf = new SimpleDateFormat(DATETIME_FORMAT, Locale.getDefault());
+        return sdf.format(date);
+    }
+
+    /**
+     *
+     * @return work date and time string formatted as "dd MMM yyyy HH:mm   EEE",
+     * or empty string.
+     */
+    public String getDateTimeString2()
+    {
+        if (_date == null) return "";
+
+        Date date = new Date(_date);
+        SimpleDateFormat sdf = new SimpleDateFormat(DATETIME_FORMAT_2, Locale.getDefault());
         return sdf.format(date);
     }
 

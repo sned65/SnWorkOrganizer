@@ -7,7 +7,7 @@
     android:layout_height="wrap_content"
     android:layout_margin="4dp"
     cardview:cardCornerRadius="4dp"
-    tools:context=".WorkListActivity">
+    tools:context=".MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,27 +15,21 @@
         android:orientation="vertical"
         android:background="?android:attr/selectableItemBackground">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/work_date_time"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_margin="@dimen/text_margin"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            tools:text="02 Jan 2017 10:00 Mon"/>
 
-            <TextView
-                android:id="@+id/work_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/text_margin"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                tools:text="00:00"/>
-
-            <TextView
-                android:id="@+id/client_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/text_margin"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                tools:text="John Dow"/>
-        </LinearLayout>
+        <TextView
+            android:id="@+id/client_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/text_margin"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            tools:text="John Dow"/>
 
         <TextView
             android:id="@+id/work_title"
