@@ -7,9 +7,11 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -26,12 +28,15 @@ import android.widget.ImageButton;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.help.AboutAppDialogFragment;
+import sne.workorganizer.util.FileUtils;
 import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
 
@@ -44,7 +49,7 @@ import sne.workorganizer.util.WoConstants;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AppCompatActivity implements WorkListMaster
 {
     private static final String TAG = MainActivity.class.getName();
     private static final int RC_PERMISSIONS = 2;
@@ -339,6 +344,91 @@ public class MainActivity extends AppCompatActivity
         showProgressBar(false);
     }
 
+    @Override
+    public boolean isTwoPane()
+    {
+        return _twoPane;
+    }
+
+    @Override
+    public void removeWork(int position)
+    {
+        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
+        adapter.removeWork(position);
+        adapter.notifyItemRemoved(position);
+
+    }
+
+    @Override
+    public void updateWork(Project work, int position)
+    {
+        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
+        adapter.updateWork(work, position);
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void removeWorkEditFragment()
+    {
+        if (_twoPane)
+        {
+            Fragment frg = getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
+            getSupportFragmentManager().beginTransaction()
+                    .remove(frg)
+                    .commit();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,
+                                    Intent data)
+    {
+        //super.onActivityResult(requestCode, resultCode, data);
+        Log.i(TAG, "requestCode = "+(requestCode == WoConstants.RC_CREATE_WORK ? "CREATE_PROJECT" : requestCode)
+                +", resultCode = "+(resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
+
+        if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_EDIT_WORK)
+        {
+            Project work = data.getParcelableExtra(WoConstants.ARG_WORK);
+            int position = data.getIntExtra(WoConstants.ARG_POSITION, -1);
+            updateWork(work, position);
+
+            WorkDetailFragment wdf = (WorkDetailFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_DETAILS);
+            if (wdf != null)
+            {
+                wdf.setWork(work);
+            }
+        }
+
+        else if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_OPEN_DESIGN_DOCUMENT)
+        {
+            Uri uri = data.getData();
+            Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+            String path = FileUtils.getPath(this, uri);
+
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
+            frg.changeDesign(path);
+        }
+
+        else if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_OPEN_RESULT_DOCUMENT)
+        {
+            Uri uri = data.getData();
+            Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+            String path = FileUtils.getPath(this, uri);
+
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
+            frg.setResultPath(path);
+            frg.refreshResult();
+        }
+
+        else if (requestCode == WoConstants.RC_TAKE_PICTURE)
+        {
+            EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
+            frg.acceptPhoto(resultCode == Activity.RESULT_OK);
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////
     private class WorkListViewAdapter
             extends RecyclerView.Adapter<WorkListViewAdapter.ViewHolder>
     {
@@ -366,6 +456,12 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position)
         {
+            if (_works.isEmpty())
+            {
+                holder.setProject(Project.DUMMY);
+                return;
+            }
+
             holder.setProject(_works.get(position));
 
             holder._itemView.setOnClickListener(new View.OnClickListener()
@@ -398,11 +494,50 @@ public class MainActivity extends AppCompatActivity
         @Override
         public int getItemCount()
         {
-            if (_works == null) return 0;
+            if (_works == null || _works.isEmpty()) return 1;
             return _works.size();
         }
 
-        ///////////////////////////////////////////////////////////
+        public void updateWork(Project work, int position)
+        {
+            Log.i(TAG, "updateWork("+work+", "+position+") called");
+            Project old = _works.get(position);
+            boolean inRange = work.getDate() >= _dateFrom && work.getDate() < _dateTo + 24*60*60*1000;
+            if (inRange)
+            {
+                Log.i(TAG, "updateWork() new date is in the filter range");
+                _works.set(position, work);
+                if (old.getDate().longValue() != work.getDate().longValue())
+                {
+                    sortWorksByDateTime();
+                }
+            }
+            else
+            {
+                Log.i(TAG, "updateWork() new date is not in the filter range");
+                removeWork(position);
+            }
+        }
+
+        private void sortWorksByDateTime()
+        {
+            Collections.sort(_works, new Comparator<Project>()
+            {
+                @Override
+                public int compare(Project w1, Project w2)
+                {
+                    return w1.getDate().compareTo(w2.getDate());
+                }
+            });
+        }
+
+        public void removeWork(int position)
+        {
+            Log.i(TAG, "removeWork("+position+") called");
+            _works.remove(position);
+        }
+
+        /////////////////////////////////////////////////////////////////////////
         public class ViewHolder extends WorkViewBaseHolder
                 implements View.OnLongClickListener
         {
@@ -417,7 +552,7 @@ public class MainActivity extends AppCompatActivity
             public boolean onLongClick(View v)
             {
                 Log.i(TAG, "onLongClick() called "+getAdapterPosition()+"; "+_project);
-                if (_project == null)
+                if (_project == null || Project.isDummy(_project))
                 {
                     return true;
                 }

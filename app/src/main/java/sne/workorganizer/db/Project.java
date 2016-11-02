@@ -19,6 +19,9 @@ public class Project implements Parcelable, Cloneable, DbRow
     private static final String DATETIME_FORMAT_2 = "dd MMM yyyy HH:mm,   EEE";
     private static final String TIME_FORMAT = "HH:mm";
 
+    private static final String DUMMY_ID = "DUMMY";
+    public static final Project DUMMY = new Project(DUMMY_ID);
+
     private String _id;
     private String _clientId;
     private String _name;
@@ -30,9 +33,19 @@ public class Project implements Parcelable, Cloneable, DbRow
     private String _design;
     private Integer _price;
 
+    public static boolean isDummy(Project project)
+    {
+        return DUMMY_ID.equals(project.getId());
+    }
+
     public Project()
     {
         _id = UUID.randomUUID().toString();
+    }
+
+    private Project(String id)
+    {
+        _id = id;
     }
 
     public Project(String id, String clientId, String name, Long date, String status, String design, Integer price)
@@ -63,7 +76,12 @@ public class Project implements Parcelable, Cloneable, DbRow
     @Override
     public String toString()
     {
-        return "Work["+_id + ", " + _name + ", " + (new Date(_date)) + " for " + _clientId + ", design " + _design + "]";
+        if (isDummy(this))
+        {
+            return "Work[DUMMY]";
+        }
+        String date = _date == null ? "" : (new Date(_date)).toString();
+        return "Work["+_id + ", " + _name + ", " + date + " for " + _clientId + ", design " + _design + "]";
     }
 
     /**

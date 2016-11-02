@@ -180,6 +180,19 @@ public class Mix
     }
 
     /**
+     *
+     * @param millis the number of milliseconds since epoch
+     * @return {@code true} if the given date is Saturday or Sunday
+     */
+    public static boolean isHoliday(long millis)
+    {
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(millis);
+        int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+        return dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY;
+    }
+
+    /**
      * Display the dialog with error/warning/info message.
      *
      * @param activity parent activity

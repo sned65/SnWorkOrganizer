@@ -37,6 +37,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
     private static final String TAG = ClientListActivity.class.getName();
     private static final int RC_CREATE_CLIENT = 101;
 
+    // TODO move to Client
     private static Client _EMPTY = new Client();
     static {
         _EMPTY.setId("EMPTY");

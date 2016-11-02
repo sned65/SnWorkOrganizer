@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -92,8 +93,8 @@ public class WorkActionsFragment extends DialogFragment
                     .show(getFragmentManager(), "confirm_del_work");
             break;
         case 1: // Edit
-            WorkListActivity activity = (WorkListActivity) getActivity();
-            if (activity.isTwoPane())
+            WorkListMaster master = (WorkListMaster) getActivity();
+            if (master.isTwoPane())
             {
                 Bundle arguments = new Bundle();
                 Project work_clone = _work.clone();
@@ -102,7 +103,7 @@ public class WorkActionsFragment extends DialogFragment
                 arguments.putInt(WoConstants.ARG_POSITION, _position);
                 EditWorkFragment fragment = new EditWorkFragment();
                 fragment.setArguments(arguments);
-                activity.getSupportFragmentManager().beginTransaction()
+                ((AppCompatActivity) master).getSupportFragmentManager().beginTransaction()
                         .replace(R.id.work_detail_container, fragment, WoConstants.FRG_WORK_EDIT)
                         .commit();
 

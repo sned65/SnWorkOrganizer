@@ -136,9 +136,9 @@ public class EditWorkFragment extends Fragment
                     // Note: buttons are present in two-pane mode only of WorkListActivity
                     if (save())
                     {
-                        WorkListActivity activity = (WorkListActivity) getActivity();
-                        ((WorkListActivity) getActivity()).updateWork(_work, _position);
-                        activity.removeWorkEditFragment();
+                        WorkListMaster master = (WorkListMaster) getActivity();
+                        master.updateWork(_work, _position);
+                        master.removeWorkEditFragment();
                         // TODO
                     }
                 }

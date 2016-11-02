@@ -48,7 +48,7 @@ import java.util.List;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class WorkListActivity extends AppCompatActivity
+public class WorkListActivity extends AppCompatActivity implements WorkListMaster
 {
     private static final String TAG = WorkListActivity.class.getName();
     private static final int RC_PERMISSIONS = 2;
@@ -216,6 +216,7 @@ public class WorkListActivity extends AppCompatActivity
         setupRecyclerView(workListView);
     }
 
+    @Override
     public void removeWork(int position)
     {
         RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list);
@@ -224,6 +225,7 @@ public class WorkListActivity extends AppCompatActivity
         adapter.notifyItemRemoved(position);
     }
 
+    @Override
     public void updateWork(Project work, int position)
     {
         RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list);
@@ -232,6 +234,7 @@ public class WorkListActivity extends AppCompatActivity
         adapter.notifyDataSetChanged();
     }
 
+    @Override
     public void removeWorkEditFragment()
     {
         if (_twoPane)
@@ -398,6 +401,7 @@ public class WorkListActivity extends AppCompatActivity
         workListView.getAdapter().notifyDataSetChanged();
     }
 
+    @Override
     public boolean isTwoPane()
     {
         return _twoPane;

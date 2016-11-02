@@ -46,4 +46,5 @@
     <string name="menu_gallery_design">Галерея эскизов</string>
     <string name="menu_gallery_work">Галерея работ</string>
     <string name="journal">Журнал</string>
+    <string name="info_no_works_for_dates">Нет работ в указанном диапазоне дат. Чтобы создать работу, перейдите на \"Календарь\".</string>
 </resources>

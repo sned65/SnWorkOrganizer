@@ -84,7 +84,7 @@ public class ConfirmDeleteWorkFragment extends DialogFragment
         // Remove from UI
         if (_position >= 0)
         {
-            WorkListActivity mainActivity = (WorkListActivity) getActivity();
+            WorkListMaster mainActivity = (WorkListMaster) getActivity();
             mainActivity.removeWork(_position);
         }
         else

@@ -48,18 +48,30 @@ public class WorkViewBaseHolder extends RecyclerView.ViewHolder
     public void setProject(Project project)
     {
         _project = project;
+        if (Project.isDummy(_project))
+        {
+            if (_timeView != null) _timeView.setVisibility(View.GONE);
+            if (_datetimeView != null) _datetimeView.setVisibility(View.GONE);
+            if (_clientNameView != null) _clientNameView.setVisibility(View.GONE);
+            _workTitleView.setText(R.string.info_no_works_for_dates);
+            return;
+        }
+
         if (_timeView != null)
         {
             _timeView.setText(_project.getTimeString());
+            _timeView.setVisibility(View.VISIBLE);
         }
         if (_datetimeView != null)
         {
             _datetimeView.setText(_project.getDateTimeString2());
+            _datetimeView.setVisibility(View.VISIBLE);
         }
         _workTitleView.setText(_project.getName());
         DatabaseHelper db = DatabaseHelper.getInstance(_itemView.getContext());
         Client client = db.findClientById(_project.getClientId());
         _clientName = client.getName();
         _clientNameView.setText(_clientName);
+        _clientNameView.setVisibility(View.VISIBLE);
     }
 }
