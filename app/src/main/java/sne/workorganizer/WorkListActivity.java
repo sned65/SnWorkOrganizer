@@ -487,17 +487,11 @@ public class WorkListActivity extends AppCompatActivity implements WorkListMaste
         {
             Log.i(TAG, "removeWork("+position+") called");
             _projects.remove(position);
-
-            if (_twoPane)
-            {
-                // TODO clear details
-            }
         }
 
-        public int updateWork(Project work, int position)
+        public void updateWork(Project work, int position)
         {
             Log.i(TAG, "updateWork("+work+", "+position+") called");
-            int new_position = -1;
             Project old = _projects.get(position);
             Log.i(TAG, "updateWork() compare dates for "+old+" and "+work);
             Log.i(TAG, "updateWork() compare dates "+(new Date(old.getDate()))+" and "+(new Date(work.getDate())));
@@ -510,15 +504,6 @@ public class WorkListActivity extends AppCompatActivity implements WorkListMaste
                 if (!sameTime)
                 {
                     sortWorksByTime();
-                    for (int i = 0; i < _projects.size(); ++i)
-                    {
-                        Project p = _projects.get(i);
-                        if (work.getId().equals(p.getId()))
-                        {
-                            new_position = i;
-                            break;
-                        }
-                    }
                 }
             }
             else
@@ -526,8 +511,6 @@ public class WorkListActivity extends AppCompatActivity implements WorkListMaste
                 Log.i(TAG, "updateWork() the different dates");
                 removeWork(position);
             }
-
-            return new_position;
         }
 
         private void sortWorksByTime()

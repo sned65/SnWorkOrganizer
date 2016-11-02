@@ -49,26 +49,15 @@ import sne.workorganizer.util.WoConstants;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class MainActivity extends AppCompatActivity implements WorkListMaster
+public class MainActivity extends WorkListAbstractActivity
 {
     private static final String TAG = MainActivity.class.getName();
     private static final int RC_PERMISSIONS = 2;
     private static final String ARG_DATE_FROM = "arg_date_from";
     private static final String ARG_DATE_TO = "arg_date_to";
 
-    /**
-     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
-     * device.
-     */
-    private boolean _twoPane;
-
-    private RecyclerView _workListView;
-
     private Button _btnDateFrom;
     private Button _btnDateTo;
-
-    private long _dateFrom;
-    private long _dateTo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -81,18 +70,16 @@ public class MainActivity extends AppCompatActivity implements WorkListMaster
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
-        _workListView = (RecyclerView) findViewById(R.id.work_list);
-        WorkListViewAdapter adapter = new WorkListViewAdapter(this);
-        _workListView.setAdapter(adapter);
-
         _btnDateFrom = (Button) findViewById(R.id.btn_date_from);
         _btnDateTo = (Button) findViewById(R.id.btn_date_to);
 
         Date today = Mix.truncateDate(new Date());
-        _dateFrom = today.getTime();
+        long dateFrom = today.getTime();
 
         Date plusMonth = Mix.plusMonth(today);
-        _dateTo = plusMonth.getTime();
+        long dateTo = plusMonth.getTime();
+
+        setupWorkListView((RecyclerView) findViewById(R.id.work_list), dateFrom, dateTo);
 
         ImageButton btnSearch = (ImageButton) findViewById(R.id.btn_search);
         btnSearch.setOnClickListener(new View.OnClickListener()
@@ -117,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements WorkListMaster
             // large-screen layouts (res/values-w900dp).
             // If this view is present, then the
             // activity should be in two-pane mode.
-            _twoPane = true;
+            setTwoPane(true);
         }
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
@@ -137,8 +124,8 @@ public class MainActivity extends AppCompatActivity implements WorkListMaster
     protected void onSaveInstanceState(Bundle state)
     {
         super.onSaveInstanceState(state);
-        state.putLong(ARG_DATE_FROM, _dateFrom);
-        state.putLong(ARG_DATE_TO, _dateTo);
+        state.putLong(ARG_DATE_FROM, getDateFrom());
+        state.putLong(ARG_DATE_TO, getDateTo());
         //Log.i(TAG, "onSaveInstanceState() stored current date");
     }
 
@@ -147,18 +134,18 @@ public class MainActivity extends AppCompatActivity implements WorkListMaster
     {
         Log.i(TAG, "onRestoreInstanceState() called");
         super.onRestoreInstanceState(savedInstanceState);
-        _dateFrom = savedInstanceState.getLong(ARG_DATE_FROM, 0);
-        _dateTo = savedInstanceState.getLong(ARG_DATE_TO, 0);
+        setDateFrom(savedInstanceState.getLong(ARG_DATE_FROM, 0));
+        setDateTo(savedInstanceState.getLong(ARG_DATE_TO, 0));
         setupFilterButtons();
         search();
     }
 
     private void setupFilterButtons()
     {
-        final int year_from = Mix.getDateField(_dateFrom, Calendar.YEAR);
-        final int month_from = Mix.getDateField(_dateFrom, Calendar.MONTH);
-        final int day_from = Mix.getDateField(_dateFrom, Calendar.DAY_OF_MONTH);
-        _btnDateFrom.setText(SimpleDateFormat.getDateInstance().format(new Date(_dateFrom)));
+        final int year_from = Mix.getDateField(getDateFrom(), Calendar.YEAR);
+        final int month_from = Mix.getDateField(getDateFrom(), Calendar.MONTH);
+        final int day_from = Mix.getDateField(getDateFrom(), Calendar.DAY_OF_MONTH);
+        _btnDateFrom.setText(SimpleDateFormat.getDateInstance().format(new Date(getDateFrom())));
         _btnDateFrom.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -172,17 +159,17 @@ public class MainActivity extends AppCompatActivity implements WorkListMaster
                         Calendar c = Calendar.getInstance();
                         c.set(year, month, dayOfMonth);
                         Date d = c.getTime();
-                        _dateFrom = d.getTime();
+                        setDateFrom(d.getTime());
                         _btnDateFrom.setText(SimpleDateFormat.getDateInstance().format(d));
                     }
                 }, year_from, month_from, day_from).show();
             }
         });
 
-        final int year_to = Mix.getDateField(_dateTo, Calendar.YEAR);
-        final int month_to = Mix.getDateField(_dateTo, Calendar.MONTH);
-        final int day_to = Mix.getDateField(_dateTo, Calendar.DAY_OF_MONTH);
-        _btnDateTo.setText(SimpleDateFormat.getDateInstance().format(new Date(_dateTo)));
+        final int year_to = Mix.getDateField(getDateTo(), Calendar.YEAR);
+        final int month_to = Mix.getDateField(getDateTo(), Calendar.MONTH);
+        final int day_to = Mix.getDateField(getDateTo(), Calendar.DAY_OF_MONTH);
+        _btnDateTo.setText(SimpleDateFormat.getDateInstance().format(new Date(getDateTo())));
         _btnDateTo.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -196,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements WorkListMaster
                         Calendar c = Calendar.getInstance();
                         c.set(year, month, dayOfMonth);
                         Date d = c.getTime();
-                        _dateTo = d.getTime();
+                        setDateTo(d.getTime());
                         _btnDateTo.setText(SimpleDateFormat.getDateInstance().format(d));
                     }
                 }, year_to, month_to, day_to).show();
@@ -303,82 +290,6 @@ public class MainActivity extends AppCompatActivity implements WorkListMaster
         }
     }
 
-    private void showProgressBar(boolean flag)
-    {
-        View progressBar = findViewById(R.id.progressBar);
-        View workListView = findViewById(R.id.work_list);
-        if (flag)
-        {
-            progressBar.setVisibility(View.VISIBLE);
-            workListView.setVisibility(View.GONE);
-        }
-        else
-        {
-            progressBar.setVisibility(View.GONE);
-            workListView.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void search()
-    {
-        Date dateFrom = new Date(_dateFrom);
-        Date dateTo = new Date(_dateTo);
-        Log.i(TAG, "search() from "+dateFrom+" to "+dateTo);
-
-        DatabaseHelper db = DatabaseHelper.getInstance(this);
-        db.findAllProjects(new DatabaseHelper.DbSelectProjectsCallback()
-        {
-            @Override
-            public void onSelectFinished(ArrayList<Project> records)
-            {
-                onSearchFinished(records);
-            }
-        }, dateFrom, dateTo);
-    }
-
-    private void onSearchFinished(ArrayList<Project> records)
-    {
-        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
-        adapter.setWorks(records);
-        adapter.notifyDataSetChanged();
-        showProgressBar(false);
-    }
-
-    @Override
-    public boolean isTwoPane()
-    {
-        return _twoPane;
-    }
-
-    @Override
-    public void removeWork(int position)
-    {
-        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
-        adapter.removeWork(position);
-        adapter.notifyItemRemoved(position);
-
-    }
-
-    @Override
-    public void updateWork(Project work, int position)
-    {
-        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
-        adapter.updateWork(work, position);
-        adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void removeWorkEditFragment()
-    {
-        if (_twoPane)
-        {
-            Fragment frg = getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
-            getSupportFragmentManager().beginTransaction()
-                    .remove(frg)
-                    .commit();
-        }
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode,
                                     Intent data)
@@ -425,142 +336,6 @@ public class MainActivity extends AppCompatActivity implements WorkListMaster
         {
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
             frg.acceptPhoto(resultCode == Activity.RESULT_OK);
-        }
-    }
-
-    /////////////////////////////////////////////////////////////////////////
-    private class WorkListViewAdapter
-            extends RecyclerView.Adapter<WorkListViewAdapter.ViewHolder>
-    {
-        private Activity _activity;
-        private List<Project> _works = new ArrayList<>();
-
-        WorkListViewAdapter(Activity activity)
-        {
-            _activity = activity;
-        }
-
-        public void setWorks(ArrayList<Project> works)
-        {
-            _works = works;
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
-        {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.journal_item_content, parent, false);
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(final ViewHolder holder, int position)
-        {
-            if (_works.isEmpty())
-            {
-                holder.setProject(Project.DUMMY);
-                return;
-            }
-
-            holder.setProject(_works.get(position));
-
-            holder._itemView.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    if (_twoPane)
-                    {
-                        Bundle arguments = new Bundle();
-                        arguments.putParcelable(WoConstants.ARG_WORK, holder.getProject());
-                        WorkDetailFragment fragment = new WorkDetailFragment();
-                        fragment.setArguments(arguments);
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.work_detail_container, fragment, WoConstants.FRG_DETAILS)
-                                .commit();
-                    }
-                    else
-                    {
-                        Context context = v.getContext();
-                        Intent intent = new Intent(context, WorkDetailActivity.class);
-                        intent.putExtra(WoConstants.ARG_WORK, holder.getProject());
-
-                        context.startActivity(intent);
-                    }
-                }
-            });
-        }
-
-        @Override
-        public int getItemCount()
-        {
-            if (_works == null || _works.isEmpty()) return 1;
-            return _works.size();
-        }
-
-        public void updateWork(Project work, int position)
-        {
-            Log.i(TAG, "updateWork("+work+", "+position+") called");
-            Project old = _works.get(position);
-            boolean inRange = work.getDate() >= _dateFrom && work.getDate() < _dateTo + 24*60*60*1000;
-            if (inRange)
-            {
-                Log.i(TAG, "updateWork() new date is in the filter range");
-                _works.set(position, work);
-                if (old.getDate().longValue() != work.getDate().longValue())
-                {
-                    sortWorksByDateTime();
-                }
-            }
-            else
-            {
-                Log.i(TAG, "updateWork() new date is not in the filter range");
-                removeWork(position);
-            }
-        }
-
-        private void sortWorksByDateTime()
-        {
-            Collections.sort(_works, new Comparator<Project>()
-            {
-                @Override
-                public int compare(Project w1, Project w2)
-                {
-                    return w1.getDate().compareTo(w2.getDate());
-                }
-            });
-        }
-
-        public void removeWork(int position)
-        {
-            Log.i(TAG, "removeWork("+position+") called");
-            _works.remove(position);
-        }
-
-        /////////////////////////////////////////////////////////////////////////
-        public class ViewHolder extends WorkViewBaseHolder
-                implements View.OnLongClickListener
-        {
-            public ViewHolder(View view)
-            {
-                super(view);
-
-                _itemView.setOnLongClickListener(this);
-            }
-
-            @Override
-            public boolean onLongClick(View v)
-            {
-                Log.i(TAG, "onLongClick() called "+getAdapterPosition()+"; "+_project);
-                if (_project == null || Project.isDummy(_project))
-                {
-                    return true;
-                }
-
-                WorkActionsFragment.newInstance(_project, _clientName, getAdapterPosition())
-                        .show(_activity.getFragmentManager(), "project_actions");
-                return true;
-            }
         }
     }
 }
