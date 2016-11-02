@@ -51,4 +51,5 @@
     <string name="error_file_not_found">File not found</string>
     <string name="journal">Journal</string>
     <string name="info_no_works_for_dates">No works for the given date range. Go to \"Calendar\" to create a work.</string>
+    <string name="info_no_works_for_date">No works for the given date. Click \"Create\" to create a work.</string>
 </resources>

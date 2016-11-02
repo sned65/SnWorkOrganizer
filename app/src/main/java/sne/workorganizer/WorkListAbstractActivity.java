@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -39,6 +40,8 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 
     private RecyclerView _workListView;
 
+    @StringRes private int _noWorkMessage;
+
     private long _dateFrom;
     private long _dateTo;
 
@@ -48,7 +51,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         super.onCreate(savedInstanceState);
     }
 
-    protected void setupWorkListView(RecyclerView workListView, Long dateFrom, Long dateTo)
+    protected void setupWorkListView(Long dateFrom, Long dateTo)
     {
         _dateFrom = dateFrom;
         if (dateTo == null)
@@ -59,9 +62,16 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         {
             _dateTo = dateTo;
         }
-        _workListView = workListView;
+
+        _workListView = (RecyclerView) findViewById(R.id.work_list);
         WorkListViewAdapter adapter = new WorkListViewAdapter(this, dateFrom, dateTo);
+        adapter.setNoWorkMessage(_noWorkMessage);
         _workListView.setAdapter(adapter);
+    }
+
+    protected void setNoWorkMessage(@StringRes int noWorkMessage)
+    {
+        _noWorkMessage = noWorkMessage;
     }
 
     protected void setTwoPane(boolean flag)
@@ -173,6 +183,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         private List<Project> _works = new ArrayList<>();
         private Long _dateFrom;
         private Long _dateTo;
+        @StringRes private int _noWorkMessage;
 
         WorkListViewAdapter(Activity activity, Long dateFrom, Long dateTo)
         {
@@ -186,6 +197,11 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
             {
                 _dateTo = dateTo;
             }
+        }
+
+        protected void setNoWorkMessage(@StringRes int noWorkMessage)
+        {
+            _noWorkMessage = noWorkMessage;
         }
 
         public void setWorks(ArrayList<Project> works)
@@ -248,12 +264,12 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 
         public void updateWork(Project work, int position)
         {
-            Log.i(TAG, "updateWork("+work+", "+position+") called");
+            Log.d(TAG, "updateWork("+work+", "+position+") called");
             Project old = _works.get(position);
             boolean inRange = work.getDate() >= _dateFrom && work.getDate() < _dateTo + 24*60*60*1000;
             if (inRange)
             {
-                Log.i(TAG, "updateWork() new date is in the filter range");
+                Log.d(TAG, "updateWork() new date is in the filter range");
                 _works.set(position, work);
                 if (old.getDate().longValue() != work.getDate().longValue())
                 {
@@ -262,7 +278,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
             }
             else
             {
-                Log.i(TAG, "updateWork() new date is not in the filter range");
+                Log.d(TAG, "updateWork() new date is NOT in the filter range");
                 removeWork(position);
             }
         }
@@ -281,7 +297,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 
         public void removeWork(int position)
         {
-            Log.i(TAG, "removeWork("+position+") called");
+            Log.d(TAG, "removeWork("+position+") called");
             _works.remove(position);
         }
 
@@ -291,7 +307,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         {
             public ViewHolder(View view)
             {
-                super(view);
+                super(view, _noWorkMessage);
 
                 _itemView.setOnLongClickListener(this);
             }
@@ -299,7 +315,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
             @Override
             public boolean onLongClick(View v)
             {
-                Log.i(TAG, "onLongClick() called "+getAdapterPosition()+"; "+_project);
+                Log.d(TAG, "onLongClick() called "+getAdapterPosition()+"; "+_project);
                 if (_project == null || Project.isDummy(_project))
                 {
                     return true;

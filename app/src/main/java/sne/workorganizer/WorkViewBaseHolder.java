@@ -1,5 +1,6 @@
 package sne.workorganizer;
 
+import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
@@ -9,24 +10,26 @@ import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
 
 /**
- * Created by Nikolay_Smirnov on 01.11.2016.
+ * Base class for work list {@code ViewHolder}s.
  */
-
 public class WorkViewBaseHolder extends RecyclerView.ViewHolder
 {
+    @SuppressWarnings("unused")
     private final static String TAG = WorkViewBaseHolder.class.getName();
 
+    @StringRes private final int _noWorkMessage;
     protected final View _itemView;
-    protected final TextView _timeView;
-    protected final TextView _datetimeView;
-    protected final TextView _clientNameView;
-    protected final TextView _workTitleView;
+    private final TextView _timeView;
+    private final TextView _datetimeView;
+    private final TextView _clientNameView;
+    private final TextView _workTitleView;
     protected Project _project;
     protected String _clientName;
 
-    public WorkViewBaseHolder(View view)
+    public WorkViewBaseHolder(View view, @StringRes int noWorkMessage)
     {
         super(view);
+        _noWorkMessage = noWorkMessage;
         _itemView = view;
         _timeView = (TextView) view.findViewById(R.id.work_time);
         _datetimeView = (TextView) view.findViewById(R.id.work_date_time);
@@ -53,7 +56,7 @@ public class WorkViewBaseHolder extends RecyclerView.ViewHolder
             if (_timeView != null) _timeView.setVisibility(View.GONE);
             if (_datetimeView != null) _datetimeView.setVisibility(View.GONE);
             if (_clientNameView != null) _clientNameView.setVisibility(View.GONE);
-            _workTitleView.setText(R.string.info_no_works_for_dates);
+            _workTitleView.setText(_noWorkMessage);
             return;
         }
 

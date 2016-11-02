@@ -47,4 +47,5 @@
     <string name="menu_gallery_work">Галерея работ</string>
     <string name="journal">Журнал</string>
     <string name="info_no_works_for_dates">Нет работ в указанном диапазоне дат. Чтобы создать работу, перейдите на \"Календарь\".</string>
+    <string name="info_no_works_for_date">Нет работ на выбранную дату. Чтобы создать работу, нажмите \"Создать\".</string>
 </resources>

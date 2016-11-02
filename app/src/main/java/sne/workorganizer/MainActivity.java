@@ -4,36 +4,25 @@ package sne.workorganizer;
 import android.Manifest;
 import android.app.Activity;
 import android.app.DatePickerDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ImageButton;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
 
-import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.help.AboutAppDialogFragment;
 import sne.workorganizer.util.FileUtils;
@@ -79,7 +68,8 @@ public class MainActivity extends WorkListAbstractActivity
         Date plusMonth = Mix.plusMonth(today);
         long dateTo = plusMonth.getTime();
 
-        setupWorkListView((RecyclerView) findViewById(R.id.work_list), dateFrom, dateTo);
+        setNoWorkMessage(R.string.info_no_works_for_dates);
+        setupWorkListView(dateFrom, dateTo);
 
         ImageButton btnSearch = (ImageButton) findViewById(R.id.btn_search);
         btnSearch.setOnClickListener(new View.OnClickListener()

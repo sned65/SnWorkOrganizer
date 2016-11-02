@@ -48,19 +48,12 @@ import java.util.List;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class WorkListActivity extends AppCompatActivity implements WorkListMaster
+public class WorkListActivity extends WorkListAbstractActivity
 {
     private static final String TAG = WorkListActivity.class.getName();
     private static final int RC_PERMISSIONS = 2;
 
-    private Menu _menu;
     private CalendarView _calendarView;
-
-    /**
-     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
-     * device.
-     */
-    private boolean _twoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -72,7 +65,6 @@ public class WorkListActivity extends AppCompatActivity implements WorkListMaste
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
-        _menu = toolbar.getMenu();
 
         _calendarView = (CalendarView) findViewById(R.id.calendarView);
         _calendarView.setShowWeekNumber(false);
@@ -90,9 +82,13 @@ public class WorkListActivity extends AppCompatActivity implements WorkListMaste
                 //Log.i(TAG, "onSelectedDayChange(" + year + "-" + month + "-" + dayOfMonth + ") called");
 
                 Mix.calendarSetSelection(view, year, month, dayOfMonth);
-                resetWorkList();
+                setupWorkListView(view.getDate(), null);
+                search();
             }
         });
+        setNoWorkMessage(R.string.info_no_works_for_date);
+        setupWorkListView(_calendarView.getDate(), null);
+
 /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener()
@@ -106,20 +102,13 @@ public class WorkListActivity extends AppCompatActivity implements WorkListMaste
         });
 */
 
-        if (savedInstanceState == null)
-        {
-            View workListView = findViewById(R.id.work_list);
-            assert workListView != null;
-            setupRecyclerView((RecyclerView) workListView);
-        }
-
         if (findViewById(R.id.work_detail_container) != null)
         {
             // The detail container view will be present only in the
             // large-screen layouts (res/values-w900dp).
             // If this view is present, then the
             // activity should be in two-pane mode.
-            _twoPane = true;
+            setTwoPane(true);
         }
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
@@ -133,6 +122,8 @@ public class WorkListActivity extends AppCompatActivity implements WorkListMaste
             };
             ActivityCompat.requestPermissions(this, permissions, RC_PERMISSIONS);
         }
+
+        search();
     }
 
 
@@ -185,64 +176,8 @@ public class WorkListActivity extends AppCompatActivity implements WorkListMaste
         {
             Log.i(TAG, "onRestoreInstanceState() set date "+(new Date(date)));
             _calendarView.setDate(date);
-
-            View workListView = findViewById(R.id.work_list);
-            assert workListView != null;
-            setupRecyclerView((RecyclerView) workListView);
-        }
-    }
-
-/*
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState)
-    {
-        super.onPostCreate(savedInstanceState);
-
-        Log.i(TAG, "onPostCreate() _twoPane = "+_twoPane+"; _updateDetailPane = "+_updateDetailPane);
-        if (_twoPane && _updateDetailPane >= 0)
-        {
-            RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list_daily);
-            // TODO update detail part, if any
-            boolean done = workListView.getChildAt(_updateDetailPane).performClick();
-            if (done) Log.i(TAG, "onRestoreInstanceState() click successful");
-            else Log.i(TAG, "onRestoreInstanceState() click NOT successful");
-        }
-    }
-*/
-
-    private void resetWorkList()
-    {
-        RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list);
-        setupRecyclerView(workListView);
-    }
-
-    @Override
-    public void removeWork(int position)
-    {
-        RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list);
-        WorkListViewAdapter adapter = (WorkListViewAdapter) workListView.getAdapter();
-        adapter.removeWork(position);
-        adapter.notifyItemRemoved(position);
-    }
-
-    @Override
-    public void updateWork(Project work, int position)
-    {
-        RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list);
-        WorkListViewAdapter adapter = (WorkListViewAdapter) workListView.getAdapter();
-        adapter.updateWork(work, position);
-        adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void removeWorkEditFragment()
-    {
-        if (_twoPane)
-        {
-            Fragment frg = getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
-            getSupportFragmentManager().beginTransaction()
-                    .remove(frg)
-                    .commit();
+            setupWorkListView(_calendarView.getDate(), null);
+            search();
         }
     }
 
@@ -334,7 +269,7 @@ public class WorkListActivity extends AppCompatActivity implements WorkListMaste
 
         if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_CREATE_WORK)
         {
-            resetWorkList();
+            search();
         }
 
         else if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_EDIT_WORK)
@@ -376,237 +311,5 @@ public class WorkListActivity extends AppCompatActivity implements WorkListMaste
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
             frg.acceptPhoto(resultCode == Activity.RESULT_OK);
         }
-    }
-
-/*
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-        Fragment frg = getSupportFragmentManager().findFragmentByTag(FRG_DETAILS);
-        Log.i(TAG, "onResume() FRAGMENT = "+frg);
-    }
-*/
-
-    private void setupRecyclerView(@NonNull RecyclerView recyclerView)
-    {
-        Date date = new Date(_calendarView.getDate());
-        Log.i(TAG, "setupRecyclerView() for "+date);
-        recyclerView.setAdapter(new WorkListViewAdapter(this, date));
-    }
-
-    private void showProjectList()
-    {
-        RecyclerView workListView = (RecyclerView) findViewById(R.id.work_list);
-        workListView.getAdapter().notifyDataSetChanged();
-    }
-
-    @Override
-    public boolean isTwoPane()
-    {
-        return _twoPane;
-    }
-
-    public void resetDetailPane(int position)
-    {
-        // TODO resetDetailPane
-    }
-
-    public class WorkListViewAdapter
-            extends RecyclerView.Adapter<WorkListViewAdapter.ViewHolder>
-    {
-        private Activity _activity;
-        private Date _date;
-        private List<Project> _projects;
-
-        WorkListViewAdapter(Activity activity, Date date)
-        {
-            _activity = activity;
-            _date = date;
-            DatabaseHelper db = DatabaseHelper.getInstance(_activity);
-            db.findAllProjects(new DatabaseHelper.DbSelectProjectsCallback()
-            {
-                @Override
-                public void onSelectFinished(ArrayList<Project> records)
-                {
-                    Log.i(TAG, "onSelectFinished() "+records+", size = "+((records == null) ? "" : records.size()));
-                    _projects = records;
-                    showProjectList();
-                }
-            }, _date);
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
-        {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.work_list_content, parent, false);
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(final ViewHolder holder, int position)
-        {
-            holder.setProject(_projects.get(position));
-
-            holder._itemView.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    if (_twoPane)
-                    {
-                        Bundle arguments = new Bundle();
-                        arguments.putParcelable(WoConstants.ARG_WORK, holder.getProject());
-                        WorkDetailFragment fragment = new WorkDetailFragment();
-                        fragment.setArguments(arguments);
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.work_detail_container, fragment, WoConstants.FRG_DETAILS)
-                                .commit();
-                    }
-                    else
-                    {
-                        Context context = v.getContext();
-                        Intent intent = new Intent(context, WorkDetailActivity.class);
-                        intent.putExtra(WoConstants.ARG_WORK, holder.getProject());
-
-                        context.startActivity(intent);
-                    }
-                }
-            });
-        }
-
-        @Override
-        public int getItemCount()
-        {
-            if (_projects == null) return 0;
-            return _projects.size();
-        }
-
-        public void removeWork(int position)
-        {
-            Log.i(TAG, "removeWork("+position+") called");
-            _projects.remove(position);
-        }
-
-        public void updateWork(Project work, int position)
-        {
-            Log.i(TAG, "updateWork("+work+", "+position+") called");
-            Project old = _projects.get(position);
-            Log.i(TAG, "updateWork() compare dates for "+old+" and "+work);
-            Log.i(TAG, "updateWork() compare dates "+(new Date(old.getDate()))+" and "+(new Date(work.getDate())));
-            boolean sameDate = Mix.sameDate(old.getDate(), work.getDate());
-            if (sameDate)
-            {
-                Log.i(TAG, "updateWork() the same dates");
-                boolean sameTime = Mix.sameTime(old.getDate(), work.getDate());
-                _projects.set(position, work);
-                if (!sameTime)
-                {
-                    sortWorksByTime();
-                }
-            }
-            else
-            {
-                Log.i(TAG, "updateWork() the different dates");
-                removeWork(position);
-            }
-        }
-
-        private void sortWorksByTime()
-        {
-            Collections.sort(_projects, new Comparator<Project>()
-            {
-                @Override
-                public int compare(Project w1, Project w2)
-                {
-                    return w1.getDate().compareTo(w2.getDate());
-                }
-            });
-        }
-
-        public class ViewHolder extends WorkViewBaseHolder
-            implements View.OnLongClickListener
-        {
-            public ViewHolder(View view)
-            {
-                super(view);
-
-                _itemView.setOnLongClickListener(this);
-            }
-
-            @Override
-            public boolean onLongClick(View v)
-            {
-                Log.i(TAG, "onLongClick() called "+getAdapterPosition()+"; "+_project);
-                if (_project == null)
-                {
-                    return true;
-                }
-
-                WorkActionsFragment.newInstance(_project, _clientName, getAdapterPosition())
-                        .show(_activity.getFragmentManager(), "project_actions");
-                return true;
-            }
-        }
-/*
-        public class ViewHolder extends RecyclerView.ViewHolder
-            implements View.OnLongClickListener
-        {
-            public final View _itemView;
-            public final TextView _timeView;
-            public final TextView _clientNameView;
-            public final TextView _workTitleView;
-            private Project _project;
-            private String _clientName;
-
-            public ViewHolder(View view)
-            {
-                super(view);
-                _itemView = view;
-                _timeView = (TextView) view.findViewById(R.id.work_time);
-                _clientNameView = (TextView) view.findViewById(R.id.client_name);
-                _workTitleView = (TextView) view.findViewById(R.id.work_title);
-
-                _itemView.setOnLongClickListener(this);
-            }
-
-            @Override
-            public String toString()
-            {
-                return super.toString() + " '" + _clientNameView.getText() + "'";
-            }
-
-            public Project getProject()
-            {
-                return _project;
-            }
-
-            public void setProject(Project project)
-            {
-                _project = project;
-                _timeView.setText(_project.getTimeString());
-                _workTitleView.setText(_project.getName());
-                DatabaseHelper db = DatabaseHelper.getInstance(_itemView.getContext());
-                Client client = db.findClientById(_project.getClientId());
-                _clientName = client.getName();
-                _clientNameView.setText(_clientName);
-            }
-
-            @Override
-            public boolean onLongClick(View v)
-            {
-                Log.i(TAG, "onLongClick() called "+getAdapterPosition()+"; "+_project);
-                if (_project == null)
-                {
-                    return true;
-                }
-
-                WorkActionsFragment.newInstance(_project, _clientName, getAdapterPosition())
-                        .show(_activity.getFragmentManager(), "project_actions");
-                return true;
-            }
-        }
-*/
     }
 }
