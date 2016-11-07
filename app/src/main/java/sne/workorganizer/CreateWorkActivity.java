@@ -57,7 +57,6 @@ public class CreateWorkActivity extends AppCompatActivity
     private String _designPath;
     private ImageButton _designSelectBtn;
 
-    private Cursor _currentCursor;
     private AsyncTask _loadClientsTask;
 
     private Date _workDate;
@@ -90,7 +89,7 @@ public class CreateWorkActivity extends AppCompatActivity
             @Override
             public void onClick(View v)
             {
-                onSelectDesign(v);
+                onSelectDesign();
             }
         });
     }
@@ -158,19 +157,12 @@ public class CreateWorkActivity extends AppCompatActivity
     private void initClientSelector()
     {
         _selectClientView = (AutoCompleteTextView) findViewById(R.id.select_client);
-        // TODO move to DatabaseHandler
         SimpleCursorAdapter adapter =
                 new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1,
                         null, new String[] {
                         DatabaseHelper.CLIENTS_COL_FULLNAME },
                         new int[] { android.R.id.text1 },
                         0);
-//        SimpleCursorAdapter adapter =
-//                new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2,
-//                        null, new String[] {
-//                        DatabaseHelper.CLIENTS_COL_FULLNAME, "_id" },
-//                        new int[] { android.R.id.text1, android.R.id.text2 },
-//                        0);
         adapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter()
         {
             @Override
@@ -190,7 +182,7 @@ public class CreateWorkActivity extends AppCompatActivity
                 {
                     _loadClientsTask = new LoadCursorTask(str.toString()).execute();
                 }
-                return _currentCursor;
+                return null;
             }
         });
 
@@ -210,12 +202,6 @@ public class CreateWorkActivity extends AppCompatActivity
                 _selectedClient.setName(c.getString(idx_name));
             }
         });
-
-        // FIXME move to callback
-//        if (_currentCursor == null)
-//        {
-//            _loadClientsTask = new LoadCursorTask(null).execute();
-//        }
     }
 
     @Override
@@ -241,7 +227,7 @@ public class CreateWorkActivity extends AppCompatActivity
         if (c != null) c.close();
     }
 
-    private void onSelectDesign(View view)
+    private void onSelectDesign()
     {
         Intent i = new Intent().setType("image/*");
         i.setAction(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE);

@@ -16,7 +16,7 @@ import java.util.List;
 
 import sne.workorganizer.util.Mix;
 
-// TODO work with photos
+// Notes about work with photos:
 // http://blog.cindypotvin.com/saving-an-image-in-a-sqlite-database-in-your-android-application/
 
 /**
@@ -561,6 +561,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      *
      * @param workId {@link Project} id
      * @return {@link Picture} corresponding the given work id, or {@code null}
+     * @throws SQLiteDatabaseCorruptException if too many pictures found for the given work id.
      */
     public Picture findPictureByWorkId(String workId)
     {
@@ -580,7 +581,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 throw new SQLiteDatabaseCorruptException("Too many pictures for work id "+workId);
             }
             picture = createPictureFromCursor(c);
-            break; // FIXME workaround of "Too many pictures for work id "
         }
 
         c.close();

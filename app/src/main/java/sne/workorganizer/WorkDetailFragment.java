@@ -1,6 +1,7 @@
 package sne.workorganizer;
 
 import android.app.Activity;
+import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -116,7 +117,15 @@ public class WorkDetailFragment extends Fragment
             }
         }
 
-        Picture resultPhoto = db.findPictureByWorkId(_project.getId());
+        Picture resultPhoto = null;
+        try
+        {
+            resultPhoto = db.findPictureByWorkId(_project.getId());
+        }
+        catch (SQLiteDatabaseCorruptException e)
+        {
+            Mix.showError(getActivity(), e.getMessage(), InfoDialogFragment.Severity.ERROR);
+        }
         if (resultPhoto == null || resultPhoto.getResultPhoto() == null)
         {
             View result = _rootView.findViewById(R.id.detail_row_result);

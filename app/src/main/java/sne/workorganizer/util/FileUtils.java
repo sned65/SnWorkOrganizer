@@ -292,7 +292,7 @@ public class FileUtils
                     return Environment.getExternalStorageDirectory() + "/" + split[1];
                 }
 
-                // TODO handle non-primary volumes
+                // T O D O: handle non-primary volumes
             }
             // DownloadsProvider
             else if (isDownloadsDocument(uri)) {
@@ -475,7 +475,7 @@ public class FileUtils
     }
 
     /**
-     * File and folder comparator. TODO Expose sorting option method
+     * File and folder comparator. T O D O: Expose sorting option method
      *
      * @author paulburke
      */

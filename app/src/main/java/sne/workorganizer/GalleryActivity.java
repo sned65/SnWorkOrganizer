@@ -213,9 +213,9 @@ public class GalleryActivity extends AppCompatActivity
             View v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.picture_row, parent, false);
 
+            // set the view's size, margins, paddings and layout parameters
             //GridLayoutManager.LayoutParams params = new GridLayoutManager.LayoutParams(parent.getContext(), attrs);
             //v.setLayoutParams(params);
-            // TODO set the view's size, margins, paddings and layout parameters
             return new RowHolderResult(v, _activity);
         }
 
@@ -334,9 +334,9 @@ public class GalleryActivity extends AppCompatActivity
             View v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.picture_row, parent, false);
 
+            // set the view's size, margins, paddings and layout parameters
             //GridLayoutManager.LayoutParams params = new GridLayoutManager.LayoutParams(parent.getContext(), attrs);
             //v.setLayoutParams(params);
-            // TODO set the view's size, margins, paddings and layout parameters
             return new RowHolderDesign(v, _activity);
         }
 

@@ -2,6 +2,7 @@ package sne.workorganizer;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -123,7 +124,6 @@ public class EditWorkFragment extends Fragment
                 {
                     WorkListActivity activity = (WorkListActivity) getActivity();
                     activity.removeWorkEditFragment();
-                    // TODO
                 }
             });
 
@@ -139,7 +139,6 @@ public class EditWorkFragment extends Fragment
                         WorkListMaster master = (WorkListMaster) getActivity();
                         master.updateWork(_work, _position);
                         master.removeWorkEditFragment();
-                        // TODO
                     }
                 }
             });
@@ -266,7 +265,15 @@ public class EditWorkFragment extends Fragment
         });
 
         DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
-        Picture resultPhoto = db.findPictureByWorkId(_work.getId());
+        Picture resultPhoto = null;
+        try
+        {
+            resultPhoto = db.findPictureByWorkId(_work.getId());
+        }
+        catch (SQLiteDatabaseCorruptException e)
+        {
+            Mix.showError(getActivity(), e.getMessage(), InfoDialogFragment.Severity.ERROR);
+        }
         if (resultPhoto == null || resultPhoto.getResultPhoto() == null)
         {
             _resultClearBtn.setVisibility(View.GONE);
