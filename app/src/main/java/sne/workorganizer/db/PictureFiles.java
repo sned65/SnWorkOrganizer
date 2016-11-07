@@ -27,7 +27,7 @@ public class PictureFiles
     /**
      * Create or update an internal png-file for the given picture.
      *
-     * @param ctx
+     * @param ctx {@code Context}
      * @param id the identifier of the picture (GUID)
      * @param picture the picture to save to the internal storage.
      */
@@ -36,10 +36,11 @@ public class PictureFiles
         File file = getInternalFile(ctx, id);
         if (file.exists())
         {
+            //noinspection ResultOfMethodCallIgnored
             file.delete();
         }
 
-        FileOutputStream fos = null;
+        FileOutputStream fos;
         try
         {
             fos = new FileOutputStream(file);
@@ -55,18 +56,19 @@ public class PictureFiles
 
     /**
      *
-     * @param ctx
+     * @param ctx {@code Context}
      * @param id the identifier of the picture (GUID)
      */
     public static void deletePicture(Context ctx, String id)
     {
         File file = getInternalFile(ctx, id);
+        //noinspection ResultOfMethodCallIgnored
         file.delete();
     }
 
     /**
      *
-     * @param ctx
+     * @param ctx {@code Context}
      * @param id the identifier of the picture (GUID)
      * @return the resulting bitmap, or {@code null} if it could not be decoded.
      */

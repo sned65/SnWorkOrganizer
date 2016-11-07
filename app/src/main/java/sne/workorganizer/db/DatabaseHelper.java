@@ -27,7 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     /**
      * List of DB tables.
      */
-    public enum Table
+    private enum Table
     {
         CLIENTS, PROJECTS, PICTURES;
 
@@ -45,7 +45,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     // CLIENTS TABLE
 
-    public static final String CLIENTS_PK = "client_id";
+    private static final String CLIENTS_PK = "client_id";
     private static final int CLIENTS_NCOLS = 5;
     private static final String CLIENTS_TYPED_COLUMNS =
             "client_id TEXT PRIMARY KEY, fullname TEXT, phone TEXT, email TEXT, social TEXT";
@@ -110,7 +110,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     private static DatabaseHelper _instance;
 
-    //private ArrayList<Client> _clients;
     private static final int INSERT_POSITION = 0;
 
     //////////////////////////////////////////////////////////////////
@@ -158,11 +157,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         throw new RuntimeException("No upgrade available");
     }
 
-//    public void invalidateCache()
-//    {
-//        _clients = null;
-//    }
-
     private ArrayList<Client> selectClients()
     {
         ArrayList<Client> clients = new ArrayList<>();
@@ -181,24 +175,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         c.close();
         return clients;
     }
-
-    /*
-     * Finds all clients synchronously.
-     *
-     * @return list of {@code Client}s
-     * @deprecated Use asynchronous findAllClients(DbSelectCallback callback)
-     */
-//    @Deprecated
-//    public List<Client> findAllClients()
-//    {
-//        //Log.i(TAG, "findAllClients() called");
-//        if (_clients == null)
-//        {
-//            //Log.i(TAG, "findAllClients() SELECT");
-//            _clients = selectClients();
-//        }
-//        return _clients;
-//    }
 
     private ArrayList<Project> selectProjects(Date dateFrom, Date dateTo, String where)
     {
@@ -319,7 +295,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * Finds all clients asynchronously.
      * Calls {@code callback} when the query is finished.
      *
-     * @param callback
+     * @param callback to be called when the query is finished. Can be {@code null}.
      */
     public void findAllClients(DbSelectClientsCallback callback)
     {
@@ -329,7 +305,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     /**
      * Synchronously selects {@code Client} by its id.
      *
-     * @param clientId
+     * @param clientId id of client
      * @return {@code Client} corresponding the given id, or {@code null}
      */
     public Client findClientById(String clientId)
@@ -394,12 +370,13 @@ public class DatabaseHelper extends SQLiteOpenHelper
     }
 
     /**
-     * Finds all projects for the given date asynchronously.
+     * Finds all projects asynchronously for the given date range.
      * Calls {@code callback} when the query is finished.
      *
-     * @param callback
-     * @param dateFrom
-     * @param dateTo
+     * @param callback to be called when the query is finished. Can be {@code null}.
+     * @param dateFrom start date
+     * @param dateTo end date (including).
+     *               If {@code null} then {@code dateFrom} is used as the end date.
      */
     public void findAllProjects(DbSelectProjectsCallback callback, Date dateFrom, Date dateTo)
     {
@@ -407,22 +384,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
     }
 
     /**
-     * Finds all projects for the given date asynchronously.
-     * Calls {@code callback} when the query is finished.
-     *
-     * @param callback
-     * @param date
-     */
-    public void findAllProjects(DbSelectProjectsCallback callback, Date date)
-    {
-        findAllProjects(callback, date, null);
-    }
-
-    /**
      * Finds all projects with filled design column.
      * Calls {@code callback} when the query is finished.
      *
-     * @param callback
+     * @param callback to be called when the query is finished. Can be {@code null}.
      */
     public void findAllProjectsWithDesign(DbSelectProjectsCallback callback)
     {
@@ -432,7 +397,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     /**
      * Synchronously selects {@link Project} by its id.
      *
-     * @param workId
+     * @param workId id of work
      * @return {@link Project} corresponding the given id, or {@code null}
      */
     public Project findProjectById(String workId)
@@ -463,16 +428,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * Finds all pictures asynchronously.
      * Calls {@code callback} when the query is finished.
      *
-     * @param callback
+     * @param callback to be called when the query is finished. Can be {@code null}.
      */
     public void findAllPictures(DbSelectPicturesCallback callback)
     {
         new SelectPicturesTask(callback).execute();
-    }
-
-    public int getInsertPosition()
-    {
-        return INSERT_POSITION;
     }
 
     /**
@@ -482,54 +442,27 @@ public class DatabaseHelper extends SQLiteOpenHelper
      */
     public void createClient(Client client)
     {
-        //_clients.add(INSERT_POSITION, client);
         new UpdateThread(client).start();
     }
 
     /**
      * Update client in a separate thread.
      *
-     * @param client
-     * @return position in internal client list,
-     * or -1 if not found.
+     * @param client existing client with new data
      */
-    public int updateClient(Client client)
+    public void updateClient(Client client)
     {
-//        for (int i = 0; i < _clients.size(); ++i)
-//        {
-//            Client c = _clients.get(i);
-//            if (client.getId().equals(c.getId()))
-//            {
-//                _clients.set(i, client);
-//                new UpdateThread(client).start();
-//                return i;
-//            }
-//        }
         new UpdateThread(client).start();
-        return -1;
     }
 
     /**
      * Delete client in a separate thread.
      *
      * @param id id of {@code Client}
-     * @return position in the original internal client list,
-     * or -1 if not found.
      */
-    public int deleteClient(String id)
+    public void deleteClient(String id)
     {
-//        for (int i = 0; i < _clients.size(); ++i)
-//        {
-//            Client c = _clients.get(i);
-//            if (id.equals(c.getId()))
-//            {
-//                _clients.remove(i);
-//                new DeleteThread(Table.CLIENTS, id).start();
-//                return i;
-//            }
-//        }
         new DeleteThread(Table.CLIENTS, id).start();
-        return -1;
     }
 
     /**
@@ -546,19 +479,16 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * Delete work in a separate thread.
      *
      * @param id id of {@code Client}
-     * @return position in the original internal client list,
-     * or -1 if not found.
      */
-    public int deleteWork(String id)
+    public void deleteWork(String id)
     {
         new DeleteThread(Table.PROJECTS, id).start();
-        return -1;
     }
 
     /**
      * Update work in a separate thread.
      *
-     * @param work
+     * @param work existing work with new data
      * @param picture update a reference in {@code Picture} table.
      */
     public void updateWork(Project work, Picture picture)
@@ -589,7 +519,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     /**
      * Update picture in a separate thread.
      *
-     * @param picture
+     * @param picture existing picture with new data
      */
     public void updatePicture(Picture picture)
     {
@@ -599,7 +529,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     /**
      * Synchronously selects {@code Picture} by its id.
      *
-     * @param pictureId
+     * @param pictureId id of picture
      * @return {@link Picture} corresponding the given id, or {@code null}
      */
     public Picture findPictureById(String pictureId)
@@ -696,8 +626,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
         {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
 
-            String sql = null;
-            Object[] args = null;
+            String sql;
+            Object[] args;
             if (_client != null)
             {
                 sql = "INSERT OR REPLACE INTO " + Table.CLIENTS + "(" + CLIENTS_COLUMNS +

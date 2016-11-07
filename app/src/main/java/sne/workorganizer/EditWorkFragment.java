@@ -157,6 +157,7 @@ public class EditWorkFragment extends Fragment
         clientNameView.setText(_clientName);
 
         _dateView = (CalendarView) rootView.findViewById(R.id.work_date);
+        //noinspection deprecation
         _dateView.setShowWeekNumber(false);
         _dateView.setDate(_work.getDate());
         _dateView.setOnDateChangeListener(new CalendarView.OnDateChangeListener()

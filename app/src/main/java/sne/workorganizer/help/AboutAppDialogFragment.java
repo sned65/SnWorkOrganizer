@@ -43,6 +43,7 @@ public class AboutAppDialogFragment extends DialogFragment
         {
             e.printStackTrace();
         }
+        //noinspection deprecation
         return Html.fromHtml(sb.toString());
     }
 }

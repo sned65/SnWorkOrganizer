@@ -37,12 +37,6 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
     private static final String TAG = ClientListActivity.class.getName();
     private static final int RC_CREATE_CLIENT = 101;
 
-    // TODO move to Client
-    private static Client _EMPTY = new Client();
-    static {
-        _EMPTY.setId("EMPTY");
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -128,7 +122,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
         }
     }
 
-    public void createClient(Client client, int position)
+    private void createClient(Client client, int position)
     {
         Log.i(TAG, "createClient("+client+", "+position+") called");
         RecyclerView rv = (RecyclerView) findViewById(R.id.client_list);
@@ -148,7 +142,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
         }
     }
 
-    public void updateClient(Client client, int position)
+    private void updateClient(Client client, int position)
     {
         RecyclerView rv = (RecyclerView) findViewById(R.id.client_list);
         ClientListAdapter adapter = (ClientListAdapter) rv.getAdapter();
@@ -215,7 +209,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
         {
             if (_clients.isEmpty())
             {
-                holder.bindModel(_EMPTY);
+                holder.bindModel(Client.DUMMY);
             }
             else
             {
@@ -237,22 +231,22 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
             }
         }
 
-        public void addClient(Client client, int position)
+        void addClient(Client client, int position)
         {
             _clients.add(position, client);
         }
 
-        public void removeClient(int position)
+        void removeClient(int position)
         {
             _clients.remove(position);
         }
 
-        public void updateClient(Client client, int position)
+        void updateClient(Client client, int position)
         {
             _clients.set(position, client);
         }
 
-        public int getClientCount()
+        int getClientCount()
         {
             return (_clients == null) ? 0 : _clients.size();
         }
@@ -269,7 +263,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
         private TextView _clientEmail;
         private TableLayout _projTable;
 
-        public RowHolder(View itemView, Activity activity)
+        RowHolder(View itemView, Activity activity)
         {
             super(itemView);
 
@@ -287,9 +281,9 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
             content.setOnLongClickListener(this);
         }
 
-        public void bindModel(Client client)
+        void bindModel(Client client)
         {
-            if (_EMPTY.getId().equals(client.getId()))
+            if (Client.isDummy(client))
             {
                 _client = null;
                 _clientName.setText(_clientName.getResources().getString(R.string.no_clients));

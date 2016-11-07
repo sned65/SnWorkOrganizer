@@ -14,7 +14,7 @@ import sne.workorganizer.db.Project;
 import sne.workorganizer.util.WoConstants;
 
 /**
- * Created by Nikolay_Smirnov on 19.10.2016.
+ * Delete a work with confirmation.
  */
 public class ConfirmDeleteWorkFragment extends DialogFragment
         implements DialogInterface.OnClickListener

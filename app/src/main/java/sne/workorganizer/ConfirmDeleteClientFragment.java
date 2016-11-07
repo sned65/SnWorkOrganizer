@@ -5,8 +5,6 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -14,7 +12,7 @@ import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 
 /**
- * Created by Nikolay_Smirnov on 04.10.2016.
+ * Delete a client with confirmation.
  */
 public class ConfirmDeleteClientFragment extends DialogFragment
         implements DialogInterface.OnClickListener

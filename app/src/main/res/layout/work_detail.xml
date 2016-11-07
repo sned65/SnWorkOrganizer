@@ -128,7 +128,8 @@
                 app:srcCompat="@drawable/ic_local_florist_black_24dp"
                 android:id="@+id/work_design"
                 android:layout_margin="8dp"
-                android:scaleType="fitCenter"/>
+                android:scaleType="fitCenter"
+                tools:ignore="ContentDescription"/>
         </TableRow>
 
         <TableRow
@@ -150,7 +151,8 @@
                 app:srcCompat="@drawable/ic_photo_camera_black_24dp"
                 android:id="@+id/work_result"
                 android:layout_margin="8dp"
-                android:scaleType="fitCenter"/>
+                android:scaleType="fitCenter"
+                tools:ignore="ContentDescription"/>
         </TableRow>
     </TableLayout>
 

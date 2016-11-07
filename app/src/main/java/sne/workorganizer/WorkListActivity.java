@@ -2,42 +2,25 @@ package sne.workorganizer;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.CalendarView;
-import android.widget.TextView;
 
+import java.util.Date;
 
-import sne.workorganizer.db.Client;
-import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.help.AboutAppDialogFragment;
 import sne.workorganizer.util.FileUtils;
 import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
 
 /**
  * An activity representing a list of Works with calendar.
@@ -67,6 +50,7 @@ public class WorkListActivity extends WorkListAbstractActivity
         toolbar.setTitle(getTitle());
 
         _calendarView = (CalendarView) findViewById(R.id.calendarView);
+        //noinspection deprecation
         _calendarView.setShowWeekNumber(false);
         long current_date = getIntent().getLongExtra(WoConstants.ARG_CURRENT_DATE, -1);
         if (current_date > 0)
@@ -197,12 +181,12 @@ public class WorkListActivity extends WorkListAbstractActivity
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId())
         {
-        case R.id.menu_settings:
-        {
-//            Intent settings = new Intent(this, SettingsActivity.class);
-//            startActivity(settings);
-            return true;
-        }
+//        case R.id.menu_settings:
+//        {
+////            Intent settings = new Intent(this, SettingsActivity.class);
+////            startActivity(settings);
+//            return true;
+//        }
 
         case R.id.menu_about:
         {

@@ -19,10 +19,12 @@
           android:title="@string/menu_gallery_design"
           app:showAsAction="never"/>
 
+<!--
     <item
         android:id="@+id/menu_settings"
         android:title="@string/menu_settings"
         app:showAsAction="never"/>
+-->
 
     <item android:id="@+id/menu_about"
           android:title="@string/menu_about"

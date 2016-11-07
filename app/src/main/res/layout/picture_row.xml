@@ -20,7 +20,8 @@
             cardview:srcCompat="@drawable/ic_local_florist_black_24dp"
             android:id="@+id/photo"
             android:minWidth="256dp"
-            android:minHeight="179dp"/>
+            android:minHeight="179dp"
+            tools:ignore="ContentDescription"/>
 
         <TextView
             android:id="@+id/work_title"

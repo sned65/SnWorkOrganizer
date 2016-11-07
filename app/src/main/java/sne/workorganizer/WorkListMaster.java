@@ -3,10 +3,9 @@ package sne.workorganizer;
 import sne.workorganizer.db.Project;
 
 /**
- * Created by Nikolay_Smirnov on 02.11.2016.
+ * Common interface for Work List.
  */
-
-public interface WorkListMaster
+interface WorkListMaster
 {
     boolean isTwoPane();
     void removeWork(int position);

@@ -26,7 +26,7 @@ public class Picture implements DbRow, Parcelable
         _resultPhoto = resultPhoto;
     }
 
-    protected Picture(Parcel in)
+    private Picture(Parcel in)
     {
         _id = in.readString();
         _workId = in.readString();

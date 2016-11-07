@@ -25,7 +25,7 @@
                 android:id="@+id/client_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="TextView"
+                tools:text="John Dow"
                 android:textSize="25sp"
                 android:textStyle="bold"/>
 

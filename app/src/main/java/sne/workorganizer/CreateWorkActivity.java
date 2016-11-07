@@ -275,10 +275,7 @@ public class CreateWorkActivity extends AppCompatActivity
                     Log.i(TAG, "Display name: " + displayName);
                 }
 
-                if (c != null)
-                {
-                    c.close();
-                }
+                c.close();
 
                 _designPath = FileUtils.getPath(this, uri);
                 Log.i(TAG, "onActivityResult() uri ("+uri+") -> _designPath ("+_designPath+")");
@@ -401,6 +398,7 @@ public class CreateWorkActivity extends AppCompatActivity
         }
         else
         {
+            //noinspection deprecation
             hh = _timePicker.getCurrentHour();
         }
 
@@ -411,6 +409,7 @@ public class CreateWorkActivity extends AppCompatActivity
         }
         else
         {
+            //noinspection deprecation
             mm = _timePicker.getCurrentMinute();
         }
 
@@ -425,7 +424,7 @@ public class CreateWorkActivity extends AppCompatActivity
 
         if (_designPath != null)
         {
-            project.setDesign(_designPath.toString());
+            project.setDesign(_designPath);
         }
 
         return project;
@@ -439,9 +438,9 @@ public class CreateWorkActivity extends AppCompatActivity
 
     private class LoadCursorTask extends BaseTask<Void>
     {
-        private String _pattern;
+        private final String _pattern;
 
-        public LoadCursorTask(String pattern)
+        LoadCursorTask(String pattern)
         {
             _pattern = pattern;
         }
@@ -462,7 +461,7 @@ public class CreateWorkActivity extends AppCompatActivity
             _loadClientsTask = null;
         }
 
-        protected Cursor doQuery(String startsWith)
+        Cursor doQuery(String startsWith)
         {
             DatabaseHelper db = DatabaseHelper.getInstance(CreateWorkActivity.this);
             return db.getClientCursorByNameStart(startsWith);

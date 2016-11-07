@@ -6,7 +6,6 @@ import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -17,9 +16,6 @@ import java.util.List;
 
 import sne.workorganizer.db.Project;
 import sne.workorganizer.util.WoConstants;
-
-import static android.app.Activity.RESULT_CANCELED;
-import static android.app.Activity.RESULT_OK;
 
 /**
  * Popup dialog to select actions on Work.

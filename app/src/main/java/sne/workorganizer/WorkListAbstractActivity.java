@@ -74,6 +74,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         _noWorkMessage = noWorkMessage;
     }
 
+    @SuppressWarnings("SameParameterValue")
     protected void setTwoPane(boolean flag)
     {
         _twoPane = flag;

@@ -43,6 +43,7 @@ public class Project implements Parcelable, Cloneable, DbRow
         _id = UUID.randomUUID().toString();
     }
 
+    @SuppressWarnings("SameParameterValue")
     private Project(String id)
     {
         _id = id;

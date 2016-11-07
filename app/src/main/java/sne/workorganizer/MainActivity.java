@@ -228,12 +228,12 @@ public class MainActivity extends WorkListAbstractActivity
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId())
         {
-        case R.id.menu_settings:
-        {
-//            Intent settings = new Intent(this, SettingsActivity.class);
-//            startActivity(settings);
-            return true;
-        }
+//        case R.id.menu_settings:
+//        {
+////            Intent settings = new Intent(this, SettingsActivity.class);
+////            startActivity(settings);
+//            return true;
+//        }
 
         case R.id.menu_about:
         {

@@ -105,7 +105,7 @@ public class GalleryActivity extends AppCompatActivity
     /////////////////////////////////////////////////////////////////////////////////
     private static abstract class GalleryAdapter<VH extends RowHolder> extends RecyclerView.Adapter<VH>
     {
-        protected Activity _activity;
+        final Activity _activity;
 
         GalleryAdapter(Activity activity)
         {
@@ -117,10 +117,10 @@ public class GalleryActivity extends AppCompatActivity
     static abstract class RowHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener
     {
-        protected Activity _activity;
+        final Activity _activity;
 
-        protected ImageView _imageView;
-        protected TextView _workTitle;
+        final ImageView _imageView;
+        final TextView _workTitle;
 
         RowHolder(View itemView, Activity activity)
         {
@@ -133,7 +133,7 @@ public class GalleryActivity extends AppCompatActivity
             itemView.setOnClickListener(this);
         }
 
-        protected abstract class FillPicture extends AsyncTask<Void, Void, Void>
+        abstract class FillPicture extends AsyncTask<Void, Void, Void>
         {
             private Project _work;
             private Bitmap _bitmap;

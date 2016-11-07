@@ -4,7 +4,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,6 +12,9 @@ import java.util.UUID;
  */
 public class Client implements Parcelable, DbRow
 {
+    private static final String DUMMY_ID = "DUMMY";
+    public static final Client DUMMY = new Client(DUMMY_ID);
+
     private String _id;
     private String _name;
     private String _phone;
@@ -20,22 +22,20 @@ public class Client implements Parcelable, DbRow
     private String _social;
     private List<Project> _projects = new ArrayList<>();
 
+    public static boolean isDummy(Client client)
+    {
+        return DUMMY_ID.equals(client.getId());
+    }
+
     public Client()
     {
         _id = UUID.randomUUID().toString();
     }
 
-    public Client(String id, String name, String phone, String email, String social, List<Project> projects)
+    @SuppressWarnings("SameParameterValue")
+    private Client(String id)
     {
         _id = id;
-        _name = name;
-        _phone = phone;
-        _email = email;
-        _social = social;
-        if (projects != null)
-        {
-            _projects = projects;
-        }
     }
 
     @Override
@@ -44,7 +44,7 @@ public class Client implements Parcelable, DbRow
         return "Client["+_id+", "+_name+"]";
     }
 
-    protected Client(Parcel in)
+    private Client(Parcel in)
     {
         _id = in.readString();
         _name = in.readString();
