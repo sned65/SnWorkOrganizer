@@ -1,5 +1,6 @@
 package sne.workorganizer;
 
+import android.graphics.Color;
 import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.widget.TextView;
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.util.Mix;
 
 /**
  * Base class for work list {@code ViewHolder}s.
@@ -26,7 +28,7 @@ public class WorkViewBaseHolder extends RecyclerView.ViewHolder
     protected Project _project;
     protected String _clientName;
 
-    public WorkViewBaseHolder(View view, @StringRes int noWorkMessage)
+    protected WorkViewBaseHolder(View view, @StringRes int noWorkMessage)
     {
         super(view);
         _noWorkMessage = noWorkMessage;
@@ -68,6 +70,14 @@ public class WorkViewBaseHolder extends RecyclerView.ViewHolder
         if (_datetimeView != null)
         {
             _datetimeView.setText(_project.getDateTimeString2());
+            if (Mix.isHoliday(_project.getDate()))
+            {
+                _datetimeView.setTextColor(Color.RED);
+            }
+            else
+            {
+                _datetimeView.setTextColor(Color.BLACK);
+            }
             _datetimeView.setVisibility(View.VISIBLE);
         }
         _workTitleView.setText(_project.getName());

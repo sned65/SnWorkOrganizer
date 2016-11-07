@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.InputType;
@@ -15,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.CalendarView;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import java.io.File;
@@ -190,6 +192,82 @@ public class Mix
         c.setTimeInMillis(millis);
         int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
         return dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY;
+    }
+
+    /**
+     * Wrapper around new and deprecated {@link TimePicker#getHour()} function.
+     * @param timePicker {@code TimePicker} from which to get the currently selected hour
+     * @return the currently selected hour, in the range (0-23)
+     */
+    public static int timePickerGetHour(TimePicker timePicker)
+    {
+        int hh;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            hh = timePicker.getHour();
+        }
+        else
+        {
+            //noinspection deprecation
+            hh = timePicker.getCurrentHour();
+        }
+        return hh;
+    }
+
+    /**
+     * Wrapper around new and deprecated {@link TimePicker#setHour(int)} function.
+     * @param timePicker {@code TimePicker} to set the hour
+     * @param hour the hour to set, in the range (0-23)
+     */
+    public static void timePickerSetHour(TimePicker timePicker, int hour)
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            timePicker.setHour(hour);
+        }
+        else
+        {
+            //noinspection deprecation
+            timePicker.setCurrentHour(hour);
+        }
+    }
+
+    /**
+     * Wrapper around new and deprecated {@link TimePicker#getMinute()} function.
+     * @param timePicker {@code TimePicker} from which to get the currently selected minute
+     * @return the currently selected minute, in the range (0-59)
+     */
+    public static int timePickerGetMinute(TimePicker timePicker)
+    {
+        int mm;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            mm = timePicker.getMinute();
+        }
+        else
+        {
+            //noinspection deprecation
+            mm = timePicker.getCurrentMinute();
+        }
+        return mm;
+    }
+
+    /**
+     * Wrapper around new and deprecated {@link TimePicker#setMinute(int)} function.
+     * @param timePicker {@code TimePicker} to set the currently selected minute
+     * @param minute the minute to set, in the range (0-59)
+     */
+    public static void timePickerSetMinute(TimePicker timePicker, int minute)
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            timePicker.setMinute(minute);
+        }
+        else
+        {
+            //noinspection deprecation
+            timePicker.setCurrentMinute(minute);
+        }
     }
 
     /**

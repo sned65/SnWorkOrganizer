@@ -265,7 +265,8 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 
         public void updateWork(Project work, int position)
         {
-            Log.d(TAG, "updateWork("+work+", "+position+") called");
+            // FIXME BUG MainActivity sets wrong dates
+            Log.d(TAG, "updateWork("+work+", "+position+") called. Date range: "+new Date(_dateFrom)+" - "+new Date(_dateTo));
             Project old = _works.get(position);
             boolean inRange = work.getDate() >= _dateFrom && work.getDate() < _dateTo + 24*60*60*1000;
             if (inRange)

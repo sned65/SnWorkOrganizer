@@ -122,7 +122,7 @@ public class EditWorkFragment extends Fragment
                 @Override
                 public void onClick(View v)
                 {
-                    WorkListActivity activity = (WorkListActivity) getActivity();
+                    WorkListMaster activity = (WorkListMaster) getActivity();
                     activity.removeWorkEditFragment();
                 }
             });
@@ -133,7 +133,7 @@ public class EditWorkFragment extends Fragment
                 @Override
                 public void onClick(View v)
                 {
-                    // Note: buttons are present in two-pane mode only of WorkListActivity
+                    // Note: buttons are present in two-pane mode only
                     if (save())
                     {
                         WorkListMaster master = (WorkListMaster) getActivity();
@@ -172,9 +172,9 @@ public class EditWorkFragment extends Fragment
         _timeView = (TimePicker) rootView.findViewById(R.id.work_time_picker);
         _timeView.setIs24HourView(true);
         int hh = Mix.getDateField(_work.getDate(), Calendar.HOUR_OF_DAY);
-        _timeView.setCurrentHour(hh);
+        Mix.timePickerSetHour(_timeView, hh);
         int mm = Mix.getDateField(_work.getDate(), Calendar.MINUTE);
-        _timeView.setCurrentMinute(mm);
+        Mix.timePickerSetMinute(_timeView, mm);
 
         _titleView = (EditText) rootView.findViewById(R.id.work_title);
         _titleView.setText(_work.getName());
@@ -372,8 +372,8 @@ public class EditWorkFragment extends Fragment
     private void fillWork()
     {
         long dt = _dateView.getDate();
-        int hh = _timeView.getCurrentHour();
-        int mm = _timeView.getCurrentMinute();
+        int hh = Mix.timePickerGetHour(_timeView);
+        int mm = Mix.timePickerGetMinute(_timeView);
         long date = Mix.updateTime(dt, hh, mm);
         _work.setDate(date);
 

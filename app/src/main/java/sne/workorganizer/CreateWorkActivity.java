@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.support.design.widget.TextInputEditText;
@@ -377,28 +376,8 @@ public class CreateWorkActivity extends AppCompatActivity
             }
         }
 
-        int hh;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-        {
-            hh = _timePicker.getHour();
-        }
-        else
-        {
-            //noinspection deprecation
-            hh = _timePicker.getCurrentHour();
-        }
-
-        int mm;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-        {
-            mm = _timePicker.getMinute();
-        }
-        else
-        {
-            //noinspection deprecation
-            mm = _timePicker.getCurrentMinute();
-        }
-
+        int hh = Mix.timePickerGetHour(_timePicker);
+        int mm = Mix.timePickerGetMinute(_timePicker);
 
         Calendar cal = GregorianCalendar.getInstance();
         cal.setTime(_workDate);

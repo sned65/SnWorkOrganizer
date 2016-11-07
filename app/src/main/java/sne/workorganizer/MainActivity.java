@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -44,9 +45,11 @@ public class MainActivity extends WorkListAbstractActivity
     private static final int RC_PERMISSIONS = 2;
     private static final String ARG_DATE_FROM = "arg_date_from";
     private static final String ARG_DATE_TO = "arg_date_to";
+    private static final int COLOR_SEARCH_WARNING = Color.rgb(0xff, 0xa5, 0x00);
 
     private Button _btnDateFrom;
     private Button _btnDateTo;
+    private ImageButton _btnSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -71,13 +74,15 @@ public class MainActivity extends WorkListAbstractActivity
         setNoWorkMessage(R.string.info_no_works_for_dates);
         setupWorkListView(dateFrom, dateTo);
 
-        ImageButton btnSearch = (ImageButton) findViewById(R.id.btn_search);
-        btnSearch.setOnClickListener(new View.OnClickListener()
+        _btnSearch = (ImageButton) findViewById(R.id.btn_search);
+        _btnSearch.setBackgroundColor(Color.LTGRAY);
+        _btnSearch.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
                 search();
+                _btnSearch.setBackgroundColor(Color.LTGRAY);
             }
         });
 
@@ -150,7 +155,13 @@ public class MainActivity extends WorkListAbstractActivity
                         c.set(year, month, dayOfMonth);
                         Date d = c.getTime();
                         setDateFrom(d.getTime());
-                        _btnDateFrom.setText(SimpleDateFormat.getDateInstance().format(d));
+                        String old_date = _btnDateFrom.getText().toString();
+                        String new_date = SimpleDateFormat.getDateInstance().format(d);
+                        if (!old_date.equals(new_date))
+                        {
+                            _btnSearch.setBackgroundColor(COLOR_SEARCH_WARNING);
+                        }
+                        _btnDateFrom.setText(new_date);
                     }
                 }, year_from, month_from, day_from).show();
             }
@@ -174,7 +185,13 @@ public class MainActivity extends WorkListAbstractActivity
                         c.set(year, month, dayOfMonth);
                         Date d = c.getTime();
                         setDateTo(d.getTime());
-                        _btnDateTo.setText(SimpleDateFormat.getDateInstance().format(d));
+                        String old_date = _btnDateTo.getText().toString();
+                        String new_date = SimpleDateFormat.getDateInstance().format(d);
+                        if (!old_date.equals(new_date))
+                        {
+                            _btnSearch.setBackgroundColor(COLOR_SEARCH_WARNING);
+                        }
+                        _btnDateTo.setText(new_date);
                     }
                 }, year_to, month_to, day_to).show();
             }
