@@ -48,6 +48,7 @@ public class WorkListActivity extends WorkListAbstractActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
+        toolbar.setSubtitle(R.string.calendar);
 
         _calendarView = (CalendarView) findViewById(R.id.calendarView);
         //noinspection deprecation
@@ -153,12 +154,18 @@ public class WorkListActivity extends WorkListAbstractActivity
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState)
     {
-        Log.i(TAG, "onRestoreInstanceState() called");
+        if (BuildConfig.DEBUG)
+        {
+            Log.d(TAG, "onRestoreInstanceState() called");
+        }
         super.onRestoreInstanceState(savedInstanceState);
         long date = savedInstanceState.getLong(WoConstants.ARG_CURRENT_DATE, -1);
         if (date > 0)
         {
-            Log.i(TAG, "onRestoreInstanceState() set date "+(new Date(date)));
+            if (BuildConfig.DEBUG)
+            {
+                Log.d(TAG, "onRestoreInstanceState() set date " + (new Date(date)));
+            }
             _calendarView.setDate(date);
             setupWorkListView(_calendarView.getDate(), null);
             search();

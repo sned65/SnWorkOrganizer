@@ -64,6 +64,7 @@ public class MainActivity extends WorkListAbstractActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
+        toolbar.setSubtitle(R.string.journal);
 
         _btnDateFrom = (Button) findViewById(R.id.btn_date_from);
         _btnDateTo = (Button) findViewById(R.id.btn_date_to);
