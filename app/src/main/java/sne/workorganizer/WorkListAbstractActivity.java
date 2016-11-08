@@ -42,8 +42,6 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 
     @StringRes private int _noWorkMessage;
 
-    private long _dateFrom;
-    private long _dateTo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -53,16 +51,6 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 
     protected void setupWorkListView(Long dateFrom, Long dateTo)
     {
-        _dateFrom = dateFrom;
-        if (dateTo == null)
-        {
-            _dateTo = _dateFrom;
-        }
-        else
-        {
-            _dateTo = dateTo;
-        }
-
         _workListView = (RecyclerView) findViewById(R.id.work_list);
         WorkListViewAdapter adapter = new WorkListViewAdapter(this, dateFrom, dateTo);
         adapter.setNoWorkMessage(_noWorkMessage);
@@ -117,9 +105,13 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 
     protected void search()
     {
-        Date dateFrom = new Date(_dateFrom);
-        Date dateTo = new Date(_dateTo);
-        Log.i(TAG, "search() from "+dateFrom+" to "+dateTo);
+        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
+        Date dateFrom = new Date(adapter.getDateFrom());
+        Date dateTo = new Date(adapter.getDateTo());
+        if (BuildConfig.DEBUG)
+        {
+            Log.d(TAG, "search() from " + dateFrom + " to " + dateTo);
+        }
 
         DatabaseHelper db = DatabaseHelper.getInstance(this);
         db.findAllProjects(new DatabaseHelper.DbSelectProjectsCallback()
@@ -158,22 +150,26 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 
     protected long getDateFrom()
     {
-        return _dateFrom;
+        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
+        return adapter.getDateFrom();
     }
 
     protected void setDateFrom(long dateFrom)
     {
-        _dateFrom = dateFrom;
+        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
+        adapter.setDateFrom(dateFrom);
     }
 
     protected long getDateTo()
     {
-        return _dateTo;
+        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
+        return adapter.getDateTo();
     }
 
     protected void setDateTo(long dateTo)
     {
-        _dateTo = dateTo;
+        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
+        adapter.setDateTo(dateTo);
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -190,7 +186,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         {
             _activity = activity;
             _dateFrom = dateFrom;
-            if (_dateTo == null)
+            if (dateTo == null)
             {
                 _dateTo = _dateFrom;
             }
@@ -265,13 +261,18 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 
         public void updateWork(Project work, int position)
         {
-            // FIXME BUG MainActivity sets wrong dates
-            Log.d(TAG, "updateWork("+work+", "+position+") called. Date range: "+new Date(_dateFrom)+" - "+new Date(_dateTo));
+            if (BuildConfig.DEBUG)
+            {
+                Log.d(TAG, "updateWork(" + work + ", " + position + ") called. Date range: " + new Date(_dateFrom) + " - " + new Date(_dateTo));
+            }
             Project old = _works.get(position);
             boolean inRange = work.getDate() >= _dateFrom && work.getDate() < _dateTo + 24*60*60*1000;
             if (inRange)
             {
-                Log.d(TAG, "updateWork() new date is in the filter range");
+                if (BuildConfig.DEBUG)
+                {
+                    Log.d(TAG, "updateWork() new date is in the filter range");
+                }
                 _works.set(position, work);
                 if (old.getDate().longValue() != work.getDate().longValue())
                 {
@@ -280,7 +281,10 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
             }
             else
             {
-                Log.d(TAG, "updateWork() new date is NOT in the filter range");
+                if (BuildConfig.DEBUG)
+                {
+                    Log.d(TAG, "updateWork() new date is NOT in the filter range");
+                }
                 removeWork(position);
             }
         }
@@ -299,8 +303,31 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 
         public void removeWork(int position)
         {
-            Log.d(TAG, "removeWork("+position+") called");
+            if (BuildConfig.DEBUG)
+            {
+                Log.d(TAG, "removeWork(" + position + ") called");
+            }
             _works.remove(position);
+        }
+
+        public Long getDateFrom()
+        {
+            return _dateFrom;
+        }
+
+        public void setDateFrom(Long dateFrom)
+        {
+            _dateFrom = dateFrom;
+        }
+
+        public Long getDateTo()
+        {
+            return _dateTo;
+        }
+
+        public void setDateTo(Long dateTo)
+        {
+            _dateTo = dateTo;
         }
 
         /////////////////////////////////////////////////////////////////////////
@@ -317,7 +344,10 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
             @Override
             public boolean onLongClick(View v)
             {
-                Log.d(TAG, "onLongClick() called "+getAdapterPosition()+"; "+_project);
+                if (BuildConfig.DEBUG)
+                {
+                    Log.d(TAG, "onLongClick() called " + getAdapterPosition() + "; " + _project);
+                }
                 if (_project == null || Project.isDummy(_project))
                 {
                     return true;

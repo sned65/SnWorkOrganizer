@@ -54,7 +54,10 @@ public class MainActivity extends WorkListAbstractActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-        Log.i(TAG, "onCreate(" + savedInstanceState + ") called");
+        if (BuildConfig.DEBUG)
+        {
+            Log.d(TAG, "onCreate(" + savedInstanceState + ") called");
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -121,13 +124,15 @@ public class MainActivity extends WorkListAbstractActivity
         super.onSaveInstanceState(state);
         state.putLong(ARG_DATE_FROM, getDateFrom());
         state.putLong(ARG_DATE_TO, getDateTo());
-        //Log.i(TAG, "onSaveInstanceState() stored current date");
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState)
     {
-        Log.i(TAG, "onRestoreInstanceState() called");
+        if (BuildConfig.DEBUG)
+        {
+            Log.d(TAG, "onRestoreInstanceState() called");
+        }
         super.onRestoreInstanceState(savedInstanceState);
         setDateFrom(savedInstanceState.getLong(ARG_DATE_FROM, 0));
         setDateTo(savedInstanceState.getLong(ARG_DATE_TO, 0));
@@ -221,7 +226,7 @@ public class MainActivity extends WorkListAbstractActivity
         //Log.i(TAG, "onRequestPermissionsResult() called");
         if (requestCode != RC_PERMISSIONS)
         {
-            Log.d(TAG, "Got unexpected permission result: " + requestCode);
+            Log.e(TAG, "Got unexpected permission result: " + requestCode);
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
             return;
         }
@@ -301,9 +306,11 @@ public class MainActivity extends WorkListAbstractActivity
     protected void onActivityResult(int requestCode, int resultCode,
                                     Intent data)
     {
-        //super.onActivityResult(requestCode, resultCode, data);
-        Log.i(TAG, "requestCode = "+(requestCode == WoConstants.RC_CREATE_WORK ? "CREATE_PROJECT" : requestCode)
-                +", resultCode = "+(resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
+        if (BuildConfig.DEBUG)
+        {
+            Log.d(TAG, "requestCode = " + (requestCode == WoConstants.RC_CREATE_WORK ? "CREATE_PROJECT" : requestCode)
+                    + ", resultCode = " + (resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
+        }
 
         if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_EDIT_WORK)
         {
@@ -321,7 +328,10 @@ public class MainActivity extends WorkListAbstractActivity
         else if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_OPEN_DESIGN_DOCUMENT)
         {
             Uri uri = data.getData();
-            Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+            if (BuildConfig.DEBUG)
+            {
+                Log.d(TAG, "onActivityResult() uri = " + uri.toString());
+            }
             String path = FileUtils.getPath(this, uri);
 
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
@@ -331,7 +341,10 @@ public class MainActivity extends WorkListAbstractActivity
         else if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_OPEN_RESULT_DOCUMENT)
         {
             Uri uri = data.getData();
-            Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+            if (BuildConfig.DEBUG)
+            {
+                Log.d(TAG, "onActivityResult() uri = " + uri.toString());
+            }
             String path = FileUtils.getPath(this, uri);
 
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
