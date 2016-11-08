@@ -484,4 +484,24 @@ public class Mix
             }
         }
     }
+
+    /**
+     * Causes the thread which sent this message to sleep for the given interval of time
+     * (given in seconds). The precision is not guaranteed - the Thread may sleep more
+     * or less than requested.
+     *
+     * @param sec The time to sleep in seconds.
+     */
+    public static void sleep(int sec)
+    {
+        if (sec <= 0) return;
+        try
+        {
+            Thread.sleep(sec*1000);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+    }
 }
