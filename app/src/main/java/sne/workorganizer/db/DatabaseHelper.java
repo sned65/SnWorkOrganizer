@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import sne.workorganizer.BuildConfig;
 import sne.workorganizer.util.Mix;
 
 // Notes about work with photos:
@@ -163,7 +164,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
         String sql = "SELECT " + CLIENTS_COLUMNS + " FROM " + Table.CLIENTS + " ORDER BY fullname";
 
         SQLiteDatabase db = getReadableDatabase();
-        Log.i(TAG, sql);
+        if (BuildConfig.DEBUG)
+        {
+            Log.d(TAG, sql);
+        }
         Cursor c = db.rawQuery(sql, null);
 
         while (c.moveToNext())
@@ -207,7 +211,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
         }
 
         SQLiteDatabase db = getReadableDatabase();
-        Log.i(TAG, sql+", using "+dateFrom);
+        if (BuildConfig.DEBUG)
+        {
+            Log.d(TAG, sql + ", using " + dateFrom);
+        }
         Cursor c = db.rawQuery(sql, args);
 
         while (c.moveToNext())
@@ -226,7 +233,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
         String sql = "SELECT " + PICTURES_COLUMNS + " FROM " + Table.PICTURES;
 
         SQLiteDatabase db = getReadableDatabase();
-        Log.i(TAG, sql);
+        if (BuildConfig.DEBUG)
+        {
+            Log.d(TAG, sql);
+        }
         Cursor c = db.rawQuery(sql, null);
 
         while (c.moveToNext())
@@ -258,7 +268,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
         List<Project> projects = new ArrayList<>();
         args[0] = client.getId();
-        Log.i(TAG, sqlProj+", using "+args[0]);
+        if (BuildConfig.DEBUG)
+        {
+            Log.d(TAG, sqlProj + ", using " + args[0]);
+        }
         Cursor c_proj = db.rawQuery(sqlProj, args);
         while (c_proj.moveToNext())
         {
@@ -315,7 +328,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 " WHERE " + CLIENTS_PK + " = ?";
 
         SQLiteDatabase db = getReadableDatabase();
-        Log.i(TAG, sql+", using "+clientId);
+        if (BuildConfig.DEBUG)
+        {
+            Log.d(TAG, sql + ", using " + clientId);
+        }
         String[] args = new String[] { clientId };
         Cursor c = db.rawQuery(sql, args);
 
@@ -407,7 +423,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 " WHERE " + PROJECTS_PK + " = ?";
 
         SQLiteDatabase db = getReadableDatabase();
-        Log.i(TAG, sql+", using "+workId);
+        if (BuildConfig.DEBUG)
+        {
+            Log.d(TAG, sql + ", using " + workId);
+        }
         String[] args = new String[] { workId };
         Cursor c = db.rawQuery(sql, args);
 
@@ -539,7 +558,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 " WHERE " + PICTURES_PK + " = ?";
 
         SQLiteDatabase db = getReadableDatabase();
-        Log.i(TAG, sql+", using "+pictureId);
+        if (BuildConfig.DEBUG)
+        {
+            Log.d(TAG, sql + ", using " + pictureId);
+        }
         String[] args = new String[] { pictureId };
         Cursor c = db.rawQuery(sql, args);
 
@@ -570,7 +592,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 " WHERE " + PICTURES_COL_WORK_ID + " = ?";
 
         SQLiteDatabase db = getReadableDatabase();
-        Log.i(TAG, sql+", using "+workId);
+        if (BuildConfig.DEBUG)
+        {
+            Log.d(TAG, sql + ", using " + workId);
+        }
         String[] args = new String[] { workId };
         Cursor c = db.rawQuery(sql, args);
 
@@ -638,8 +663,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 args[2] = _client.getPhone();
                 args[3] = _client.getEmail();
                 args[4] = _client.getSocial();
-                Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s, %s", sql,
-                        args[0], args[1], args[2], args[3], args[4]));
+                if (BuildConfig.DEBUG)
+                {
+                    Log.d(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s, %s", sql,
+                            args[0], args[1], args[2], args[3], args[4]));
+                }
                 getWritableDatabase().execSQL(sql, args);
             }
 
@@ -655,9 +683,12 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 args[4] = _work.getStatus();
                 args[5] = _work.getPrice();
                 args[6] = _work.getDesign();
-                Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s, %s, %s, %s", sql,
-                        args[0], args[1], args[2], new Date(_work.getDate()).toString(),
-                        args[4], args[5], args[6]));
+                if (BuildConfig.DEBUG)
+                {
+                    Log.d(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s, %s, %s, %s", sql,
+                            args[0], args[1], args[2], new Date(_work.getDate()).toString(),
+                            args[4], args[5], args[6]));
+                }
                 getWritableDatabase().execSQL(sql, args);
             }
 
@@ -676,8 +707,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
                     args[0] = _picture.getId();
                     args[1] = _picture.getWorkId();
                     args[2] = photo;
-                    Log.i(TAG, String.format("UpdateThread: %s, using %s, %s, %s", sql,
-                            args[0], args[1], args[2]));
+                    if (BuildConfig.DEBUG)
+                    {
+                        Log.d(TAG, String.format("UpdateThread: %s, using %s, %s, %s", sql,
+                                args[0], args[1], args[2]));
+                    }
                     getWritableDatabase().execSQL(sql, args);
                 }
             }
@@ -690,7 +724,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
                     " WHERE " + PICTURES_COL_WORK_ID + " = ?";
             Object[] args = new Object[1];
             args[0] = workId;
-            Log.i(TAG, String.format("clearResultPictures: %s, using %s", sql, args[0]));
+            if (BuildConfig.DEBUG)
+            {
+                Log.d(TAG, String.format("clearResultPictures: %s, using %s", sql, args[0]));
+            }
 
             getWritableDatabase().execSQL(sql, args);
         }
@@ -701,7 +738,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
                     " WHERE " + PICTURES_COL_WORK_ID + " = ?";
             Object[] args = new Object[1];
             args[0] = workId;
-            Log.i(TAG, String.format("deleteResultPictures: %s, using %s", sql, args[0]));
+            if (BuildConfig.DEBUG)
+            {
+                Log.d(TAG, String.format("deleteResultPictures: %s, using %s", sql, args[0]));
+            }
 
             getWritableDatabase().execSQL(sql, args);
         }
@@ -775,7 +815,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 throw new IllegalArgumentException("Cannot delete from unknown table "+_table);
             }
 
-            Log.i(TAG, sql+", using "+_id);
+            if (BuildConfig.DEBUG)
+            {
+                Log.d(TAG, sql + ", using " + _id);
+            }
             getWritableDatabase().execSQL(sql, args);
         }
     }

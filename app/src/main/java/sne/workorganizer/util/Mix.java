@@ -320,7 +320,7 @@ public class Mix
      */
     public static void sendEmail(Context ctx, String email)
     {
-        Log.i(TAG, "sendEmail() called for "+email);
+        Log.d(TAG, "sendEmail() called for "+email);
         if (TextUtils.isEmpty(email)) return;
 
         Intent emailIntent = new Intent(Intent.ACTION_SEND);
@@ -480,7 +480,7 @@ public class Mix
             }
             else
             {
-                Log.i(TAG, "checkGrantedPermissions() Permission "+permissions[i]+" granted");
+                Log.d(TAG, "checkGrantedPermissions() Permission "+permissions[i]+" granted");
             }
         }
     }

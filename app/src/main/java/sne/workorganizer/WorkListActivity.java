@@ -41,7 +41,7 @@ public class WorkListActivity extends WorkListAbstractActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-        Log.i(TAG, "onCreate("+savedInstanceState+") called");
+        Log.d(TAG, "onCreate("+savedInstanceState+") called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_work_list);
 
@@ -56,7 +56,7 @@ public class WorkListActivity extends WorkListAbstractActivity
         long current_date = getIntent().getLongExtra(WoConstants.ARG_CURRENT_DATE, -1);
         if (current_date > 0)
         {
-            Log.i(TAG, "onCreate() current date = "+(new Date(current_date)));
+            Log.d(TAG, "onCreate() current date = "+(new Date(current_date)));
             _calendarView.setDate(current_date);
         }
         _calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener()
@@ -255,7 +255,7 @@ public class WorkListActivity extends WorkListAbstractActivity
                                     Intent data)
     {
         //super.onActivityResult(requestCode, resultCode, data);
-        Log.i(TAG, "requestCode = "+(requestCode == WoConstants.RC_CREATE_WORK ? "CREATE_PROJECT" : requestCode)
+        Log.d(TAG, "requestCode = "+(requestCode == WoConstants.RC_CREATE_WORK ? "CREATE_PROJECT" : requestCode)
                 +", resultCode = "+(resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
 
         if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_CREATE_WORK)
@@ -279,7 +279,7 @@ public class WorkListActivity extends WorkListAbstractActivity
         else if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_OPEN_DESIGN_DOCUMENT)
         {
             Uri uri = data.getData();
-            Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+            Log.d(TAG, "onActivityResult() uri = "+uri.toString());
             String path = FileUtils.getPath(this, uri);
 
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
@@ -289,7 +289,7 @@ public class WorkListActivity extends WorkListAbstractActivity
         else if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_OPEN_RESULT_DOCUMENT)
         {
             Uri uri = data.getData();
-            Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+            Log.d(TAG, "onActivityResult() uri = "+uri.toString());
             String path = FileUtils.getPath(this, uri);
 
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);

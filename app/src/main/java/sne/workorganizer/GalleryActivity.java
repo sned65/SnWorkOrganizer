@@ -199,7 +199,7 @@ public class GalleryActivity extends AppCompatActivity
                 @Override
                 public void onSelectFinished(ArrayList<Picture> records)
                 {
-                    Log.i(TAG, "onSelectFinished() " + records + ", size = " + ((records == null) ? "" : records.size()));
+                    Log.d(TAG, "onSelectFinished() " + records + ", size = " + ((records == null) ? "" : records.size()));
                     _pictures = records;
                     showGallery();
                 }
@@ -222,7 +222,7 @@ public class GalleryActivity extends AppCompatActivity
         @Override
         public void onBindViewHolder(RowHolderResult holder, int position)
         {
-            Log.i(TAG, "onBindViewHolder("+position+") "+_pictures.get(position));
+            Log.d(TAG, "onBindViewHolder("+position+") "+_pictures.get(position));
             holder.bindModel(_pictures.get(position));
         }
 
@@ -261,7 +261,7 @@ public class GalleryActivity extends AppCompatActivity
         @Override
         public void onClick(View v)
         {
-            Log.i(TAG, "onClick() called " + getAdapterPosition() + "; " + _picture);
+            Log.d(TAG, "onClick() called " + getAdapterPosition() + "; " + _picture);
             if (_picture == null) return;
 
             Mix.showPhoto(_activity, _picture.getResultPhoto());
@@ -270,7 +270,7 @@ public class GalleryActivity extends AppCompatActivity
         @Override
         public boolean onLongClick(View v)
         {
-            Log.i(TAG, "onLongClick() called " + getAdapterPosition() + "; " + _picture);
+            Log.d(TAG, "onLongClick() called " + getAdapterPosition() + "; " + _picture);
             if (_picture == null)
             {
                 return true;
@@ -320,7 +320,7 @@ public class GalleryActivity extends AppCompatActivity
                 @Override
                 public void onSelectFinished(ArrayList<Project> records)
                 {
-                    Log.i(TAG, "onSelectFinished() size = " + ((records == null) ? "" : records.size())+ ": " + records);
+                    Log.d(TAG, "onSelectFinished() size = " + ((records == null) ? "" : records.size())+ ": " + records);
                     _projects = records;
                     showGallery();
                 }
@@ -343,7 +343,7 @@ public class GalleryActivity extends AppCompatActivity
         @Override
         public void onBindViewHolder(RowHolderDesign holder, int position)
         {
-            Log.i(TAG, "onBindViewHolder("+position+")");
+            Log.d(TAG, "onBindViewHolder("+position+")");
             holder.bindModel(_projects.get(position));
         }
 
@@ -374,7 +374,7 @@ public class GalleryActivity extends AppCompatActivity
         @Override
         public void onClick(View v)
         {
-            Log.i(TAG, "onClick() called " + getAdapterPosition() + "; " + _work);
+            Log.d(TAG, "onClick() called " + getAdapterPosition() + "; " + _work);
             if (_work == null) return;
 
             Mix.showPhoto(_activity, _work.getDesign());

@@ -237,14 +237,14 @@ public class CreateWorkActivity extends AppCompatActivity
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData)
     {
-        Log.i(TAG, "onActivityResult("+requestCode+", "+requestCode+") called");
+        Log.d(TAG, "onActivityResult("+requestCode+", "+requestCode+") called");
         if (resultCode != Activity.RESULT_OK) return;
         if (resultData == null) return;
 
         if (requestCode == WoConstants.RC_OPEN_DESIGN_DOCUMENT)
         {
             Uri uri = resultData.getData();
-            Log.i(TAG, uri.toString());
+            Log.d(TAG, uri.toString());
 
             Cursor c =
                     getContentResolver().query(uri, null, null,
@@ -257,13 +257,13 @@ public class CreateWorkActivity extends AppCompatActivity
                 if (displayNameColumn >= 0)
                 {
                     displayName = c.getString(displayNameColumn);
-                    Log.i(TAG, "Display name: " + displayName);
+                    Log.d(TAG, "Display name: " + displayName);
                 }
 
                 c.close();
 
                 _designPath = FileUtils.getPath(this, uri);
-                Log.i(TAG, "onActivityResult() uri ("+uri+") -> _designPath ("+_designPath+")");
+                Log.d(TAG, "onActivityResult() uri ("+uri+") -> _designPath ("+_designPath+")");
                 _designView.setText(displayName);
 
                 //int thumbnailWidth = getResources().getDimensionPixelSize(android.R.dimen.thumbnail_width);
@@ -279,7 +279,7 @@ public class CreateWorkActivity extends AppCompatActivity
             }
             else
             {
-                Log.i(TAG, "?No metadata available for "+uri);
+                Log.d(TAG, "?No metadata available for "+uri);
             }
         }
 
@@ -303,7 +303,7 @@ public class CreateWorkActivity extends AppCompatActivity
         // Validate fields
 
         String client_name = _selectClientView.getText().toString();
-        Log.i(TAG, "save() client_name = "+client_name);
+        Log.d(TAG, "save() client_name = "+client_name);
 
         boolean cancel = false;
         View focus = null;
@@ -332,7 +332,7 @@ public class CreateWorkActivity extends AppCompatActivity
         if (_selectedClient == null || !client_name.equals(_selectedClient.getName()))
         {
             // new client
-            Log.i(TAG, "save() new client");
+            Log.d(TAG, "save() new client");
             DatabaseHelper db = DatabaseHelper.getInstance(this);
             Client newClient = new Client();
             newClient.setName(client_name);

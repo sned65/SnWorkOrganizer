@@ -311,7 +311,7 @@ public class EditWorkFragment extends Fragment
 
     private void makePhoto()
     {
-        Log.i(TAG, "makePhoto() called");
+        Log.d(TAG, "makePhoto() called");
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         Uri resultUri = PhotoUtils.getOutputMediaFileUri(_work.getName()); // create a file to save the image
         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, resultUri); // set the image file name
@@ -330,7 +330,7 @@ public class EditWorkFragment extends Fragment
 
     public boolean save()
     {
-        Log.i(TAG, "save() called");
+        Log.d(TAG, "save() called");
         if (validateFields()) return false;
 
         fillWork();
@@ -438,7 +438,7 @@ public class EditWorkFragment extends Fragment
 
     public void acceptPhoto(boolean flag)
     {
-        Log.i(TAG, "acceptPhoto("+flag+") called for "+_photoPath);
+        Log.d(TAG, "acceptPhoto("+flag+") called for "+_photoPath);
         if (flag)
         {
             _resultPath = _photoPath;

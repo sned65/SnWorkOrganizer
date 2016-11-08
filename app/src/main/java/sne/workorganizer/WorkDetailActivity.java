@@ -138,7 +138,7 @@ public class WorkDetailActivity extends AppCompatActivity implements EditClientD
     protected void onActivityResult(int requestCode, int resultCode,
                                     Intent data)
     {
-        Log.i(TAG, "requestCode = " + requestCode
+        Log.d(TAG, "requestCode = " + requestCode
                 + ", resultCode = " + (resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
         if (resultCode != Activity.RESULT_OK) return;
 

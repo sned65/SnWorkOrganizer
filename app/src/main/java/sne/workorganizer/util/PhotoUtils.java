@@ -81,7 +81,7 @@ public class PhotoUtils
                 displayName = c.getString(name_idx);
                 int size_idx = c.getColumnIndex(OpenableColumns.SIZE);
                 Long size = c.getLong(size_idx);
-                Log.i(TAG, "setScaledBitmap() name = " + displayName + ", size = " + size);
+                Log.d(TAG, "setScaledBitmap() name = " + displayName + ", size = " + size);
             }
             c.close();
             //Log.i(TAG, "setScaledBitmap() path = "+path);

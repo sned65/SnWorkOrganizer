@@ -108,13 +108,13 @@ public class EditWorkActivity extends AppCompatActivity
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData)
     {
-        Log.i(TAG, "onActivityResult("+requestCode+", "+requestCode+") called");
+        Log.d(TAG, "onActivityResult("+requestCode+", "+requestCode+") called");
 
         if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_OPEN_DESIGN_DOCUMENT)
         {
             if (resultData == null) return;
             Uri uri = resultData.getData();
-            Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+            Log.d(TAG, "onActivityResult() uri = "+uri.toString());
             String path = FileUtils.getPath(this, uri);
 
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
@@ -125,7 +125,7 @@ public class EditWorkActivity extends AppCompatActivity
         {
             if (resultData == null) return;
             Uri uri = resultData.getData();
-            Log.i(TAG, "onActivityResult() uri = "+uri.toString());
+            Log.d(TAG, "onActivityResult() uri = "+uri.toString());
             String path = FileUtils.getPath(this, uri);
 
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);

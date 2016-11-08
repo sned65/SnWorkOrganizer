@@ -105,7 +105,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
     protected void onActivityResult(int requestCode, int resultCode,
                                     Intent data)
     {
-        Log.i(TAG, "requestCode = "+(requestCode == RC_CREATE_CLIENT ? "CREATE_CLIENT" : requestCode)
+        Log.d(TAG, "requestCode = "+(requestCode == RC_CREATE_CLIENT ? "CREATE_CLIENT" : requestCode)
                 +", resultCode = "+(resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
         if (resultCode != RESULT_OK) return;
 
@@ -124,10 +124,10 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
 
     private void createClient(Client client, int position)
     {
-        Log.i(TAG, "createClient("+client+", "+position+") called");
+        Log.d(TAG, "createClient("+client+", "+position+") called");
         RecyclerView rv = (RecyclerView) findViewById(R.id.client_list);
         ClientListAdapter adapter = (ClientListAdapter) rv.getAdapter();
-        Log.i(TAG, "adapter.getClientCount() = "+adapter.getClientCount());
+        Log.d(TAG, "adapter.getClientCount() = "+adapter.getClientCount());
         if (adapter.getClientCount() == 0)
         {
             adapter.addClient(client, position);
@@ -187,7 +187,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
                 @Override
                 public void onSelectFinished(ArrayList<Client> records)
                 {
-                    Log.i(TAG, "onSelectFinished() "+records+", size = "+((records == null) ? "" : records.size()));
+                    Log.d(TAG, "onSelectFinished() "+records+", size = "+((records == null) ? "" : records.size()));
                     _clients = records;
                     showClientList();
                 }
@@ -334,7 +334,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
         @Override
         public boolean onLongClick(View v)
         {
-            Log.i(TAG, "onLongClick() called "+getAdapterPosition()+"; "+_client);
+            Log.d(TAG, "onLongClick() called "+getAdapterPosition()+"; "+_client);
             if (_client == null)
             {
                 return true;

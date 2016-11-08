@@ -50,7 +50,7 @@ public class PictureFiles
         }
         catch (Exception ex)
         {
-            Log.i(TAG, "Problem saving picture for id = " + id, ex);
+            Log.d(TAG, "Problem saving picture for id = " + id, ex);
         }
     }
 
