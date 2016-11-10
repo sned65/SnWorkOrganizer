@@ -158,6 +158,14 @@ public class DatabaseHelper extends SQLiteOpenHelper
         throw new RuntimeException("No upgrade available");
     }
 
+    @Override
+    public void onOpen(SQLiteDatabase db)
+    {
+        super.onOpen(db);
+        // SQLite disables foreign key constraint by default, so we need to enable it.
+        db.execSQL("PRAGMA foreign_keys=ON");
+    }
+
     private ArrayList<Client> selectClients()
     {
         ArrayList<Client> clients = new ArrayList<>();
