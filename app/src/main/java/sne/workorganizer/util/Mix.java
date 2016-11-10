@@ -491,6 +491,7 @@ public class Mix
      * or less than requested.
      *
      * @param sec The time to sleep in seconds.
+     *            If {@code <= 0} then the function returns immediately.
      */
     public static void sleep(int sec)
     {

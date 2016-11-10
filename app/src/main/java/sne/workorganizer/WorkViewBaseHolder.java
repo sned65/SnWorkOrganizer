@@ -83,7 +83,15 @@ public class WorkViewBaseHolder extends RecyclerView.ViewHolder
         _workTitleView.setText(_project.getName());
         DatabaseHelper db = DatabaseHelper.getInstance(_itemView.getContext());
         Client client = db.findClientById(_project.getClientId());
-        _clientName = client.getName();
+        if (client == null)
+        {
+            // should never happen
+            _clientName = "???";
+        }
+        else
+        {
+            _clientName = client.getName();
+        }
         _clientNameView.setText(_clientName);
         _clientNameView.setVisibility(View.VISIBLE);
     }

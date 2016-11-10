@@ -112,8 +112,6 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
 
         if (requestCode == RC_CREATE_CLIENT)
         {
-            //DatabaseHelper db = DatabaseHelper.getInstance(this);
-            //rv.getAdapter().notifyItemInserted(db.getInsertPosition());//.notifyDataSetChanged();
             Client newClient = data.getParcelableExtra(WoConstants.ARG_CLIENT);
             createClient(newClient, 0);
 
