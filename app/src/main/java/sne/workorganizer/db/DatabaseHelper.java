@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.os.Process;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -499,7 +500,19 @@ public class DatabaseHelper extends SQLiteOpenHelper
      */
     public void createProject(Project project)
     {
-        new UpdateThread(project).start();
+        createProjectWithClient(project, null);
+    }
+
+    /**
+     * Insert new work and client in a separate thread.
+     *
+     * @param project work to be inserted
+     * @param newClient new client.
+     *                  Should be {@code null} if the work is for existing client.
+     */
+    public void createProjectWithClient(Project project, @Nullable Client newClient)
+    {
+        new UpdateThread(project, newClient).start();
     }
 
     /**
@@ -638,6 +651,13 @@ public class DatabaseHelper extends SQLiteOpenHelper
         UpdateThread(Project work)
         {
             super();
+            _work = work;
+        }
+
+        UpdateThread(Project work, Client client)
+        {
+            super();
+            _client = client;
             _work = work;
         }
 

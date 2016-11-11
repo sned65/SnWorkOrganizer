@@ -329,14 +329,15 @@ public class CreateWorkActivity extends AppCompatActivity
             return;
         }
 
+        DatabaseHelper db = DatabaseHelper.getInstance(this);
+        Client newClient = null;
+
         if (_selectedClient == null || !client_name.equals(_selectedClient.getName()))
         {
             // new client
             Log.d(TAG, "save() new client");
-            DatabaseHelper db = DatabaseHelper.getInstance(this);
-            Client newClient = new Client();
+            newClient = new Client();
             newClient.setName(client_name);
-            db.createClient(newClient);
 
             _selectedClient = new IdNamePair();
             _selectedClient.setId(newClient.getId());
@@ -347,8 +348,7 @@ public class CreateWorkActivity extends AppCompatActivity
 
         Project project = fillProject();
 
-        DatabaseHelper db = DatabaseHelper.getInstance(this);
-        db.createProject(project);
+        db.createProjectWithClient(project, newClient);
 
         Intent result = new Intent();
         result.putExtra(WoConstants.ARG_WORK, project);
