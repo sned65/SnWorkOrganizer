@@ -53,6 +53,7 @@ dependencies {
     androidTestCompile 'com.github.SilenceDut:ExpandableLayout:1.2.0'
     androidTestCompile 'com.android.support:support-v4:24.2.1'
     androidTestCompile 'com.android.support.test:rules:0.5'
+    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.2'
 
     // 24.2.1 leads to
     //  java.lang.IllegalArgumentException: Rect should intersect with child's bounds.
