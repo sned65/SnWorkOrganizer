@@ -3,6 +3,7 @@ package sne.workorganizer;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.support.annotation.StringRes;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.BySelector;
@@ -24,6 +25,7 @@ public class TestUtils
 {
     private static final String TAG = TestUtils.class.getName();
     private static final String GRANT_PERMISSION_ACTIVITY = "com.android.packageinstaller.permission.ui.GrantPermissionsActivity";
+    private static final String PERMISSION_ALLOW_BUTTON_ID = "permission_allow_button";
     private static final int PERMISSIONS_DIALOG_DELAY = 3;
     private static final int GRANT_BUTTON_INDEX = 1;
 
@@ -46,25 +48,21 @@ public class TestUtils
                 // Espresso doesn't allow us to interact with system dialogs,
                 // so we used UiAutomator, which is perfectly compatible with Espresso.
                 UiDevice device = UiDevice.getInstance(getInstrumentation());
-                boolean hasDialog = device.hasObject(By.clazz(GRANT_PERMISSION_ACTIVITY));
-                while (hasDialog)
+
+                UiSelector selector = new UiSelector()
+                        .resourceIdMatches(".*/"+PERMISSION_ALLOW_BUTTON_ID);
+
+                UiObject allowPermissions = device.findObject(selector);
+                Log.i(TAG, "allowPermissions exists "+allowPermissions.exists());
+                while (allowPermissions.exists())
                 {
-                    UiObject allowPermissions = device.findObject(new UiSelector()
-                            .clickable(true)
-                            .checkable(false)
-                            .instance(GRANT_BUTTON_INDEX));
-                    if (allowPermissions.exists())
-                    {
-                        Log.i(TAG, "allowAllNeededPermissions() click on "+allowPermissions.getText());
-                        allowPermissions.click();
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    UiObject permissionMessage = device.findObject(new UiSelector()
+                            .resourceIdMatches(".*/permission_message"));
+                    Log.i(TAG, "allowAllNeededPermissions() click on " + allowPermissions.getText()+" for "+permissionMessage.getText());
+                    allowPermissions.click();
 
                     Mix.sleep(PERMISSIONS_DIALOG_DELAY);
-                    hasDialog = device.hasObject(By.clazz(GRANT_PERMISSION_ACTIVITY));
+                    allowPermissions = device.findObject(selector);
                 }
             }
         }
