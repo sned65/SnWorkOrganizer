@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -482,27 +483,6 @@ public class Mix
             {
                 Log.d(TAG, "checkGrantedPermissions() Permission "+permissions[i]+" granted");
             }
-        }
-    }
-
-    /**
-     * Causes the thread which sent this message to sleep for the given interval of time
-     * (given in seconds). The precision is not guaranteed - the Thread may sleep more
-     * or less than requested.
-     *
-     * @param sec The time to sleep in seconds.
-     *            If {@code <= 0} then the function returns immediately.
-     */
-    public static void sleep(int sec)
-    {
-        if (sec <= 0) return;
-        try
-        {
-            Thread.sleep(sec*1000);
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
         }
     }
 }

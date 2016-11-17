@@ -3,6 +3,7 @@ package sne.workorganizer;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.SystemClock;
 import android.support.annotation.StringRes;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.By;
@@ -26,7 +27,7 @@ public class TestUtils
     private static final String TAG = TestUtils.class.getName();
     private static final String PERMISSION_ALLOW_BUTTON_ID = "permission_allow_button";
     private static final String PERMISSION_MESSAGE = "permission_message";
-    private static final int PERMISSIONS_DIALOG_DELAY = 3;
+    private static final int PERMISSIONS_DIALOG_DELAY = 3000;
     private static final int GRANT_BUTTON_INDEX = 1;
 
     private TestUtils()
@@ -44,7 +45,7 @@ public class TestUtils
         {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             {
-                Mix.sleep(PERMISSIONS_DIALOG_DELAY);
+                SystemClock.sleep(PERMISSIONS_DIALOG_DELAY);
                 // Espresso doesn't allow us to interact with system dialogs,
                 // so we used UiAutomator, which is perfectly compatible with Espresso.
                 UiDevice device = UiDevice.getInstance(getInstrumentation());
@@ -62,7 +63,7 @@ public class TestUtils
                     allowPermissions.click();
 
                     // Next permission
-                    Mix.sleep(PERMISSIONS_DIALOG_DELAY);
+                    SystemClock.sleep(PERMISSIONS_DIALOG_DELAY);
                     allowPermissions = device.findObject(selector);
                 }
             }
@@ -98,7 +99,7 @@ public class TestUtils
         {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !hasNeededPermission(permissionNeeded))
             {
-                Mix.sleep(PERMISSIONS_DIALOG_DELAY);
+                SystemClock.sleep(PERMISSIONS_DIALOG_DELAY);
                 // Espresso doesn't allow us to interact with system dialogs,
                 // so we used UiAutomator, which is perfectly compatible with Espresso.
                 UiDevice device = UiDevice.getInstance(getInstrumentation());
@@ -116,7 +117,7 @@ public class TestUtils
                 {
                     Log.i(TAG, "allowPermissionsIfNeeded() click");
                     allowPermissions.click();
-                    Mix.sleep(PERMISSIONS_DIALOG_DELAY);
+                    SystemClock.sleep(PERMISSIONS_DIALOG_DELAY);
                 }
                 Log.i(TAG, "hasNeededPermission -> "+hasNeededPermission(permissionNeeded));
             }
