@@ -24,8 +24,8 @@ import static android.support.test.InstrumentationRegistry.getInstrumentation;
 public class TestUtils
 {
     private static final String TAG = TestUtils.class.getName();
-    private static final String GRANT_PERMISSION_ACTIVITY = "com.android.packageinstaller.permission.ui.GrantPermissionsActivity";
     private static final String PERMISSION_ALLOW_BUTTON_ID = "permission_allow_button";
+    private static final String PERMISSION_MESSAGE = "permission_message";
     private static final int PERMISSIONS_DIALOG_DELAY = 3;
     private static final int GRANT_BUTTON_INDEX = 1;
 
@@ -51,16 +51,17 @@ public class TestUtils
 
                 UiSelector selector = new UiSelector()
                         .resourceIdMatches(".*/"+PERMISSION_ALLOW_BUTTON_ID);
+                UiSelector selector_message = new UiSelector()
+                        .resourceIdMatches(".*/"+PERMISSION_MESSAGE);
 
                 UiObject allowPermissions = device.findObject(selector);
                 Log.i(TAG, "allowPermissions exists "+allowPermissions.exists());
                 while (allowPermissions.exists())
                 {
-                    UiObject permissionMessage = device.findObject(new UiSelector()
-                            .resourceIdMatches(".*/permission_message"));
-                    Log.i(TAG, "allowAllNeededPermissions() click on " + allowPermissions.getText()+" for "+permissionMessage.getText());
+                    Log.i(TAG, "allowAllNeededPermissions() click on " + allowPermissions.getText()+" for "+permissionText(device, selector_message));
                     allowPermissions.click();
 
+                    // Next permission
                     Mix.sleep(PERMISSIONS_DIALOG_DELAY);
                     allowPermissions = device.findObject(selector);
                 }
@@ -69,6 +70,19 @@ public class TestUtils
         catch (UiObjectNotFoundException e)
         {
             Log.e(TAG, "There is no permissions dialog to interact with");
+        }
+    }
+
+    private static String permissionText(UiDevice device, UiSelector selector)
+    {
+        UiObject pm = device.findObject(selector);
+        try
+        {
+            return pm.getText();
+        }
+        catch (UiObjectNotFoundException e)
+        {
+            return "";
         }
     }
 

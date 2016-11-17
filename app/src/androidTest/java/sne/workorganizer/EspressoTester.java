@@ -2,6 +2,7 @@ package sne.workorganizer;
 
 import android.Manifest;
 import android.database.Cursor;
+import android.support.design.widget.TextInputEditText;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.espresso.matcher.CursorMatchers;
 import android.support.test.rule.ActivityTestRule;
@@ -30,6 +31,7 @@ import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu;
 import static android.support.test.espresso.Espresso.pressBack;
+import static android.support.test.espresso.action.ViewActions.clearText;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.longClick;
 import static android.support.test.espresso.action.ViewActions.pressKey;
@@ -38,6 +40,7 @@ import static android.support.test.espresso.assertion.ViewAssertions.doesNotExis
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.isPlatformPopup;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static junit.framework.Assert.assertTrue;
@@ -84,11 +87,11 @@ public class EspressoTester
     @BeforeClass
     static public void globalInit()
     {
-        _pauses.put(1, PAUSE_LONG);
+        _pauses.put(1, PAUSE_NONE);
         _pauses.put(2, PAUSE_NONE);
-        _pauses.put(3, PAUSE_NONE);
+        _pauses.put(3, PAUSE_LONG);
         _pauses.put(10, PAUSE_NONE);
-        _pauses.put(11, PAUSE_SHORT);
+        _pauses.put(11, PAUSE_LONG);
         _pauses.put(99, PAUSE_NONE);
 
         String guid1 = UUID.randomUUID().toString();
@@ -100,18 +103,17 @@ public class EspressoTester
         _workTitle2 = WORK_TITLE_PREFIX + guid2;
     }
 
-    @Test
-    public void t000_grantPermissions()
-    {
-//        TestUtils.allowPermissionsIfNeeded(Manifest.permission.READ_EXTERNAL_STORAGE);
-//        TestUtils.allowPermissionsIfNeeded(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-//        TestUtils.allowPermissionsIfNeeded(Manifest.permission.CAMERA);
-        TestUtils.allowAllNeededPermissions();
-    }
+//    @Test
+//    public void t000_grantPermissions()
+//    {
+//        TestUtils.allowAllNeededPermissions();
+//    }
 
     @Test
     public void t001_createClient()
     {
+        TestUtils.allowAllNeededPermissions();
+
         int pause = _pauses.get(1);
         Mix.sleep(pause);
 
@@ -148,6 +150,8 @@ public class EspressoTester
     @Test
     public void t002_createWork()
     {
+        TestUtils.allowAllNeededPermissions();
+
         int pause = _pauses.get(2);
         Mix.sleep(pause);
 
@@ -182,8 +186,36 @@ public class EspressoTester
     }
 
     @Test
+    public void t003_editWork()
+    {
+        TestUtils.allowAllNeededPermissions();
+
+        int pause = _pauses.get(3);
+        Mix.sleep(pause);
+
+        // Long click on item to open popup action menu.
+        onView(withText(_workTitle1)).perform(longClick());
+        Mix.sleep(pause);
+
+        onView(withText(R.string.edit)).perform(click());
+        Mix.sleep(pause);
+
+        String new_title = _workTitle1+" edited";
+        onView(allOf(is(instanceOf(TextInputEditText.class)), withText(_workTitle1))).perform(clearText(), typeText(new_title));
+        Mix.sleep(pause);
+
+        // Save edited work.
+        onView(withText(R.string.save)).perform(click());
+
+        // Check existence of the edited work.
+        onView(withText(new_title)).check(matches(isDisplayed()));
+    }
+
+    @Test
     public void t010_mainMenu()
     {
+        TestUtils.allowAllNeededPermissions();
+
         int pause = _pauses.get(10);
         Mix.sleep(pause);
 
@@ -243,6 +275,8 @@ public class EspressoTester
     @Test
     public void t099_deleteClient()
     {
+        TestUtils.allowAllNeededPermissions();
+
         int pause = _pauses.get(99);
         deleteClient(_clientName1, pause);
 
@@ -261,6 +295,8 @@ public class EspressoTester
     @Test
     public void t011_createWorkWithClient()
     {
+        TestUtils.allowAllNeededPermissions();
+
         int pause = _pauses.get(11);
         Mix.sleep(pause);
 
