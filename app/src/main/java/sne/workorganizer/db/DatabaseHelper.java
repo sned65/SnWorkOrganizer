@@ -7,9 +7,12 @@ import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.os.Process;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -124,6 +127,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return _instance;
     }
 
+/*
     public interface DbSelectClientsCallback
     {
         void onSelectFinished(ArrayList<Client> records);
@@ -138,6 +142,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     {
         void onSelectFinished(ArrayList<Picture> records);
     }
+*/
 
     private DatabaseHelper(Context ctx)
     {
@@ -319,9 +324,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
      *
      * @param callback to be called when the query is finished. Can be {@code null}.
      */
-    public void findAllClients(DbSelectClientsCallback callback)
+    public void findAllClients(/*DbSelectClientsCallback callback*/)
     {
-        new SelectClientsTask(callback).execute();
+        //new SelectClientsTask(callback).execute();
+        new SelectClientsTask().execute();
     }
 
     /**
@@ -403,9 +409,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * @param dateTo end date (including).
      *               If {@code null} then {@code dateFrom} is used as the end date.
      */
-    public void findAllProjects(DbSelectProjectsCallback callback, Date dateFrom, Date dateTo)
+    public void findAllProjects(/*DbSelectProjectsCallback callback,*/ Date dateFrom, Date dateTo)
     {
-        new SelectProjectsTask(callback, dateFrom, dateTo).execute();
+        //new SelectProjectsTask(callback, dateFrom, dateTo).execute();
+        new SelectProjectsTask(dateFrom, dateTo).execute();
     }
 
     /**
@@ -414,9 +421,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
      *
      * @param callback to be called when the query is finished. Can be {@code null}.
      */
-    public void findAllProjectsWithDesign(DbSelectProjectsCallback callback)
+    public void findAllProjectsWithDesign(/*DbSelectProjectsCallback callback*/)
     {
-        new SelectProjectsTask(callback, PROJECTS_COL_DESIGN+" IS NOT NULL").execute();
+        //new SelectProjectsTask(callback, PROJECTS_COL_DESIGN+" IS NOT NULL").execute();
+        new SelectProjectsTask(PROJECTS_COL_DESIGN+" IS NOT NULL").execute();
     }
 
     /**
@@ -458,9 +466,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
      *
      * @param callback to be called when the query is finished. Can be {@code null}.
      */
-    public void findAllPictures(DbSelectPicturesCallback callback)
+    public void findAllPictures(/*DbSelectPicturesCallback callback*/)
     {
-        new SelectPicturesTask(callback).execute();
+        //new SelectPicturesTask(callback).execute();
+        new SelectPicturesTask().execute();
     }
 
     /**
@@ -853,12 +862,13 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     private class SelectClientsTask extends AsyncTask<Void, Void, ArrayList<Client>>
     {
-        private DbSelectClientsCallback _callback = null;
+        //private DbSelectClientsCallback _callback = null;
 
-        SelectClientsTask(DbSelectClientsCallback callback)
+        //SelectClientsTask(DbSelectClientsCallback callback)
+        SelectClientsTask()
         {
             super();
-            _callback = callback;
+            //_callback = callback;
         }
 
         @Override
@@ -870,10 +880,12 @@ public class DatabaseHelper extends SQLiteOpenHelper
         @Override
         protected void onPostExecute(ArrayList<Client> result)
         {
-            if (_callback != null)
-            {
-                _callback.onSelectFinished(result);
-            }
+//            if (_callback != null)
+//            {
+//                _callback.onSelectFinished(result);
+//            }
+
+            EventBus.getDefault().post(result);
         }
 
 /*
@@ -927,15 +939,16 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     private class SelectProjectsTask extends AsyncTask<Void, Void, ArrayList<Project>>
     {
-        private DbSelectProjectsCallback _callback = null;
+        //private DbSelectProjectsCallback _callback = null;
         private Date _dateFrom;
         private Date _dateTo;
         private String _where;
 
-        SelectProjectsTask(DbSelectProjectsCallback callback, Date dateFrom, Date dateTo)
+        //SelectProjectsTask(DbSelectProjectsCallback callback, Date dateFrom, Date dateTo)
+        SelectProjectsTask(Date dateFrom, Date dateTo)
         {
             super();
-            _callback = callback;
+            //_callback = callback;
             if (dateFrom != null)
             {
                 _dateFrom = Mix.truncateDate(dateFrom);
@@ -946,37 +959,43 @@ public class DatabaseHelper extends SQLiteOpenHelper
             }
         }
 
-        SelectProjectsTask(DbSelectProjectsCallback callback, String where)
+        //SelectProjectsTask(DbSelectProjectsCallback callback, String where)
+        SelectProjectsTask(String where)
         {
             super();
-            _callback = callback;
+            //_callback = callback;
             _where = where;
         }
 
         @Override
         protected ArrayList<Project> doInBackground(Void... params)
         {
+            //SystemClock.sleep(5000); // FIXME for tests
             return selectProjects(_dateFrom, _dateTo, _where);
         }
 
         @Override
         protected void onPostExecute(ArrayList<Project> result)
         {
-            if (_callback != null)
-            {
-                _callback.onSelectFinished(result);
-            }
+            // TODO remove callback -> replace with Event Bus
+//            if (_callback != null)
+//            {
+//                _callback.onSelectFinished(result);
+//            }
+
+            EventBus.getDefault().post(result);
         }
     }
 
     private class SelectPicturesTask extends AsyncTask<Void, Void, ArrayList<Picture>>
     {
-        private DbSelectPicturesCallback _callback = null;
+        //private DbSelectPicturesCallback _callback = null;
 
-        SelectPicturesTask(DbSelectPicturesCallback callback)
+        //SelectPicturesTask(DbSelectPicturesCallback callback)
+        SelectPicturesTask()
         {
             super();
-            _callback = callback;
+            //_callback = callback;
         }
 
         @Override
@@ -988,10 +1007,12 @@ public class DatabaseHelper extends SQLiteOpenHelper
         @Override
         protected void onPostExecute(ArrayList<Picture> result)
         {
-            if (_callback != null)
-            {
-                _callback.onSelectFinished(result);
-            }
+//            if (_callback != null)
+//            {
+//                _callback.onSelectFinished(result);
+//            }
+
+            EventBus.getDefault().post(result);
         }
     }
 }

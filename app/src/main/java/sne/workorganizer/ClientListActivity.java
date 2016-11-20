@@ -20,6 +20,10 @@ import android.widget.TextView;
 
 import com.silencedut.expandablelayout.ExpandableLayout;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -102,6 +106,30 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
     }
 
     @Override
+    public void onPause()
+    {
+        RecyclerView rv = (RecyclerView) findViewById(R.id.client_list);
+        ClientListAdapter adapter = (ClientListAdapter) rv.getAdapter();
+        if (adapter != null)
+        {
+            EventBus.getDefault().unregister(adapter);
+        }
+        super.onPause();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        RecyclerView rv = (RecyclerView) findViewById(R.id.client_list);
+        ClientListAdapter adapter = (ClientListAdapter) rv.getAdapter();
+        if (adapter != null)
+        {
+            EventBus.getDefault().register(adapter);
+        }
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode,
                                     Intent data)
     {
@@ -180,16 +208,25 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
         {
             _activity = activity;
             DatabaseHelper db = DatabaseHelper.getInstance(_activity);
-            db.findAllClients(new DatabaseHelper.DbSelectClientsCallback()
-            {
-                @Override
-                public void onSelectFinished(ArrayList<Client> records)
-                {
-                    Log.d(TAG, "onSelectFinished() "+records+", size = "+((records == null) ? "" : records.size()));
-                    _clients = records;
-                    showClientList();
-                }
-            });
+            db.findAllClients();
+//            db.findAllClients(new DatabaseHelper.DbSelectClientsCallback()
+//            {
+//                @Override
+//                public void onSelectFinished(ArrayList<Client> records)
+//                {
+//                    Log.d(TAG, "onSelectFinished() "+records+", size = "+((records == null) ? "" : records.size()));
+//                    _clients = records;
+//                    showClientList();
+//                }
+//            });
+        }
+
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onSearchFinished(ArrayList<Client> records)
+        {
+            Log.d(TAG, "onSearchFinished("+records.size()+") called");
+            _clients = records;
+            showClientList();
         }
 
         @Override

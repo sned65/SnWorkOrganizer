@@ -16,6 +16,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -86,6 +90,32 @@ public class GalleryActivity extends AppCompatActivity
             adapter = new GalleryAdapterResult(this);
         }
         photoGallery.setAdapter(adapter);
+    }
+
+    @Override
+    public void onPause()
+    {
+        RecyclerView rv = (RecyclerView) findViewById(R.id.photo_gallery);
+        GalleryAdapter adapter = (GalleryAdapter) rv.getAdapter();
+        if (adapter != null)
+        {
+            EventBus.getDefault().unregister(adapter);
+        }
+
+        super.onPause();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        RecyclerView rv = (RecyclerView) findViewById(R.id.photo_gallery);
+        GalleryAdapter adapter = (GalleryAdapter) rv.getAdapter();
+        if (adapter != null)
+        {
+            EventBus.getDefault().register(adapter);
+        }
     }
 
     private void showGallery()
@@ -194,6 +224,8 @@ public class GalleryActivity extends AppCompatActivity
         {
             super(activity);
             DatabaseHelper db = DatabaseHelper.getInstance(_activity);
+            db.findAllPictures();
+/*
             db.findAllPictures(new DatabaseHelper.DbSelectPicturesCallback()
             {
                 @Override
@@ -204,6 +236,15 @@ public class GalleryActivity extends AppCompatActivity
                     showGallery();
                 }
             });
+*/
+        }
+
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onSelectFinished(ArrayList<Picture> records)
+        {
+            Log.d(TAG, "onSelectFinished() " + records + ", size = " + ((records == null) ? "" : records.size()));
+            _pictures = records;
+            showGallery();
         }
 
         @Override
@@ -315,6 +356,8 @@ public class GalleryActivity extends AppCompatActivity
         {
             super(activity);
             DatabaseHelper db = DatabaseHelper.getInstance(_activity);
+            db.findAllProjectsWithDesign();
+/*
             db.findAllProjectsWithDesign(new DatabaseHelper.DbSelectProjectsCallback()
             {
                 @Override
@@ -325,6 +368,15 @@ public class GalleryActivity extends AppCompatActivity
                     showGallery();
                 }
             });
+*/
+        }
+
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onSelectFinished(ArrayList<Project> records)
+        {
+            Log.d(TAG, "onSelectFinished() size = " + ((records == null) ? "" : records.size())+ ": " + records);
+            _projects = records;
+            showGallery();
         }
 
         @Override

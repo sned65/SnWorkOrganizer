@@ -13,6 +13,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,6 +51,20 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onPause()
+    {
+        EventBus.getDefault().unregister(this);
+        super.onPause();
     }
 
     protected void setupWorkListView(Long dateFrom, Long dateTo)
@@ -114,6 +132,8 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         }
 
         DatabaseHelper db = DatabaseHelper.getInstance(this);
+        db.findAllProjects(dateFrom, dateTo);
+/*
         db.findAllProjects(new DatabaseHelper.DbSelectProjectsCallback()
         {
             @Override
@@ -122,10 +142,13 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
                 onSearchFinished(records);
             }
         }, dateFrom, dateTo);
+*/
     }
 
-    private void onSearchFinished(ArrayList<Project> records)
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSearchFinished(ArrayList<Project> records)
     {
+        Log.i(TAG, "onSearchFinished("+records.size()+") called");
         WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
         adapter.setWorks(records);
         adapter.notifyDataSetChanged();

@@ -4,10 +4,17 @@ import android.Manifest;
 import android.database.Cursor;
 import android.os.SystemClock;
 import android.support.design.widget.TextInputEditText;
+import android.support.test.espresso.Espresso;
+import android.support.test.espresso.PerformException;
+import android.support.test.espresso.UiController;
+import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.espresso.matcher.CursorMatchers;
+import android.support.test.espresso.util.HumanReadables;
+import android.support.test.espresso.util.TreeIterables;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.View;
@@ -23,6 +30,8 @@ import org.junit.runners.MethodSorters;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.util.Mix;
@@ -36,11 +45,14 @@ import static android.support.test.espresso.action.ViewActions.clearText;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.longClick;
 import static android.support.test.espresso.action.ViewActions.pressKey;
+import static android.support.test.espresso.action.ViewActions.replaceText;
+import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.isPlatformPopup;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
@@ -102,6 +114,11 @@ public class EspressoTester
         String guid2 = UUID.randomUUID().toString();
         _clientName2 = CLIENT_NAME_PREFIX + guid2;
         _workTitle2 = WORK_TITLE_PREFIX + guid2;
+
+        Log.i(TAG, "_clientName1 = "+_clientName1);
+        Log.i(TAG, "_workTitle1 = "+_workTitle1);
+        Log.i(TAG, "_clientName2 = "+_clientName2);
+        Log.i(TAG, "_workTitle2 = "+_workTitle2);
     }
 
 //    @Test
@@ -141,11 +158,28 @@ public class EspressoTester
         onView(withText(R.string.save)).perform(click());
         SystemClock.sleep(pause);
 
-        // Check existence of the new client.
+        onView(isRoot()).perform(waitId(R.id.client_list, TimeUnit.SECONDS.toMillis(15)));
         Matcher<View> rv = withId(R.id.client_list);
         onView(rv).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         onView(withText(_clientName1)).check(matches(isDisplayed()));
         SystemClock.sleep(pause);
+
+/*
+        WaitForComponentIdlingResource waiter = new WaitForComponentIdlingResource(R.id.client_list);
+        Espresso.registerIdlingResources(waiter);
+        try
+        {
+            // Check existence of the new client.
+            Matcher<View> rv = withId(R.id.client_list);
+            onView(rv).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+            onView(withText(_clientName1)).check(matches(isDisplayed()));
+            SystemClock.sleep(pause);
+        }
+        finally
+        {
+            Espresso.unregisterIdlingResources(waiter);
+        }
+*/
     }
 
     @Test
@@ -176,13 +210,14 @@ public class EspressoTester
         onView(withId(R.id.work_title)).perform(typeText(_workTitle1));
         SystemClock.sleep(pause);
 
-        onView(withId(R.id.work_price)).perform(typeText("1000"));
+        onView(withId(R.id.work_price)).perform(scrollTo(), typeText("1000"));
         SystemClock.sleep(pause);
 
         // Save new work.
         onView(withText(R.string.save)).perform(click());
 
         // Check existence of the new work.
+        waitFor(withText(_workTitle1), 10000);
         onView(withText(_workTitle1)).check(matches(isDisplayed()));
     }
 
@@ -202,7 +237,7 @@ public class EspressoTester
         SystemClock.sleep(pause);
 
         String new_title = _workTitle1+" edited";
-        onView(allOf(is(instanceOf(TextInputEditText.class)), withText(_workTitle1))).perform(clearText(), typeText(new_title));
+        onView(allOf(is(instanceOf(TextInputEditText.class)), withText(_workTitle1))).perform(replaceText(new_title));
         SystemClock.sleep(pause);
 
         // Save edited work.
@@ -328,5 +363,119 @@ public class EspressoTester
 
         deleteClient(_clientName2, pause);
         SystemClock.sleep(pause);
+    }
+
+    /**
+     * From http://stackoverflow.com/questions/21417954/espresso-thread-sleep
+     *
+     * @param viewId the resource id.
+     * @param millis timeout, in milliseconds.
+     * @return
+     */
+    public static ViewAction waitId(final int viewId, final long millis)
+    {
+        return waitFor(withId(viewId), millis);
+/*
+        return new ViewAction()
+        {
+            @Override
+            public Matcher<View> getConstraints()
+            {
+                return isRoot();
+            }
+
+            @Override
+            public String getDescription()
+            {
+                return "wait for a specific view with id <" + viewId + "> during " + millis + " millis.";
+            }
+
+            @Override
+            public void perform(final UiController uiController, final View view)
+            {
+                uiController.loopMainThreadUntilIdle();
+                final long startTime = System.currentTimeMillis();
+                final long endTime = startTime + millis;
+                final Matcher<View> viewMatcher = withId(viewId);
+
+                do
+                {
+                    for (View child : TreeIterables.breadthFirstViewTraversal(view))
+                    {
+                        // found view with required ID
+                        if (viewMatcher.matches(child))
+                        {
+                            return;
+                        }
+                    }
+
+                    uiController.loopMainThreadForAtLeast(50);
+                }
+                while (System.currentTimeMillis() < endTime);
+
+                // timeout happens
+                throw new PerformException.Builder()
+                        .withActionDescription(this.getDescription())
+                        .withViewDescription(HumanReadables.describe(view))
+                        .withCause(new TimeoutException())
+                        .build();
+            }
+        };
+*/
+    }
+
+    /**
+     * From http://stackoverflow.com/questions/21417954/espresso-thread-sleep
+     *
+     * @param viewMatcher
+     * @param millis timeout, in milliseconds.
+     * @return
+     */
+    public static ViewAction waitFor(final Matcher<View> viewMatcher, final long millis)
+    {
+        return new ViewAction()
+        {
+            @Override
+            public Matcher<View> getConstraints()
+            {
+                return isRoot();
+            }
+
+            @Override
+            public String getDescription()
+            {
+                return "wait for a specific view during " + millis + " millis.";
+            }
+
+            @Override
+            public void perform(final UiController uiController, final View view)
+            {
+                uiController.loopMainThreadUntilIdle();
+                final long startTime = System.currentTimeMillis();
+                final long endTime = startTime + millis;
+
+                do
+                {
+                    for (View child : TreeIterables.breadthFirstViewTraversal(view))
+                    {
+                        // found view with required ID
+                        if (viewMatcher.matches(child))
+                        {
+                            return;
+                        }
+                    }
+
+                    uiController.loopMainThreadForAtLeast(50);
+                }
+                while (System.currentTimeMillis() < endTime);
+
+                // timeout happens
+                throw new PerformException.Builder()
+                        .withActionDescription(this.getDescription())
+                        .withViewDescription(HumanReadables.describe(view))
+                        .withCause(new TimeoutException())
+                        .build();
+            }
+        };
     }
 }
