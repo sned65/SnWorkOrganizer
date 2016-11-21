@@ -706,6 +706,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                             args[0], args[1], args[2], args[3], args[4]));
                 }
                 getWritableDatabase().execSQL(sql, args);
+                EventBus.getDefault().post(_client);
             }
 
             if (_work != null)
@@ -727,6 +728,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                             args[4], args[5], args[6]));
                 }
                 getWritableDatabase().execSQL(sql, args);
+                EventBus.getDefault().post(_work);
             }
 
             if (_picture != null)
@@ -857,6 +859,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 Log.d(TAG, sql + ", using " + _id);
             }
             getWritableDatabase().execSQL(sql, args);
+            // TODO EventBus
         }
     }
 

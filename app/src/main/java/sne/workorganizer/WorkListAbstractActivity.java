@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.util.WoConstants;
@@ -155,6 +156,53 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         showProgressBar(false);
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onWorkUpdated(Project work)
+    {
+        search();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onClientDeleted(Client client)
+    {
+        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
+        ArrayList<Project> records = new ArrayList<>();
+        for (Project w : adapter.getWorks())
+        {
+            if (!w.getClientId().equals(client.getId()))
+            {
+                records.add(w);
+            }
+        }
+
+        if (adapter.getWorks().size() != records.size())
+        {
+            adapter.setWorks(records);
+            adapter.notifyDataSetChanged();
+            showProgressBar(false);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onClientNameModified(Client client)
+    {
+        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
+        boolean modified = false;
+        for (Project w : adapter.getWorks())
+        {
+            if (w.getClientId().equals(client.getId()))
+            {
+                modified = true;
+            }
+        }
+
+        if (modified)
+        {
+            adapter.notifyDataSetChanged();
+            showProgressBar(false);
+        }
+    }
+
     protected void showProgressBar(boolean flag)
     {
         View progressBar = findViewById(R.id.progressBar);
@@ -227,6 +275,11 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         public void setWorks(ArrayList<Project> works)
         {
             _works = works;
+        }
+
+        public List<Project> getWorks()
+        {
+            return _works;
         }
 
         @Override
