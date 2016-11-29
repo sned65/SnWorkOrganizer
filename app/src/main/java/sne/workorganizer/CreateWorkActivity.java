@@ -25,6 +25,8 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -34,6 +36,7 @@ import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.IdNamePair;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.eb.WorkCreateEvent;
 import sne.workorganizer.util.FileUtils;
 import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.PhotoUtils;
@@ -354,6 +357,9 @@ public class CreateWorkActivity extends AppCompatActivity
         result.putExtra(WoConstants.ARG_WORK, project);
         setResult(RESULT_OK, result);
         finish();
+
+        WorkCreateEvent event = new WorkCreateEvent(project);
+        EventBus.getDefault().postSticky(event);
     }
 
     private Project fillProject()

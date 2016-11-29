@@ -92,31 +92,31 @@ public class GalleryActivity extends AppCompatActivity
         photoGallery.setAdapter(adapter);
     }
 
-    @Override
-    public void onPause()
-    {
-        RecyclerView rv = (RecyclerView) findViewById(R.id.photo_gallery);
-        GalleryAdapter adapter = (GalleryAdapter) rv.getAdapter();
-        if (adapter != null)
-        {
-            EventBus.getDefault().unregister(adapter);
-        }
+//    @Override
+//    public void onPause()
+//    {
+//        RecyclerView rv = (RecyclerView) findViewById(R.id.photo_gallery);
+//        GalleryAdapter adapter = (GalleryAdapter) rv.getAdapter();
+//        if (adapter != null)
+//        {
+//            EventBus.getDefault().unregister(adapter);
+//        }
+//
+//        super.onPause();
+//    }
 
-        super.onPause();
-    }
-
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-
-        RecyclerView rv = (RecyclerView) findViewById(R.id.photo_gallery);
-        GalleryAdapter adapter = (GalleryAdapter) rv.getAdapter();
-        if (adapter != null)
-        {
-            EventBus.getDefault().register(adapter);
-        }
-    }
+//    @Override
+//    public void onResume()
+//    {
+//        super.onResume();
+//
+//        RecyclerView rv = (RecyclerView) findViewById(R.id.photo_gallery);
+//        GalleryAdapter adapter = (GalleryAdapter) rv.getAdapter();
+//        if (adapter != null)
+//        {
+//            EventBus.getDefault().register(adapter);
+//        }
+//    }
 
     private void showGallery()
     {
@@ -224,8 +224,7 @@ public class GalleryActivity extends AppCompatActivity
         {
             super(activity);
             DatabaseHelper db = DatabaseHelper.getInstance(_activity);
-            db.findAllPictures();
-/*
+//            db.findAllPictures();
             db.findAllPictures(new DatabaseHelper.DbSelectPicturesCallback()
             {
                 @Override
@@ -236,16 +235,15 @@ public class GalleryActivity extends AppCompatActivity
                     showGallery();
                 }
             });
-*/
         }
 
-        @Subscribe(threadMode = ThreadMode.MAIN)
-        public void onSelectFinished(ArrayList<Picture> records)
-        {
-            Log.d(TAG, "onSelectFinished() " + records + ", size = " + ((records == null) ? "" : records.size()));
-            _pictures = records;
-            showGallery();
-        }
+//        @Subscribe(threadMode = ThreadMode.MAIN)
+//        public void onSelectFinished(ArrayList<Picture> records)
+//        {
+//            Log.d(TAG, "onSelectFinished() " + records + ", size = " + ((records == null) ? "" : records.size()));
+//            _pictures = records;
+//            showGallery();
+//        }
 
         @Override
         public RowHolderResult onCreateViewHolder(ViewGroup parent, int viewType)
@@ -356,8 +354,7 @@ public class GalleryActivity extends AppCompatActivity
         {
             super(activity);
             DatabaseHelper db = DatabaseHelper.getInstance(_activity);
-            db.findAllProjectsWithDesign();
-/*
+//            db.findAllProjectsWithDesign();
             db.findAllProjectsWithDesign(new DatabaseHelper.DbSelectProjectsCallback()
             {
                 @Override
@@ -368,16 +365,15 @@ public class GalleryActivity extends AppCompatActivity
                     showGallery();
                 }
             });
-*/
         }
 
-        @Subscribe(threadMode = ThreadMode.MAIN)
-        public void onSelectFinished(ArrayList<Project> records)
-        {
-            Log.d(TAG, "onSelectFinished() size = " + ((records == null) ? "" : records.size())+ ": " + records);
-            _projects = records;
-            showGallery();
-        }
+//        @Subscribe(threadMode = ThreadMode.MAIN)
+//        public void onSelectFinished(ArrayList<Project> records)
+//        {
+//            Log.d(TAG, "onSelectFinished() size = " + ((records == null) ? "" : records.size())+ ": " + records);
+//            _projects = records;
+//            showGallery();
+//        }
 
         @Override
         public RowHolderDesign onCreateViewHolder(ViewGroup parent, int viewType)

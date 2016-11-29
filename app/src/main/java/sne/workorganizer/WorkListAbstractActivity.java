@@ -26,6 +26,9 @@ import java.util.List;
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.eb.ClientDeleteEvent;
+import sne.workorganizer.eb.WorkCreateEvent;
+import sne.workorganizer.eb.WorkUpdateEvent;
 import sne.workorganizer.util.WoConstants;
 
 /**
@@ -133,8 +136,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         }
 
         DatabaseHelper db = DatabaseHelper.getInstance(this);
-        db.findAllProjects(dateFrom, dateTo);
-/*
+//        db.findAllProjects(dateFrom, dateTo);
         db.findAllProjects(new DatabaseHelper.DbSelectProjectsCallback()
         {
             @Override
@@ -143,10 +145,9 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
                 onSearchFinished(records);
             }
         }, dateFrom, dateTo);
-*/
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    //@Subscribe(threadMode = ThreadMode.MAIN)
     public void onSearchFinished(ArrayList<Project> records)
     {
         Log.i(TAG, "onSearchFinished("+records.size()+") called");
@@ -156,15 +157,36 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         showProgressBar(false);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onWorkUpdated(Project work)
+    @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
+    public void onWorkCreated(WorkCreateEvent e)
     {
+        EventBus.getDefault().removeStickyEvent(e);
         search();
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onClientDeleted(Client client)
+    @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
+    public void onWorkUpdated(WorkUpdateEvent e)
     {
+        EventBus.getDefault().removeStickyEvent(e);
+        Project modifiedWork = e.getWork();
+        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
+        List<Project> works = adapter.getWorks();
+        for (int position = 0; position < works.size(); ++position)
+        {
+            if (modifiedWork.getId().equals(works.get(position).getId()))
+            {
+                works.set(position, modifiedWork);
+                adapter.notifyItemChanged(position);
+                break;
+            }
+        }
+    }
+
+    @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
+    public void onClientDeleteEvent(ClientDeleteEvent e)
+    {
+        Client client = e.getClient();
+        EventBus.getDefault().removeStickyEvent(e);
         WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
         ArrayList<Project> records = new ArrayList<>();
         for (Project w : adapter.getWorks())
@@ -183,9 +205,10 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onClientNameModified(Client client)
     {
+        EventBus.getDefault().removeStickyEvent(client);
         WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
         boolean modified = false;
         for (Project w : adapter.getWorks())

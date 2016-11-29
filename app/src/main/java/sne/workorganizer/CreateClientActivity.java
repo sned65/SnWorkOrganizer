@@ -75,7 +75,7 @@ public class CreateClientActivity extends AppCompatActivity
         TextView emailView = (TextView) findViewById(R.id.client_email);
 
         Client client = new Client();
-        client.setName(nameView.getText().toString());
+        client.setName(nameView.getText().toString().trim());
         client.setPhone(phoneView.getText().toString());
         client.setSocial(socialView.getText().toString());
         client.setEmail(emailView.getText().toString());

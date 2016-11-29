@@ -14,6 +14,7 @@ import android.support.test.espresso.util.HumanReadables;
 import android.support.test.espresso.util.TreeIterables;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
@@ -50,6 +51,8 @@ import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnHolderItem;
+import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItem;
 import static android.support.test.espresso.matcher.RootMatchers.isPlatformPopup;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
@@ -102,10 +105,10 @@ public class EspressoTester
     {
         _pauses.put(1, PAUSE_NONE);
         _pauses.put(2, PAUSE_NONE);
-        _pauses.put(3, PAUSE_LONG);
+        _pauses.put(3, PAUSE_NONE);
+        _pauses.put(4, PAUSE_NONE);
         _pauses.put(10, PAUSE_NONE);
-        _pauses.put(11, PAUSE_LONG);
-        _pauses.put(99, PAUSE_NONE);
+        _pauses.put(11, PAUSE_NONE);
 
         String guid1 = UUID.randomUUID().toString();
         _clientName1 = CLIENT_NAME_PREFIX + guid1;
@@ -236,7 +239,7 @@ public class EspressoTester
         onView(withText(R.string.edit)).perform(click());
         SystemClock.sleep(pause);
 
-        String new_title = _workTitle1+" edited";
+        String new_title = _workTitle1+" *** EDITED ***";
         onView(allOf(is(instanceOf(TextInputEditText.class)), withText(_workTitle1))).perform(replaceText(new_title));
         SystemClock.sleep(pause);
 
@@ -244,10 +247,11 @@ public class EspressoTester
         onView(withText(R.string.save)).perform(click());
 
         // Check existence of the edited work.
+        onView(isRoot()).perform(waitFor(withText(new_title), TimeUnit.SECONDS.toMillis(10)));
         onView(withText(new_title)).check(matches(isDisplayed()));
     }
 
-    //@Test
+    @Test
     public void t010_mainMenu()
     {
         TestUtils.allowAllNeededPermissions();
@@ -309,11 +313,11 @@ public class EspressoTester
     }
 
     @Test
-    public void t099_deleteClient()
+    public void t004_deleteClient()
     {
         TestUtils.allowAllNeededPermissions();
 
-        int pause = _pauses.get(99);
+        int pause = _pauses.get(4);
         deleteClient(_clientName1, pause);
 
         // Go to Journal
@@ -362,6 +366,7 @@ public class EspressoTester
         // Check existence of the new work.
         onView(isRoot()).perform(waitFor(withText(_workTitle2), TimeUnit.SECONDS.toMillis(10)));
         onView(withText(_workTitle2)).check(matches(isDisplayed()));
+        //onView(withClassName(is(RecyclerView.class.getCanonicalName()))).perform(RecyclerViewActions.scrollTo(withText(_workTitle2)));
 
         deleteClient(_clientName2, pause);
         SystemClock.sleep(pause);
@@ -460,7 +465,7 @@ public class EspressoTester
                 {
                     for (View child : TreeIterables.breadthFirstViewTraversal(view))
                     {
-                        // found view with required ID
+                        // found view with required matcher
                         if (viewMatcher.matches(child))
                         {
                             return;

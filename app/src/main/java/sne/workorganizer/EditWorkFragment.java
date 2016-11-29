@@ -22,12 +22,15 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.File;
 import java.util.Calendar;
 
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Picture;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.eb.WorkUpdateEvent;
 import sne.workorganizer.util.FileUtils;
 import sne.workorganizer.util.InfoDialogFragment;
 import sne.workorganizer.util.Mix;
@@ -342,6 +345,10 @@ public class EditWorkFragment extends Fragment
         // Update DB
         DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
         db.updateWork(_work, pict);
+
+        // Inform subscribers
+        WorkUpdateEvent event = new WorkUpdateEvent(_work);
+        EventBus.getDefault().postSticky(event);
 
         return true;
     }

@@ -9,8 +9,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
+import org.greenrobot.eventbus.EventBus;
+
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
+import sne.workorganizer.eb.ClientNameUpdateEvent;
 
 /**
  * Edit client dialog
@@ -82,7 +85,9 @@ public class EditClientDialog extends DialogFragment
     public void onClick(DialogInterface dialog, int which)
     {
         // Fill client
-        _client.setName(_clientNameView.getText().toString());
+        String old_name = _client.getName();
+        String new_name = _clientNameView.getText().toString().trim();
+        _client.setName(new_name);
         _client.setPhone(_clientPhoneView.getText().toString());
         _client.setSocial(_clientSocialView.getText().toString());
         _client.setEmail(_clientEmailView.getText().toString());
@@ -96,6 +101,13 @@ public class EditClientDialog extends DialogFragment
         {
             EditClientDialogCallback mainActivity = (EditClientDialogCallback) getActivity();
             mainActivity.onEditClientFinished(_client, _position);
+        }
+
+        // Inform subscribers
+        if (!new_name.equals(old_name))
+        {
+            ClientNameUpdateEvent event = new ClientNameUpdateEvent(_client);
+            EventBus.getDefault().postSticky(event);
         }
     }
 }

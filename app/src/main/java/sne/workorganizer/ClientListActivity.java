@@ -30,6 +30,9 @@ import java.util.List;
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.eb.WorkCreateEvent;
+import sne.workorganizer.eb.WorkDeleteEvent;
+import sne.workorganizer.eb.WorkUpdateEvent;
 import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
 
@@ -108,8 +111,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
     @Override
     public void onPause()
     {
-        RecyclerView rv = (RecyclerView) findViewById(R.id.client_list);
-        ClientListAdapter adapter = (ClientListAdapter) rv.getAdapter();
+        ClientListAdapter adapter = getClientListAdapter();
         if (adapter != null)
         {
             EventBus.getDefault().unregister(adapter);
@@ -121,12 +123,17 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
     public void onResume()
     {
         super.onResume();
-        RecyclerView rv = (RecyclerView) findViewById(R.id.client_list);
-        ClientListAdapter adapter = (ClientListAdapter) rv.getAdapter();
+        ClientListAdapter adapter = getClientListAdapter();
         if (adapter != null)
         {
             EventBus.getDefault().register(adapter);
         }
+    }
+
+    private ClientListAdapter getClientListAdapter()
+    {
+        RecyclerView rv = (RecyclerView) findViewById(R.id.client_list);
+        return (ClientListAdapter) rv.getAdapter();
     }
 
     @Override
@@ -208,26 +215,26 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
         {
             _activity = activity;
             DatabaseHelper db = DatabaseHelper.getInstance(_activity);
-            db.findAllClients();
-//            db.findAllClients(new DatabaseHelper.DbSelectClientsCallback()
-//            {
-//                @Override
-//                public void onSelectFinished(ArrayList<Client> records)
-//                {
-//                    Log.d(TAG, "onSelectFinished() "+records+", size = "+((records == null) ? "" : records.size()));
-//                    _clients = records;
-//                    showClientList();
-//                }
-//            });
+            //db.findAllClients();
+            db.findAllClients(new DatabaseHelper.DbSelectClientsCallback()
+            {
+                @Override
+                public void onSelectFinished(ArrayList<Client> records)
+                {
+                    Log.d(TAG, "onSelectFinished() "+records+", size = "+((records == null) ? "" : records.size()));
+                    _clients = records;
+                    showClientList();
+                }
+            });
         }
 
-        @Subscribe(threadMode = ThreadMode.MAIN)
-        public void onSearchFinished(ArrayList<Client> records)
-        {
-            Log.d(TAG, "onSearchFinished("+records.size()+") called");
-            _clients = records;
-            showClientList();
-        }
+//        @Subscribe(threadMode = ThreadMode.MAIN)
+//        public void onSearchFinished(ArrayList<Client> records)
+//        {
+//            Log.d(TAG, "onSearchFinished("+records.size()+") called");
+//            _clients = records;
+//            showClientList();
+//        }
 
         @Override
         public RowHolder onCreateViewHolder(ViewGroup parent, int viewType)
@@ -263,6 +270,87 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
             else
             {
                 return _clients.size();
+            }
+        }
+
+        @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+        public void onWorkCreateEvent(WorkCreateEvent e)
+        {
+            Project newWork = e.getWork();
+            EventBus.getDefault().removeStickyEvent(e);
+            String clientId = newWork.getClientId();
+            for (int ic = 0; ic < _clients.size(); ++ic)
+            {
+                Client c = _clients.get(ic);
+                if (c.getId().equals(clientId))
+                {
+                    List<Project> works = c.getProjects();
+                    for (int i = 0; i < works.size(); ++i)
+                    {
+                        Project w = works.get(i);
+                        if (newWork.getDate() > w.getDate())
+                        {
+                            works.add(i, newWork);
+                            notifyItemChanged(ic);
+                            return;
+                        }
+                    }
+                    works.add(newWork);
+                    notifyItemInserted(ic);
+                    break;
+                }
+            }
+        }
+
+        @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+        public void onWorkUpdateEvent(WorkUpdateEvent e)
+        {
+            Project changedWork = e.getWork();
+            EventBus.getDefault().removeStickyEvent(e);
+            String clientId = changedWork.getClientId();
+            for (int ic = 0; ic < _clients.size(); ++ic)
+            {
+                Client c = _clients.get(ic);
+                if (c.getId().equals(clientId))
+                {
+                    List<Project> works = c.getProjects();
+                    for (int i = 0; i < works.size(); ++i)
+                    {
+                        Project w = works.get(i);
+                        if (changedWork.getId().equals(w.getId()))
+                        {
+                            works.set(i, changedWork);
+                            notifyItemChanged(ic);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+        public void onWorkDeleteEvent(WorkDeleteEvent e)
+        {
+            Project deletedWork = e.getWork();
+            EventBus.getDefault().removeStickyEvent(e);
+            String clientId = deletedWork.getClientId();
+            for (int ic = 0; ic < _clients.size(); ++ic)
+            {
+                Client c = _clients.get(ic);
+                if (c.getId().equals(clientId))
+                {
+                    List<Project> works = c.getProjects();
+                    for (int i = 0; i < works.size(); ++i)
+                    {
+                        Project w = works.get(i);
+                        if (deletedWork.getId().equals(w.getId()))
+                        {
+                            works.remove(i);
+                            notifyItemChanged(ic);
+                            return;
+                        }
+                    }
+                }
             }
         }
 

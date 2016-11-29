@@ -8,8 +8,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import org.greenrobot.eventbus.EventBus;
+
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
+import sne.workorganizer.eb.ClientDeleteEvent;
 
 /**
  * Delete a client with confirmation.
@@ -68,5 +71,9 @@ public class ConfirmDeleteClientFragment extends DialogFragment
         // Remove from UI
         ClientListActivity mainActivity = (ClientListActivity) getActivity();
         mainActivity.removeClient(_position);
+
+        // Inform subscribers
+        ClientDeleteEvent event = new ClientDeleteEvent(_client);
+        EventBus.getDefault().postSticky(event);
     }
 }

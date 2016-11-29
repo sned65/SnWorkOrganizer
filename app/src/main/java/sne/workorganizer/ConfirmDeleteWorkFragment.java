@@ -9,8 +9,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import org.greenrobot.eventbus.EventBus;
+
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.eb.WorkDeleteEvent;
 import sne.workorganizer.util.WoConstants;
 
 /**
@@ -93,5 +96,9 @@ public class ConfirmDeleteWorkFragment extends DialogFragment
             i.putExtra(WoConstants.ARG_CURRENT_DATE, _project.getDate());
             getActivity().navigateUpTo(i);
         }
+
+        // Inform subscribers
+        WorkDeleteEvent event = new WorkDeleteEvent(_project);
+        EventBus.getDefault().postSticky(event);
     }
 }
