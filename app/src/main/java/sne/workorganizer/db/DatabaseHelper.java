@@ -301,7 +301,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         proj.setClientId(c.getString(1));
         proj.setName(c.getString(2));
         proj.setDate(c.getLong(3));
-        proj.setStatus(c.getString(4));
+        proj.setStatus(Project.WorkStatus.valueOf(c.getString(4)));
         proj.setPrice(c.getInt(5));
         proj.setDesign(c.getString(6));
         return proj;

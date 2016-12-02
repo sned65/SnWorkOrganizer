@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import sne.workorganizer.R;
+import sne.workorganizer.db.Project;
 
 /**
  * Collection of general-purpose utilities.
@@ -483,6 +484,23 @@ public class Mix
             {
                 Log.d(TAG, "checkGrantedPermissions() Permission "+permissions[i]+" granted");
             }
+        }
+    }
+
+    /**
+     * Converts {@code WorkStatus} to user-friendly string.
+     *
+     * @param status work status
+     * @param context current context
+     * @return user-friendly string describing work status.
+     */
+    public static String statusToString(Project.WorkStatus status, Context context)
+    {
+        switch (status)
+        {
+        case CREATED: return "";
+        case DONE: return context.getString(R.string.done);
+        default: return "";
         }
     }
 }

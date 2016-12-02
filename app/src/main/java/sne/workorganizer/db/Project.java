@@ -14,6 +14,15 @@ import java.util.UUID;
  */
 public class Project implements Parcelable, Cloneable, DbRow
 {
+
+    /**
+     * List of work statuses.
+     */
+    public enum WorkStatus
+    {
+        CREATED, DONE;
+    }
+
     private static final String TAG = Project.class.getName();
     private static final String DATETIME_FORMAT = "dd MMM yyyy HH:mm";
     private static final String DATETIME_FORMAT_2 = "dd MMM yyyy HH:mm,   EEE";
@@ -228,14 +237,18 @@ public class Project implements Parcelable, Cloneable, DbRow
         _date = date;
     }
 
-    public String getStatus()
+    public WorkStatus getStatus()
     {
-        return _status;
+        if (_status == null)
+        {
+            return WorkStatus.CREATED;
+        }
+        return WorkStatus.valueOf(_status);
     }
 
-    public void setStatus(String status)
+    public void setStatus(WorkStatus status)
     {
-        _status = status;
+        _status = status.toString();
     }
 
     public String getDesign()

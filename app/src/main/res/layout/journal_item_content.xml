@@ -19,7 +19,7 @@
             android:id="@+id/work_date_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/text_margin"
+            android:layout_margin="@dimen/journal_item_text_margin"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             tools:text="02 Jan 2017 10:00 Mon"/>
 
@@ -27,7 +27,7 @@
             android:id="@+id/client_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/text_margin"
+            android:layout_margin="@dimen/journal_item_text_margin"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             tools:text="John Dow"/>
 
@@ -35,8 +35,18 @@
             android:id="@+id/work_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/text_margin"
+            android:layout_margin="@dimen/journal_item_text_margin"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             tools:text="Work Title"/>
+
+        <TextView
+            android:id="@+id/work_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/journal_item_text_margin"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            tools:text="In progress"
+            android:visibility="gone"
+            tools:visibility="visible"/>
     </LinearLayout>
 </android.support.v7.widget.CardView>

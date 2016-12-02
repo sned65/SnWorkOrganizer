@@ -1,6 +1,7 @@
 package sne.workorganizer;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -435,7 +436,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
         {
             TextView nameView = fillCellText(project.getName());
             TextView dateView = fillCellText(project.getDateTimeString());
-            TextView statusView = fillCellText(project.getStatus());
+            TextView statusView = fillCellText(Mix.statusToString(project.getStatus(), _activity));
 
             TableRow row = new TableRow(_activity);
             row.addView(nameView);

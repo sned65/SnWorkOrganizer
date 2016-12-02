@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CalendarView;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -68,6 +69,8 @@ public class EditWorkFragment extends Fragment
     private ImageButton _cameraBtn;
     private String _resultPath;
     private String _photoPath;
+
+    private CheckBox _workStatusBtn;
 
     private Project _work;
     private int _position;
@@ -296,6 +299,11 @@ public class EditWorkFragment extends Fragment
                 Mix.showError(getActivity(), msg, InfoDialogFragment.Severity.WARNING);
             }
         }
+
+        // Status
+
+        _workStatusBtn = (CheckBox) rootView.findViewById(R.id.btn_work_status);
+        _workStatusBtn.setChecked(_work.getStatus() == Project.WorkStatus.DONE);
     }
 
     private void onSelectDesign()
@@ -404,6 +412,15 @@ public class EditWorkFragment extends Fragment
         }
 
         _work.setDesign(_designPath);
+
+        if (_workStatusBtn.isChecked())
+        {
+            _work.setStatus(Project.WorkStatus.DONE);
+        }
+        else
+        {
+            _work.setStatus(Project.WorkStatus.CREATED);
+        }
     }
 
     public Project getWork()

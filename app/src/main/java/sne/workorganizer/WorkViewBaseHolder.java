@@ -25,6 +25,7 @@ public class WorkViewBaseHolder extends RecyclerView.ViewHolder
     private final TextView _datetimeView;
     private final TextView _clientNameView;
     private final TextView _workTitleView;
+    private final TextView _workStatusView;
     protected Project _project;
     protected String _clientName;
 
@@ -37,6 +38,7 @@ public class WorkViewBaseHolder extends RecyclerView.ViewHolder
         _datetimeView = (TextView) view.findViewById(R.id.work_date_time);
         _clientNameView = (TextView) view.findViewById(R.id.client_name);
         _workTitleView = (TextView) view.findViewById(R.id.work_title);
+        _workStatusView = (TextView) view.findViewById(R.id.work_status);
     }
 
     @Override
@@ -94,5 +96,16 @@ public class WorkViewBaseHolder extends RecyclerView.ViewHolder
         }
         _clientNameView.setText(_clientName);
         _clientNameView.setVisibility(View.VISIBLE);
+
+        if (_project.getStatus() == Project.WorkStatus.CREATED)
+        {
+            _workStatusView.setVisibility(View.GONE);
+        }
+        else
+        {
+            String projectStatus = Mix.statusToString(_project.getStatus(), _itemView.getContext());
+            _workStatusView.setText(projectStatus);
+            _workStatusView.setVisibility(View.VISIBLE);
+        }
     }
 }
