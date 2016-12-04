@@ -305,7 +305,7 @@ public class CreateWorkActivity extends AppCompatActivity
     {
         // Validate fields
 
-        String client_name = _selectClientView.getText().toString();
+        String client_name = _selectClientView.getText().toString().trim();
         Log.d(TAG, "save() client_name = "+client_name);
 
         boolean cancel = false;

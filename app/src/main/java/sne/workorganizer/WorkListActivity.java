@@ -148,7 +148,7 @@ public class WorkListActivity extends WorkListAbstractActivity
     {
         super.onSaveInstanceState(state);
         state.putLong(WoConstants.ARG_CURRENT_DATE, _calendarView.getDate());
-        //Log.i(TAG, "onSaveInstanceState() stored current date");
+        Log.i(TAG, "onSaveInstanceState() stored current date");
     }
 
     @Override
@@ -156,7 +156,7 @@ public class WorkListActivity extends WorkListAbstractActivity
     {
         if (BuildConfig.DEBUG)
         {
-            Log.d(TAG, "onRestoreInstanceState() called");
+            Log.i(TAG, "onRestoreInstanceState() called");
         }
         super.onRestoreInstanceState(savedInstanceState);
         long date = savedInstanceState.getLong(WoConstants.ARG_CURRENT_DATE, -1);
@@ -164,7 +164,7 @@ public class WorkListActivity extends WorkListAbstractActivity
         {
             if (BuildConfig.DEBUG)
             {
-                Log.d(TAG, "onRestoreInstanceState() set date " + (new Date(date)));
+                Log.i(TAG, "onRestoreInstanceState() set date " + (new Date(date)));
             }
             _calendarView.setDate(date);
             setupWorkListView(_calendarView.getDate(), null);

@@ -2,6 +2,7 @@ package sne.workorganizer.db;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.text.SimpleDateFormat;
@@ -21,6 +22,18 @@ public class Project implements Parcelable, Cloneable, DbRow
     public enum WorkStatus
     {
         CREATED, DONE;
+
+        public static WorkStatus fromString(String text)
+        {
+            if (TextUtils.isEmpty(text))
+            {
+                return CREATED;
+            }
+            else
+            {
+                return WorkStatus.valueOf(text);
+            }
+        }
     }
 
     private static final String TAG = Project.class.getName();
@@ -91,7 +104,7 @@ public class Project implements Parcelable, Cloneable, DbRow
             return "Work[DUMMY]";
         }
         String date = _date == null ? "" : (new Date(_date)).toString();
-        return "Work["+_id + ", " + _name + ", " + date + " for " + _clientId + ", design " + _design + "]";
+        return "Work["+_id + ", " + _name + ", " + date + " for " + _clientId + ", " + _status + ", design " + _design + "]";
     }
 
     /**

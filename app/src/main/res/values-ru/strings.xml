@@ -48,6 +48,7 @@
     <string name="journal">Журнал</string>
     <string name="info_no_works_for_dates">Нет работ в указанном диапазоне дат. Чтобы создать работу, перейдите на \"Календарь\".</string>
     <string name="info_no_works_for_date">Нет работ на выбранную дату. Чтобы создать работу, нажмите \"Создать\".</string>
-    <string name="done">Сделано</string>
+    <string name="done">Выполнено</string>
     <string name="in_progress">В работе</string>
+    <string name="mark_as_done">Выполнено</string>
 </resources>

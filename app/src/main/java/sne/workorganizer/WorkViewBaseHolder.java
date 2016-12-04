@@ -60,6 +60,7 @@ public class WorkViewBaseHolder extends RecyclerView.ViewHolder
             if (_timeView != null) _timeView.setVisibility(View.GONE);
             if (_datetimeView != null) _datetimeView.setVisibility(View.GONE);
             if (_clientNameView != null) _clientNameView.setVisibility(View.GONE);
+            if (_workStatusView != null) _workStatusView.setVisibility(View.GONE);
             _workTitleView.setText(_noWorkMessage);
             return;
         }

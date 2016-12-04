@@ -11,10 +11,14 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
+import sne.workorganizer.eb.WorkUpdateEvent;
 import sne.workorganizer.util.WoConstants;
 
 /**
@@ -51,6 +55,10 @@ public class WorkActionsFragment extends DialogFragment
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState)
     {
+        _work = getArguments().getParcelable(KEY_WORK);
+        _clientName = getArguments().getString(KEY_CLIENT_NAME);
+        _position = getArguments().getInt(KEY_POSITION);
+
         View form = getActivity().getLayoutInflater()
                 .inflate(R.layout.dialog_base_actions, null);
 
@@ -59,6 +67,10 @@ public class WorkActionsFragment extends DialogFragment
         // Note: insert order is correlated with on click actions
         items.add(getString(R.string.delete));
         items.add(getString(R.string.edit));
+        if (_work.getStatus() != Project.WorkStatus.DONE)
+        {
+            items.add(getString(R.string.mark_as_done));
+        }
         actionList.setAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, items));
         actionList.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
@@ -69,10 +81,6 @@ public class WorkActionsFragment extends DialogFragment
                 doAction(position);
             }
         });
-
-        _work = getArguments().getParcelable(KEY_WORK);
-        _clientName = getArguments().getString(KEY_CLIENT_NAME);
-        _position = getArguments().getInt(KEY_POSITION);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         return builder.setTitle(R.string.client_actions_dlg_title).setView(form).create();
@@ -88,6 +96,7 @@ public class WorkActionsFragment extends DialogFragment
             ConfirmDeleteWorkFragment.newInstance(_work, _clientName, _position)
                     .show(getFragmentManager(), "confirm_del_work");
             break;
+
         case 1: // Edit
             WorkListMaster master = (WorkListMaster) getActivity();
             if (master.isTwoPane())
@@ -117,6 +126,20 @@ public class WorkActionsFragment extends DialogFragment
                 getActivity().startActivityForResult(i, WoConstants.RC_EDIT_WORK);
             }
             break;
+
+        case 2: // Mark as Done
+        {
+            _work.setStatus(Project.WorkStatus.DONE);
+
+            // Update DB
+            DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
+            db.updateWork(_work, null);
+
+            // Inform subscribers
+            WorkUpdateEvent event = new WorkUpdateEvent(_work);
+            EventBus.getDefault().postSticky(event);
+            break;
+        }
         }
     }
 }

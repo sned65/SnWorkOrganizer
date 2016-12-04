@@ -309,7 +309,7 @@ public class MainActivity extends WorkListAbstractActivity
     {
         if (BuildConfig.DEBUG)
         {
-            Log.d(TAG, "requestCode = " + (requestCode == WoConstants.RC_CREATE_WORK ? "CREATE_PROJECT" : requestCode)
+            Log.i(TAG, "requestCode = " + (requestCode == WoConstants.RC_CREATE_WORK ? "CREATE_PROJECT" : requestCode)
                     + ", resultCode = " + (resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
         }
 

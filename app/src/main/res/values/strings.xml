@@ -54,4 +54,5 @@
     <string name="info_no_works_for_date">No works for the given date. Click \"Create\" to create a work.</string>
     <string name="done">Done</string>
     <string name="in_progress">In progress</string>
+    <string name="mark_as_done">Mark as Done</string>
 </resources>

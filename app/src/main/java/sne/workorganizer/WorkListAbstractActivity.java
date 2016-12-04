@@ -39,6 +39,7 @@ import sne.workorganizer.util.WoConstants;
 public abstract class WorkListAbstractActivity extends AppCompatActivity implements WorkListMaster
 {
     private static final String TAG = WorkListAbstractActivity.class.getName();
+    private static final String ARG_WORK_LIST = "arg_work_list";
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -54,12 +55,47 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        Log.i(TAG, "onCreate() called: savedInstanceState == null is "+(savedInstanceState == null));
         super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null)
+        {
+            ArrayList<Project> works = savedInstanceState.getParcelableArrayList(ARG_WORK_LIST);
+            Log.i(TAG, "onCreate() works.size = "+works.size());
+            _workListView = (RecyclerView) findViewById(R.id.work_list);
+            ((WorkListViewAdapter) _workListView.getAdapter()).setWorks(works);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle state)
+    {
+        if (BuildConfig.DEBUG)
+        {
+            Log.i(TAG, "onSaveInstanceState() called");
+        }
+        super.onSaveInstanceState(state);
+        ArrayList<Project> works = ((WorkListViewAdapter) _workListView.getAdapter()).getWorks();
+        Log.i(TAG, "onSaveInstanceState() works.size = "+works.size());
+        state.putParcelableArrayList(ARG_WORK_LIST, works);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState)
+    {
+        if (BuildConfig.DEBUG)
+        {
+            Log.i(TAG, "onRestoreInstanceState() called");
+        }
+        super.onRestoreInstanceState(savedInstanceState);
+        ArrayList<Project> works = savedInstanceState.getParcelableArrayList(ARG_WORK_LIST);
+        ((WorkListViewAdapter) _workListView.getAdapter()).setWorks(works);
     }
 
     @Override
     public void onResume()
     {
+        Log.i(TAG, "onResume() called");
         super.onResume();
         EventBus.getDefault().register(this);
     }
@@ -67,6 +103,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
     @Override
     public void onPause()
     {
+        Log.i(TAG, "onPause() called");
         EventBus.getDefault().unregister(this);
         super.onPause();
     }
@@ -167,14 +204,18 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
     @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
     public void onWorkUpdated(WorkUpdateEvent e)
     {
+        Log.i(TAG, "onWorkUpdated() called");
         EventBus.getDefault().removeStickyEvent(e);
         Project modifiedWork = e.getWork();
+        Log.i(TAG, "onWorkUpdated() "+modifiedWork);
         WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
         List<Project> works = adapter.getWorks();
+        Log.i(TAG, "onWorkUpdated() # works = "+works.size());
         for (int position = 0; position < works.size(); ++position)
         {
             if (modifiedWork.getId().equals(works.get(position).getId()))
             {
+                Log.i(TAG, "change work at position "+position);
                 works.set(position, modifiedWork);
                 adapter.notifyItemChanged(position);
                 break;
@@ -271,7 +312,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
             extends RecyclerView.Adapter<WorkListViewAdapter.ViewHolder>
     {
         private Activity _activity;
-        private List<Project> _works = new ArrayList<>();
+        private ArrayList<Project> _works = new ArrayList<>();
         private Long _dateFrom;
         private Long _dateTo;
         @StringRes private int _noWorkMessage;
@@ -300,7 +341,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
             _works = works;
         }
 
-        public List<Project> getWorks()
+        public ArrayList<Project> getWorks()
         {
             return _works;
         }
