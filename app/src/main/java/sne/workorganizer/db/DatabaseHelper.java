@@ -621,7 +621,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         SQLiteDatabase db = getReadableDatabase();
         if (BuildConfig.DEBUG)
         {
-            Log.d(TAG, sql + ", using " + workId);
+            Log.d(TAG, "findPictureByWorkId(): "+sql + ", using " + workId);
         }
         String[] args = new String[] { workId };
         Cursor c = db.rawQuery(sql, args);
@@ -636,6 +636,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         }
 
         c.close();
+        Log.d(TAG, "findPictureByWorkId() picture "+(picture == null ? "NOT found" : picture.getResultPhoto()));
         return picture;
     }
 
@@ -703,11 +704,13 @@ public class DatabaseHelper extends SQLiteOpenHelper
                             args[0], args[1], args[2], args[3], args[4]));
                 }
                 getWritableDatabase().execSQL(sql, args);
-                EventBus.getDefault().postSticky(_client);
+                EventBus.getDefault().postSticky(_client);  // FIXME is it used?
             }
 
             if (_work != null)
             {
+                Picture p1 = findPictureByWorkId(_work.getId());
+                Log.i(TAG, "BEFORE REPLACE picture = "+p1);
                 sql = "INSERT OR REPLACE INTO " + Table.PROJECTS + "(" + PROJECTS_COLUMNS +
                         ") VALUES (" + PROJECTS_VALUE_PLACEHOLDERS + ")";
                 args = new Object[PROJECTS_NCOLS];
@@ -725,7 +728,9 @@ public class DatabaseHelper extends SQLiteOpenHelper
                             args[4], args[5], args[6]));
                 }
                 getWritableDatabase().execSQL(sql, args);
-                EventBus.getDefault().postSticky(_work);
+                Picture p2 = findPictureByWorkId(_work.getId());
+                Log.i(TAG, "AFTER REPLACE picture = "+p2);
+                //EventBus.getDefault().postSticky(_work);  // FIXME is it used?
             }
 
             if (_picture != null)

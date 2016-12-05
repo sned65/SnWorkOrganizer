@@ -69,6 +69,7 @@ public class EditWorkFragment extends Fragment
     private ImageButton _cameraBtn;
     private String _resultPath;
     private String _photoPath;
+    private boolean _resultCanBeChanged = false;
 
     private CheckBox _workStatusBtn;
 
@@ -245,6 +246,7 @@ public class EditWorkFragment extends Fragment
             @Override
             public void onClick(View v)
             {
+                _resultCanBeChanged = true;
                 _resultPath = null;
                 refreshResult();
             }
@@ -256,6 +258,7 @@ public class EditWorkFragment extends Fragment
             @Override
             public void onClick(View v)
             {
+                _resultCanBeChanged = true;
                 onSelectResult();
             }
         });
@@ -266,6 +269,7 @@ public class EditWorkFragment extends Fragment
             @Override
             public void onClick(View v)
             {
+                _resultCanBeChanged = true;
                 makePhoto();
             }
         });
@@ -287,6 +291,7 @@ public class EditWorkFragment extends Fragment
         else
         {
             _resultClearBtn.setVisibility(View.VISIBLE);
+            _resultPath = resultPhoto.getResultPhoto();
 
             Bitmap bm = PhotoUtils.getThumbnailBitmap(resultPhoto.getResultPhoto(), WoConstants.WIDTH_THUMBNAIL);
             if (bm != null)
@@ -346,9 +351,14 @@ public class EditWorkFragment extends Fragment
 
         fillWork();
 
-        Picture pict = new Picture();
-        pict.setWorkId(_work.getId());
-        pict.setResultPhoto(_resultPath);
+        Picture pict = null;
+        Log.i(TAG, "save() _resultPath = "+_resultPath+(_resultCanBeChanged?" Changed":" NOT Changed"));
+        if (_resultCanBeChanged)
+        {
+            pict = new Picture();
+            pict.setWorkId(_work.getId());
+            pict.setResultPhoto(_resultPath);
+        }
 
         // Update DB
         DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
