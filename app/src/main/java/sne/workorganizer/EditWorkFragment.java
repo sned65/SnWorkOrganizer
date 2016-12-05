@@ -355,7 +355,7 @@ public class EditWorkFragment extends Fragment
         db.updateWork(_work, pict);
 
         // Inform subscribers
-        WorkUpdateEvent event = new WorkUpdateEvent(_work);
+        WorkUpdateEvent event = new WorkUpdateEvent(_work, _position);
         EventBus.getDefault().postSticky(event);
 
         return true;

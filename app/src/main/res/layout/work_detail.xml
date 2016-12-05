@@ -51,6 +51,26 @@
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="4dp"
+            android:paddingBottom="8dp">
+
+            <TextView
+                android:id="@+id/work_status"
+                style="?android:attr/textAppearanceLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_span="2"
+                tools:text="@string/done"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:textStyle="normal|italic"/>
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/client_attr_margin"
             android:layout_marginBottom="@dimen/client_attr_margin">
 

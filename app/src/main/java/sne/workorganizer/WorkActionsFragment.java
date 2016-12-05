@@ -136,7 +136,7 @@ public class WorkActionsFragment extends DialogFragment
             db.updateWork(_work, null);
 
             // Inform subscribers
-            WorkUpdateEvent event = new WorkUpdateEvent(_work);
+            WorkUpdateEvent event = new WorkUpdateEvent(_work, _position);
             EventBus.getDefault().postSticky(event);
             break;
         }

@@ -9,14 +9,21 @@ import sne.workorganizer.db.Project;
 public class WorkUpdateEvent
 {
     private final Project _work;
+    private final int _position;
 
-    public WorkUpdateEvent(Project work)
+    public WorkUpdateEvent(Project work, int position)
     {
         _work = work;
+        _position = position;
     }
 
     public Project getWork()
     {
         return _work;
+    }
+
+    public int getPosition()
+    {
+         return _position;
     }
 }

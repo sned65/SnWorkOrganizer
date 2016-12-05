@@ -67,30 +67,30 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         }
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle state)
-    {
-        if (BuildConfig.DEBUG)
-        {
-            Log.i(TAG, "onSaveInstanceState() called");
-        }
-        super.onSaveInstanceState(state);
-        ArrayList<Project> works = ((WorkListViewAdapter) _workListView.getAdapter()).getWorks();
-        Log.i(TAG, "onSaveInstanceState() works.size = "+works.size());
-        state.putParcelableArrayList(ARG_WORK_LIST, works);
-    }
+//    @Override
+//    protected void onSaveInstanceState(Bundle state)
+//    {
+//        if (BuildConfig.DEBUG)
+//        {
+//            Log.i(TAG, "onSaveInstanceState() called");
+//        }
+//        super.onSaveInstanceState(state);
+//        ArrayList<Project> works = ((WorkListViewAdapter) _workListView.getAdapter()).getWorks();
+//        Log.i(TAG, "onSaveInstanceState() works.size = "+works.size());
+//        state.putParcelableArrayList(ARG_WORK_LIST, works);
+//    }
 
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState)
-    {
-        if (BuildConfig.DEBUG)
-        {
-            Log.i(TAG, "onRestoreInstanceState() called");
-        }
-        super.onRestoreInstanceState(savedInstanceState);
-        ArrayList<Project> works = savedInstanceState.getParcelableArrayList(ARG_WORK_LIST);
-        ((WorkListViewAdapter) _workListView.getAdapter()).setWorks(works);
-    }
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState)
+//    {
+//        if (BuildConfig.DEBUG)
+//        {
+//            Log.i(TAG, "onRestoreInstanceState() called");
+//        }
+//        super.onRestoreInstanceState(savedInstanceState);
+//        ArrayList<Project> works = savedInstanceState.getParcelableArrayList(ARG_WORK_LIST);
+//        ((WorkListViewAdapter) _workListView.getAdapter()).setWorks(works);
+//    }
 
     @Override
     public void onResume()
@@ -206,21 +206,24 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
     {
         Log.i(TAG, "onWorkUpdated() called");
         EventBus.getDefault().removeStickyEvent(e);
-        Project modifiedWork = e.getWork();
-        Log.i(TAG, "onWorkUpdated() "+modifiedWork);
-        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
-        List<Project> works = adapter.getWorks();
-        Log.i(TAG, "onWorkUpdated() # works = "+works.size());
-        for (int position = 0; position < works.size(); ++position)
-        {
-            if (modifiedWork.getId().equals(works.get(position).getId()))
-            {
-                Log.i(TAG, "change work at position "+position);
-                works.set(position, modifiedWork);
-                adapter.notifyItemChanged(position);
-                break;
-            }
-        }
+        search();
+//        Project modifiedWork = e.getWork();
+//        int position = e.getPosition();
+//        Log.i(TAG, "onWorkUpdated() "+modifiedWork+" at "+position);
+//        updateWork(modifiedWork, position);
+//        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
+//        List<Project> works = adapter.getWorks();
+//        Log.i(TAG, "onWorkUpdated() # works = "+works.size());
+//        for (int position = 0; position < works.size(); ++position)
+//        {
+//            if (modifiedWork.getId().equals(works.get(position).getId()))
+//            {
+//                Log.i(TAG, "change work at position "+position);
+//                works.set(position, modifiedWork);
+//                adapter.notifyItemChanged(position);
+//                break;
+//            }
+//        }
     }
 
     @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)

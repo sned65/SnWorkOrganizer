@@ -84,6 +84,16 @@ public class WorkDetailFragment extends Fragment
     {
         ((TextView) _rootView.findViewById(R.id.work_date_time)).setText(_project.getDateTimeString());
         ((TextView) _rootView.findViewById(R.id.work_title)).setText(_project.getName());
+        TextView statusView = (TextView) _rootView.findViewById(R.id.work_status);
+        if (_project.getStatus() == Project.WorkStatus.DONE)
+        {
+            statusView.setText(Mix.statusToString(Project.WorkStatus.DONE, getActivity()));
+            statusView.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            statusView.setVisibility(View.GONE);
+        }
         String price = _project.getPrice() == null ? "" : _project.getPrice().toString();
         ((TextView) _rootView.findViewById(R.id.work_price)).setText(price);
 
