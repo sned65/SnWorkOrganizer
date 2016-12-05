@@ -12,16 +12,18 @@
 
 
     <LinearLayout
+        style="?android:attr/buttonBarStyle"
         android:id="@+id/button_panel"
         android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
         android:layout_marginBottom="5dp"
-        tools:visibility="gone"
+        tools:visibility="visible"
         tools:ignore="RtlHardcoded">
 
         <Button
+            style="?android:attr/buttonBarButtonStyle"
             android:text="@string/cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -29,6 +31,7 @@
             android:layout_weight="1"/>
 
         <Button
+            style="?android:attr/buttonBarButtonStyle"
             android:text="@string/save"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

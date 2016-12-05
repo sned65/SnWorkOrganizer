@@ -1,7 +1,6 @@
 package sne.workorganizer;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -209,7 +208,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
 
     private class ClientListAdapter extends RecyclerView.Adapter<RowHolder>
     {
-        private Activity _activity;
+        private final Activity _activity;
         private List<Client> _clients;
 
         public ClientListAdapter(Activity activity)
@@ -379,13 +378,13 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
     static class RowHolder extends RecyclerView.ViewHolder
             implements View.OnLongClickListener
     {
-        private Activity _activity;
+        private final Activity _activity;
         private Client _client;
-        private TextView _clientName;
-        private TextView _clientPhone;
-        private TextView _clientSocial;
-        private TextView _clientEmail;
-        private TableLayout _projTable;
+        private final TextView _clientName;
+        private final TextView _clientPhone;
+        private final TextView _clientSocial;
+        private final TextView _clientEmail;
+        private final TableLayout _projTable;
 
         RowHolder(View itemView, Activity activity)
         {

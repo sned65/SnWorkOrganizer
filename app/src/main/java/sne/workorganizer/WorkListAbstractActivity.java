@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
 
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
@@ -52,20 +51,20 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
     @StringRes private int _noWorkMessage;
 
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
-        Log.i(TAG, "onCreate() called: savedInstanceState == null is "+(savedInstanceState == null));
-        super.onCreate(savedInstanceState);
-
-        if (savedInstanceState != null)
-        {
-            ArrayList<Project> works = savedInstanceState.getParcelableArrayList(ARG_WORK_LIST);
-            Log.i(TAG, "onCreate() works.size = "+works.size());
-            _workListView = (RecyclerView) findViewById(R.id.work_list);
-            ((WorkListViewAdapter) _workListView.getAdapter()).setWorks(works);
-        }
-    }
+//    @Override
+//    protected void onCreate(Bundle savedInstanceState)
+//    {
+//        Log.i(TAG, "onCreate() called: savedInstanceState == null is "+(savedInstanceState == null));
+//        super.onCreate(savedInstanceState);
+//
+//        if (savedInstanceState != null)
+//        {
+//            ArrayList<Project> works = savedInstanceState.getParcelableArrayList(ARG_WORK_LIST);
+//            Log.i(TAG, "onCreate() works.size = "+works.size());
+//            _workListView = (RecyclerView) findViewById(R.id.work_list);
+//            ((WorkListViewAdapter) _workListView.getAdapter()).setWorks(works);
+//        }
+//    }
 
 //    @Override
 //    protected void onSaveInstanceState(Bundle state)
@@ -314,7 +313,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
     private class WorkListViewAdapter
             extends RecyclerView.Adapter<WorkListViewAdapter.ViewHolder>
     {
-        private Activity _activity;
+        private final Activity _activity;
         private ArrayList<Project> _works = new ArrayList<>();
         private Long _dateFrom;
         private Long _dateTo;
