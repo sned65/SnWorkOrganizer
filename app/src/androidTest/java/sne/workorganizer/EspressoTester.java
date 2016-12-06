@@ -230,7 +230,7 @@ public class EspressoTester
         SystemClock.sleep(pause);
 
         // Save edited work.
-        onView(withText(R.string.save)).perform(click());
+        onView(allOf(withText(R.string.save), isDisplayed())).perform(click());
 
         // Check existence of the edited work.
         onView(isRoot()).perform(waitFor(withText(new_title), TimeUnit.SECONDS.toMillis(10)));
@@ -363,7 +363,7 @@ public class EspressoTester
      *
      * @param viewId the resource id.
      * @param millis timeout, in milliseconds.
-     * @return
+     * @return {@code ViewAction}
      */
     public static ViewAction waitId(final int viewId, final long millis)
     {
@@ -420,9 +420,9 @@ public class EspressoTester
     /**
      * From http://stackoverflow.com/questions/21417954/espresso-thread-sleep
      *
-     * @param viewMatcher
+     * @param viewMatcher {@code ViewMatcher}
      * @param millis timeout, in milliseconds.
-     * @return
+     * @return {@code ViewAction}
      */
     public static ViewAction waitFor(final Matcher<View> viewMatcher, final long millis)
     {

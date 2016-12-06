@@ -1,5 +1,6 @@
 package sne.workorganizer.db;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,8 +11,6 @@ import android.os.Process;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,37 +49,55 @@ public class DatabaseHelper extends SQLiteOpenHelper
     // CLIENTS TABLE
 
     private static final String CLIENTS_PK = "client_id";
-    private static final int CLIENTS_NCOLS = 5;
-    private static final String CLIENTS_TYPED_COLUMNS =
-            "client_id TEXT PRIMARY KEY, fullname TEXT, phone TEXT, email TEXT, social TEXT";
-    private static final String CLIENTS_COLUMNS =
-            "client_id, fullname, phone, email, social";
-    private static final String CLIENTS_VALUE_PLACEHOLDERS =
-            "?, ?, ?, ?, ?";
     public static final String CLIENTS_COL_FULLNAME = "fullname";
+    private static final String CLIENTS_COL_PHONE = "phone";
+    private static final String CLIENTS_COL_EMAIL = "email";
+    private static final String CLIENTS_COL_SOCIAL = "social";
+    private static final String CLIENTS_TYPED_COLUMNS =
+            CLIENTS_PK + " TEXT PRIMARY KEY, " +
+                    CLIENTS_COL_FULLNAME + " TEXT, " +
+                    CLIENTS_COL_PHONE + " TEXT, " +
+                    CLIENTS_COL_EMAIL + " TEXT, " +
+                    CLIENTS_COL_SOCIAL + " TEXT";
+    private static final String CLIENTS_COLUMNS =
+            CLIENTS_PK + ", " + CLIENTS_COL_FULLNAME + ", " +
+                    CLIENTS_COL_PHONE + ", " + CLIENTS_COL_EMAIL + ", " + CLIENTS_COL_SOCIAL;
 
     // END OF CLIENTS TABLE
 
     // WORKS TABLE
 
-    private static final int PROJECTS_NCOLS = 7;
     private static final String PROJECTS_PK = "proj_id";
+    private static final String PROJECTS_COL_CLIENT_ID = "client_id";
+    private static final String PROJECTS_COL_NAME = "proj_name";
+    private static final String PROJECTS_COL_DATE = "work_date";
+    private static final String PROJECTS_COL_STATUS = "status";
+    private static final String PROJECTS_COL_PRICE = "price";
     private static final String PROJECTS_COL_DESIGN = "design";
     private static final String PROJECTS_TYPED_COLUMNS =
-            "proj_id TEXT PRIMARY KEY, client_id TEXT, proj_name TEXT, work_date INTEGER, status TEXT, price NUMERIC, " +
+            PROJECTS_PK + " TEXT PRIMARY KEY, " +
+                    PROJECTS_COL_CLIENT_ID + " TEXT, " +
+                    PROJECTS_COL_NAME + " TEXT, " +
+                    PROJECTS_COL_DATE + " INTEGER, " +
+                    PROJECTS_COL_STATUS + " TEXT, " +
+                    PROJECTS_COL_PRICE + " NUMERIC, " +
                     PROJECTS_COL_DESIGN + " TEXT," +
-            " FOREIGN KEY(client_id) REFERENCES clients(client_id) ON DELETE CASCADE";
+            " FOREIGN KEY(" + PROJECTS_COL_CLIENT_ID +
+                    ") REFERENCES clients(" + CLIENTS_PK + ") ON DELETE CASCADE";
     private static final String PROJECTS_COLUMNS =
-            "proj_id, client_id, proj_name, work_date, status, price, "+PROJECTS_COL_DESIGN;
-    private static final String PROJECTS_VALUE_PLACEHOLDERS =
-            "?, ?, ?, ?, ?, ?, ?";
+            PROJECTS_PK + ", " +
+                    PROJECTS_COL_CLIENT_ID + ", " +
+                    PROJECTS_COL_NAME + ", " +
+                    PROJECTS_COL_DATE + ", " +
+                    PROJECTS_COL_STATUS + ", " +
+                    PROJECTS_COL_PRICE + ", " +
+                    PROJECTS_COL_DESIGN;
 
     // END OF WORKS TABLE
 
 
     // PICTURES TABLE
 
-    private static final int PICTURES_NCOLS = 3;
     private static final String PICTURES_PK = "pict_id";
     private static final String PICTURES_COL_WORK_ID = "proj_id";
     private static final String PICTURES_COL_PHOTO = "photo";
@@ -88,11 +105,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
             PICTURES_PK + " TEXT PRIMARY KEY, " +
                     PICTURES_COL_WORK_ID + " TEXT, " +
                     PICTURES_COL_PHOTO + " TEXT," +
-                    " FOREIGN KEY(" + PICTURES_COL_WORK_ID + ") REFERENCES projects(proj_id) ON DELETE SET NULL";
+                    " FOREIGN KEY(" + PICTURES_COL_WORK_ID + ") REFERENCES projects(" +
+                    PROJECTS_PK + ") ON DELETE SET NULL";
     private static final String PICTURES_COLUMNS =
             PICTURES_PK + ", " + PICTURES_COL_WORK_ID + ", " + PICTURES_COL_PHOTO;
-    private static final String PICTURES_VALUE_PLACEHOLDERS =
-            "?, ?, ?";
 
     // END OF PICTURES TABLE
 
@@ -113,8 +129,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
     };
 
     private static DatabaseHelper _instance;
-
-    private static final int INSERT_POSITION = 0;
 
     //////////////////////////////////////////////////////////////////
     public synchronized static DatabaseHelper getInstance(Context ctx)
@@ -172,7 +186,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private ArrayList<Client> selectClients()
     {
         ArrayList<Client> clients = new ArrayList<>();
-        String sql = "SELECT " + CLIENTS_COLUMNS + " FROM " + Table.CLIENTS + " ORDER BY fullname";
+        String sql = "SELECT " + CLIENTS_COLUMNS + " FROM " + Table.CLIENTS + " ORDER BY " + CLIENTS_COL_FULLNAME;
 
         SQLiteDatabase db = getReadableDatabase();
         if (BuildConfig.DEBUG)
@@ -200,13 +214,13 @@ public class DatabaseHelper extends SQLiteOpenHelper
         {
             sql = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS +
                     (where == null ? "" : " WHERE "+where) +
-                    " ORDER BY work_date";
+                    " ORDER BY " + PROJECTS_COL_DATE;
         }
         else
         {
             sql = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS +
-                    " WHERE work_date > ? AND work_date < ?" +
-                    " ORDER BY work_date";
+                    " WHERE " + PROJECTS_COL_DATE + " > ? AND " + PROJECTS_COL_DATE + " < ?" +
+                    " ORDER BY " + PROJECTS_COL_DATE;
 
             long from = dateFrom.getTime();
             long to;
@@ -263,7 +277,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private Client createClientFromCursor(Cursor c)
     {
         String sqlProj = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS
-                + " WHERE client_id = ? ORDER BY work_date";
+                + " WHERE client_id = ? ORDER BY " + PROJECTS_COL_DATE;
 
         Client client = new Client();
         client.setId(c.getString(0));
@@ -409,7 +423,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
     public void findAllProjects(DbSelectProjectsCallback callback, Date dateFrom, Date dateTo)
     {
         new SelectProjectsTask(callback, dateFrom, dateTo).execute();
-        //new SelectProjectsTask(dateFrom, dateTo).execute();
     }
 
     /**
@@ -421,7 +434,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
     public void findAllProjectsWithDesign(DbSelectProjectsCallback callback)
     {
         new SelectProjectsTask(callback, PROJECTS_COL_DESIGN+" IS NOT NULL").execute();
-        //new SelectProjectsTask(PROJECTS_COL_DESIGN+" IS NOT NULL").execute();
     }
 
     /**
@@ -466,7 +478,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
     public void findAllPictures(DbSelectPicturesCallback callback)
     {
         new SelectPicturesTask(callback).execute();
-        //new SelectPicturesTask().execute();
     }
 
     /**
@@ -476,7 +487,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      */
     public void createClient(Client client)
     {
-        new UpdateThread(client).start();
+        new InsertThread(client).start();
     }
 
     /**
@@ -518,7 +529,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      */
     public void createProjectWithClient(Project project, @Nullable Client newClient)
     {
-        new UpdateThread(project, newClient).start();
+        new InsertThread(project, newClient).start();
     }
 
     /**
@@ -536,6 +547,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      *
      * @param work existing work with new data
      * @param picture update a reference in {@code Picture} table.
+     *                If {@code null} then the reference is not changed.
      */
     public void updateWork(Project work, Picture picture)
     {
@@ -549,6 +561,16 @@ public class DatabaseHelper extends SQLiteOpenHelper
      */
     public void createPicture(Picture picture)
     {
+        new InsertThread(picture).start();
+    }
+
+    /**
+     * Update picture in a separate thread.
+     *
+     * @param picture existing picture with new data
+     */
+    public void updatePicture(Picture picture)
+    {
         new UpdateThread(picture).start();
     }
 
@@ -560,16 +582,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
     public void deletePicture(String id)
     {
         new DeleteThread(Table.PICTURES, id).start();
-    }
-
-    /**
-     * Update picture in a separate thread.
-     *
-     * @param picture existing picture with new data
-     */
-    public void updatePicture(Picture picture)
-    {
-        new UpdateThread(picture).start();
     }
 
     /**
@@ -640,8 +652,118 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return picture;
     }
 
+    private void deleteResultPictures(String workId)
+    {
+        if (BuildConfig.DEBUG)
+        {
+            Log.i(TAG, "InsertThread: Delete Picture for work "+workId);
+        }
+        getWritableDatabase().delete(Table.PICTURES.toString(), PICTURES_COL_WORK_ID + " = ?", new String[] { workId });
+    }
+
     /**
-     * SQL INSERT or UPDATE
+     * SQL INSERT
+     */
+    private class InsertThread extends Thread
+    {
+        private Client _client;
+        private Project _work;
+        private Picture _picture;
+
+        InsertThread(Client client)
+        {
+            super();
+            _client = client;
+        }
+
+        InsertThread(Project work)
+        {
+            super();
+            _work = work;
+        }
+
+        InsertThread(Project work, Client client)
+        {
+            super();
+            _client = client;
+            _work = work;
+        }
+
+        InsertThread(Picture picture)
+        {
+            super();
+            _picture = picture;
+        }
+
+        InsertThread(Project work, Picture picture)
+        {
+            super();
+            _work = work;
+            _picture = picture;
+        }
+
+        @Override
+        public void run()
+        {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+
+            if (_client != null)
+            {
+                ContentValues values = new ContentValues();
+                values.put(CLIENTS_PK, _client.getId());
+                values.put(CLIENTS_COL_FULLNAME, _client.getName());
+                values.put(CLIENTS_COL_PHONE, _client.getPhone());
+                values.put(CLIENTS_COL_EMAIL, _client.getEmail());
+                values.put(CLIENTS_COL_SOCIAL, _client.getSocial());
+                if (BuildConfig.DEBUG)
+                {
+                    Log.i(TAG, "InsertThread: Client "+values);
+                }
+                getWritableDatabase().insert(Table.CLIENTS.toString(), null, values);
+            }
+
+            if (_work != null)
+            {
+                ContentValues values = new ContentValues();
+                values.put(PROJECTS_PK, _work.getId());
+                values.put(PROJECTS_COL_CLIENT_ID, _work.getClientId());
+                values.put(PROJECTS_COL_NAME, _work.getName());
+                values.put(PROJECTS_COL_DATE, _work.getDate());
+                values.put(PROJECTS_COL_STATUS, _work.getStatus().toString());
+                values.put(PROJECTS_COL_PRICE, _work.getPrice());
+                values.put(PROJECTS_COL_DESIGN, _work.getDesign());
+                if (BuildConfig.DEBUG)
+                {
+                    Log.i(TAG, "InsertThread: Work "+values);
+                }
+                getWritableDatabase().insert(Table.PROJECTS.toString(), null, values);
+            }
+
+            if (_picture != null)
+            {
+                String photo = _picture.getResultPhoto();
+                if (TextUtils.isEmpty(photo))
+                {
+                    deleteResultPictures(_picture.getWorkId());
+                }
+                else
+                {
+                    ContentValues values = new ContentValues();
+                    values.put(PICTURES_PK, _picture.getId());
+                    values.put(PICTURES_COL_WORK_ID, _picture.getWorkId());
+                    values.put(PICTURES_COL_PHOTO, photo);
+                    if (BuildConfig.DEBUG)
+                    {
+                        Log.i(TAG, "InsertThread: Picture "+values);
+                    }
+                    getWritableDatabase().insert(Table.PICTURES.toString(), null, values);
+                }
+            }
+        }
+    }
+
+    /**
+     * SQL UPDATE
      */
     private class UpdateThread extends Thread
     {
@@ -686,51 +808,34 @@ public class DatabaseHelper extends SQLiteOpenHelper
         {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
 
-            String sql;
-            Object[] args;
             if (_client != null)
             {
-                sql = "INSERT OR REPLACE INTO " + Table.CLIENTS + "(" + CLIENTS_COLUMNS +
-                        ") VALUES (" + CLIENTS_VALUE_PLACEHOLDERS + ")";
-                args = new Object[CLIENTS_NCOLS];
-                args[0] = _client.getId();
-                args[1] = _client.getName();
-                args[2] = _client.getPhone();
-                args[3] = _client.getEmail();
-                args[4] = _client.getSocial();
+                ContentValues values = new ContentValues();
+                values.put(CLIENTS_COL_FULLNAME, _client.getName());
+                values.put(CLIENTS_COL_PHONE, _client.getPhone());
+                values.put(CLIENTS_COL_EMAIL, _client.getEmail());
+                values.put(CLIENTS_COL_SOCIAL, _client.getSocial());
                 if (BuildConfig.DEBUG)
                 {
-                    Log.d(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s, %s", sql,
-                            args[0], args[1], args[2], args[3], args[4]));
+                    Log.i(TAG, "UpdateThread: Client "+_client.getId()+": "+values);
                 }
-                getWritableDatabase().execSQL(sql, args);
-                EventBus.getDefault().postSticky(_client);  // FIXME is it used?
+                getWritableDatabase().update(Table.CLIENTS.toString(), values, CLIENTS_PK + " = ?", new String[] {_client.getId()});
             }
 
             if (_work != null)
             {
-                Picture p1 = findPictureByWorkId(_work.getId());
-                Log.i(TAG, "BEFORE REPLACE picture = "+p1);
-                sql = "INSERT OR REPLACE INTO " + Table.PROJECTS + "(" + PROJECTS_COLUMNS +
-                        ") VALUES (" + PROJECTS_VALUE_PLACEHOLDERS + ")";
-                args = new Object[PROJECTS_NCOLS];
-                args[0] = _work.getId();
-                args[1] = _work.getClientId();
-                args[2] = _work.getName();
-                args[3] = _work.getDate();
-                args[4] = _work.getStatus();
-                args[5] = _work.getPrice();
-                args[6] = _work.getDesign();
+                ContentValues values = new ContentValues();
+                values.put(PROJECTS_COL_CLIENT_ID, _work.getClientId());
+                values.put(PROJECTS_COL_NAME, _work.getName());
+                values.put(PROJECTS_COL_DATE, _work.getDate());
+                values.put(PROJECTS_COL_STATUS, _work.getStatus().toString());
+                values.put(PROJECTS_COL_PRICE, _work.getPrice());
+                values.put(PROJECTS_COL_DESIGN, _work.getDesign());
                 if (BuildConfig.DEBUG)
                 {
-                    Log.d(TAG, String.format("UpdateThread: %s, using %s, %s, %s, %s, %s, %s, %s", sql,
-                            args[0], args[1], args[2], new Date(_work.getDate()).toString(),
-                            args[4], args[5], args[6]));
+                    Log.i(TAG, "UpdateThread: Work: "+_work.getId()+": "+values);
                 }
-                getWritableDatabase().execSQL(sql, args);
-                Picture p2 = findPictureByWorkId(_work.getId());
-                Log.i(TAG, "AFTER REPLACE picture = "+p2);
-                //EventBus.getDefault().postSticky(_work);  // FIXME is it used?
+                getWritableDatabase().update(Table.PROJECTS.toString(), values, PROJECTS_PK + " = ?", new String[] {_work.getId()});
             }
 
             if (_picture != null)
@@ -742,18 +847,24 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 }
                 else
                 {
-                    sql = "INSERT OR REPLACE INTO " + Table.PICTURES + "(" + PICTURES_COLUMNS +
-                            ") VALUES (" + PICTURES_VALUE_PLACEHOLDERS + ")";
-                    args = new Object[PICTURES_NCOLS];
-                    args[0] = _picture.getId();
-                    args[1] = _picture.getWorkId();
-                    args[2] = photo;
+                    ContentValues values = new ContentValues();
+                    values.put(PICTURES_COL_PHOTO, photo);
                     if (BuildConfig.DEBUG)
                     {
-                        Log.d(TAG, String.format("UpdateThread: %s, using %s, %s, %s", sql,
-                                args[0], args[1], args[2]));
+                        Log.i(TAG, "UpdateThread: Picture for work "+_picture.getWorkId()+": "+values);
                     }
-                    getWritableDatabase().execSQL(sql, args);
+                    int n = getWritableDatabase().update(Table.PICTURES.toString(), values, PICTURES_COL_WORK_ID + " = ?", new String[] {_picture.getWorkId()});
+                    if (n == 0)
+                    {
+                        // no rows updated => insert new row
+                        values.put(PICTURES_PK, _picture.getId());
+                        values.put(PICTURES_COL_WORK_ID, _picture.getWorkId());
+                        if (BuildConfig.DEBUG)
+                        {
+                            Log.i(TAG, "UpdateThread: Insert Picture: "+values);
+                        }
+                        getWritableDatabase().insert(Table.PICTURES.toString(), null, values);
+                    }
                 }
             }
         }
@@ -772,49 +883,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
             getWritableDatabase().execSQL(sql, args);
         }
-
-        private void deleteResultPictures(String workId)
-        {
-            String sql = "DELETE FROM " + Table.PICTURES +
-                    " WHERE " + PICTURES_COL_WORK_ID + " = ?";
-            Object[] args = new Object[1];
-            args[0] = workId;
-            if (BuildConfig.DEBUG)
-            {
-                Log.d(TAG, String.format("deleteResultPictures: %s, using %s", sql, args[0]));
-            }
-
-            getWritableDatabase().execSQL(sql, args);
-        }
     }
-
-/*
-    private class ClearPictureWorkRefThread extends Thread
-    {
-        private String _workId;
-
-        ClearPictureWorkRefThread(String workId)
-        {
-            super();
-            _workId = workId;
-        }
-
-        @Override
-        public void run()
-        {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-
-            String sql = "UPDATE " + Table.PICTURES +
-                    " SET " + PICTURES_COL_WORK_ID + " = NULL" +
-                    " WHERE " + PICTURES_COL_WORK_ID + " = ?";
-            Object[] args = new Object[1];
-            args[0] = _workId;
-            Log.i(TAG, String.format("ClearWorkRefThread: %s, using %s", sql, args[0]));
-
-            getWritableDatabase().execSQL(sql, args);
-        }
-    }
-*/
 
     /**
      * SQL DELETE
@@ -858,10 +927,9 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
             if (BuildConfig.DEBUG)
             {
-                Log.d(TAG, sql + ", using " + _id);
+                Log.i(TAG, sql + ", using " + _id);
             }
             getWritableDatabase().execSQL(sql, args);
-            // TODO EventBus
         }
     }
 
@@ -870,7 +938,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         private DbSelectClientsCallback _callback = null;
 
         SelectClientsTask(DbSelectClientsCallback callback)
-        //SelectClientsTask()
         {
             super();
             _callback = callback;
@@ -889,57 +956,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
             {
                 _callback.onSelectFinished(result);
             }
-
-            //EventBus.getDefault().post(result);
         }
-
-/*
-        public ArrayList<Client> selectClients()
-        {
-            ArrayList<Client> result = new ArrayList<>();
-            String sql = "SELECT " + CLIENTS_COLUMNS + " FROM " + Table.CLIENTS;
-            String sqlProj = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS
-                    + " WHERE client_id = ?";
-
-            SQLiteDatabase db = getReadableDatabase();
-            Log.i(TAG, sql);
-            Cursor c = db.rawQuery(sql, null);
-            String[] args = new String[1];
-
-            while (c.moveToNext())
-            {
-                Client client = new Client();
-                client.setId(c.getString(0));
-                client.setName(c.getString(1));
-                client.setPhone(c.getString(2));
-                client.setEmail(c.getString(3));
-                client.setSocial(c.getString(4));
-
-                // Fill projects
-
-                List<Project> projects = new ArrayList<>();
-                args[0] = client.getId();
-                Log.i(TAG, sqlProj+", using "+args[0]);
-                Cursor c_proj = db.rawQuery(sqlProj, args);
-                while (c_proj.moveToNext())
-                {
-                    Project proj = new Project();
-                    proj.setId(c.getString(0));
-                    proj.setClientId(c.getString(1));
-                    proj.setName(c.getString(2));
-                    proj.setDate(c.getString(3));
-                    proj.setStatus(c.getString(4));
-                    projects.add(proj);
-                }
-                client.setProjects(projects);
-
-                result.add(client);
-            }
-
-            c.close();
-            return result;
-        }
-*/
     }
 
     private class SelectProjectsTask extends AsyncTask<Void, Void, ArrayList<Project>>
@@ -950,7 +967,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         private String _where;
 
         SelectProjectsTask(DbSelectProjectsCallback callback, Date dateFrom, Date dateTo)
-        //SelectProjectsTask(Date dateFrom, Date dateTo)
         {
             super();
             _callback = callback;
@@ -965,7 +981,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         }
 
         SelectProjectsTask(DbSelectProjectsCallback callback, String where)
-        //SelectProjectsTask(String where)
         {
             super();
             _callback = callback;
@@ -975,7 +990,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         @Override
         protected ArrayList<Project> doInBackground(Void... params)
         {
-            //SystemClock.sleep(5000); // FIXME for tests
+            //SystemClock.sleep(5000);
             return selectProjects(_dateFrom, _dateTo, _where);
         }
 
@@ -986,8 +1001,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
             {
                 _callback.onSelectFinished(result);
             }
-
-            //EventBus.getDefault().post(result);
         }
     }
 
@@ -996,7 +1009,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         private DbSelectPicturesCallback _callback = null;
 
         SelectPicturesTask(DbSelectPicturesCallback callback)
-        //SelectPicturesTask()
         {
             super();
             _callback = callback;
@@ -1015,8 +1027,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
             {
                 _callback.onSelectFinished(result);
             }
-
-            //EventBus.getDefault().post(result);
         }
     }
 }
