@@ -43,6 +43,7 @@ import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.isPlatformPopup;
+import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
@@ -50,6 +51,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Instrumentation test, which will execute on an Android device.
@@ -71,10 +73,9 @@ public class EspressoTester
     @Rule
     public final ActivityTestRule<MainActivity> main = new ActivityTestRule<>(MainActivity.class, true);
 
-    static private String _clientName1;
-    static private String _workTitle1;
-    static private String _clientName2;
-    static private String _workTitle2;
+    private static final int N_CLIENTS = 3;
+    static private String[] _clientNames = new String[N_CLIENTS];
+    static private String[] _workTitles = new String[N_CLIENTS];
     static private final SparseIntArray _pauses = new SparseIntArray();
 
 //    @Test
@@ -95,19 +96,16 @@ public class EspressoTester
         _pauses.put(4, PAUSE_NONE);
         _pauses.put(10, PAUSE_NONE);
         _pauses.put(11, PAUSE_NONE);
+        _pauses.put(20, PAUSE_LONG);
 
-        String guid1 = UUID.randomUUID().toString();
-        _clientName1 = CLIENT_NAME_PREFIX + guid1;
-        _workTitle1 = WORK_TITLE_PREFIX + guid1;
-
-        String guid2 = UUID.randomUUID().toString();
-        _clientName2 = CLIENT_NAME_PREFIX + guid2;
-        _workTitle2 = WORK_TITLE_PREFIX + guid2;
-
-        Log.i(TAG, "_clientName1 = "+_clientName1);
-        Log.i(TAG, "_workTitle1 = "+_workTitle1);
-        Log.i(TAG, "_clientName2 = "+_clientName2);
-        Log.i(TAG, "_workTitle2 = "+_workTitle2);
+        for (int i = 0; i < N_CLIENTS; ++i)
+        {
+            String guid = UUID.randomUUID().toString();
+            _clientNames[i] = CLIENT_NAME_PREFIX + guid;
+            _workTitles[i] = WORK_TITLE_PREFIX + guid;
+            Log.i(TAG, "_clientNames[" + i + "] = " + _clientNames[i]);
+            Log.i(TAG, "_workTitles[" + i + "] = " + _workTitles[i]);
+        }
     }
 
 //    @Test
@@ -137,20 +135,12 @@ public class EspressoTester
         onView(withText(R.string.create)).perform(click());
         SystemClock.sleep(pause);
 
-        // Fill the form.
-        onView(withId(R.id.client_name)).perform(typeText(_clientName1));
-        onView(withId(R.id.client_phone)).perform(typeText("1234567890"));
-        onView(withId(R.id.client_email)).perform(typeText("espresso@gmail.com"));
-        SystemClock.sleep(pause);
-
-        // Save new client.
-        onView(withText(R.string.save)).perform(click());
-        SystemClock.sleep(pause);
+        createClient(_clientNames[0], pause);
 
         onView(isRoot()).perform(waitId(R.id.client_list, TimeUnit.SECONDS.toMillis(15)));
         Matcher<View> rv = withId(R.id.client_list);
         onView(rv).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
-        onView(withText(_clientName1)).check(matches(isDisplayed()));
+        onView(withText(_clientNames[0])).check(matches(isDisplayed()));
         SystemClock.sleep(pause);
 
 /*
@@ -191,12 +181,12 @@ public class EspressoTester
         onView(withId(R.id.select_client)).perform(typeText(CLIENT_NAME_PREFIX.substring(0,3)));
         SystemClock.sleep(pause);
 
-        onData(allOf(is(instanceOf(Cursor.class)), CursorMatchers.withRowString(DatabaseHelper.CLIENTS_COL_FULLNAME, _clientName1)))
+        onData(allOf(is(instanceOf(Cursor.class)), CursorMatchers.withRowString(DatabaseHelper.CLIENTS_COL_FULLNAME, _clientNames[0])))
                 .inRoot(isPlatformPopup())
                 .perform(click());
         SystemClock.sleep(pause);
 
-        onView(withId(R.id.work_title)).perform(typeText(_workTitle1));
+        onView(withId(R.id.work_title)).perform(typeText(_workTitles[0]));
         SystemClock.sleep(pause);
 
         onView(withId(R.id.work_price)).perform(scrollTo(), typeText("1000"));
@@ -206,8 +196,8 @@ public class EspressoTester
         onView(withText(R.string.save)).perform(click());
 
         // Check existence of the new work.
-        onView(isRoot()).perform(waitFor(withText(_workTitle1), TimeUnit.SECONDS.toMillis(10)));
-        onView(withText(_workTitle1)).check(matches(isDisplayed()));
+        onView(isRoot()).perform(waitFor(withText(_workTitles[0]), TimeUnit.SECONDS.toMillis(10)));
+        onView(withText(_workTitles[0])).check(matches(isDisplayed()));
     }
 
     @Test
@@ -219,14 +209,14 @@ public class EspressoTester
         SystemClock.sleep(pause);
 
         // Long click on item to open popup action menu.
-        onView(withText(_workTitle1)).perform(longClick());
+        onView(withText(_workTitles[0])).perform(longClick());
         SystemClock.sleep(pause);
 
         onView(withText(R.string.edit)).perform(click());
         SystemClock.sleep(pause);
 
-        String new_title = _workTitle1+" *** EDITED ***";
-        onView(allOf(is(instanceOf(TextInputEditText.class)), withText(_workTitle1))).perform(replaceText(new_title));
+        String new_title = _workTitles[0]+" *** EDITED ***";
+        onView(allOf(is(instanceOf(TextInputEditText.class)), withText(_workTitles[0]))).perform(replaceText(new_title));
         SystemClock.sleep(pause);
 
         // Save edited work.
@@ -235,6 +225,26 @@ public class EspressoTester
         // Check existence of the edited work.
         onView(isRoot()).perform(waitFor(withText(new_title), TimeUnit.SECONDS.toMillis(10)));
         onView(withText(new_title)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void t004_deleteClient()
+    {
+        TestUtils.allowAllNeededPermissions();
+
+        int pause = _pauses.get(4);
+        deleteClient(_clientNames[0], pause);
+
+        // Go to Journal
+        pressBack();
+        SystemClock.sleep(pause);
+
+        // Go to Calendar
+        onView(withId(R.id.menu_calendar)).perform(click());
+        SystemClock.sleep(pause);
+
+        onView(withText(_workTitles[0])).check(doesNotExist());
+        SystemClock.sleep(pause);
     }
 
     @Test
@@ -270,6 +280,133 @@ public class EspressoTester
         pressBack();
     }
 
+    @Test
+    public void t011_createWorkWithClient()
+    {
+        TestUtils.allowAllNeededPermissions();
+
+        int pause = _pauses.get(11);
+        SystemClock.sleep(pause);
+
+        // Go to Calendar
+        onView(withId(R.id.menu_calendar)).perform(click());
+        SystemClock.sleep(pause);
+
+        // Go to Create Work form.
+        onView(withText(R.string.create)).perform(click());
+        SystemClock.sleep(pause);
+
+        // Fill the form.
+        onView(withId(R.id.select_client)).perform(scrollTo(), typeText(_clientNames[1]));
+        SystemClock.sleep(pause);
+
+        onView(withId(R.id.work_title)).perform(scrollTo(), typeText(_workTitles[1]));
+        SystemClock.sleep(pause);
+
+        onView(withId(R.id.work_price)).perform(scrollTo(), typeText("1000"));
+        SystemClock.sleep(pause);
+
+        // Save new work.
+        onView(withText(R.string.save)).perform(click());
+        SystemClock.sleep(pause);
+
+        // Check existence of the new work.
+        onView(isRoot()).perform(waitFor(withText(_workTitles[1]), TimeUnit.SECONDS.toMillis(10)));
+        onView(withText(_workTitles[1])).check(matches(isDisplayed()));
+        //onView(withClassName(is(RecyclerView.class.getCanonicalName()))).perform(RecyclerViewActions.scrollTo(withText(_workTitle2)));
+
+        deleteClient(_clientNames[1], pause);
+        SystemClock.sleep(pause);
+    }
+
+    @Test
+    public void t020_createWorkWithPictures()
+    {
+        TestUtils.allowAllNeededPermissions();
+
+        int pause = _pauses.get(20);
+        SystemClock.sleep(pause);
+
+        // Go to Calendar
+        onView(withId(R.id.menu_calendar)).perform(click());
+        SystemClock.sleep(pause);
+
+        // Go to Create Work form.
+        onView(withText(R.string.create)).perform(click());
+        SystemClock.sleep(pause);
+
+        // Fill the form.
+
+        onView(withId(R.id.btn_new_client)).perform(scrollTo(), click());
+        createClient(_clientNames[2], pause);
+
+        onView(withId(R.id.work_title)).perform(scrollTo(), typeText(_workTitles[2]));
+        SystemClock.sleep(pause);
+
+        onView(withId(R.id.work_price)).perform(scrollTo(), typeText("1000"));
+        SystemClock.sleep(pause);
+
+        onView(withId(R.id.btn_select_design)).perform(scrollTo(), click());
+        SystemClock.sleep(pause);
+
+        assertTrue(TestUtils.selectPicture("glenlivet_12"));
+        SystemClock.sleep(pause);
+
+        saveEditedWork(pause);
+
+        // Long click on item to open popup action menu.
+        onView(withText(_workTitles[2])).perform(longClick());
+        SystemClock.sleep(pause);
+
+        onView(withText(R.string.mark_as_done)).perform(click());
+        SystemClock.sleep(pause);
+
+        // FIXME Error performing 'scroll to' on view 'with id: sne.workorganizer:id/btn_select_result'.
+//        startEditWork(_workTitles[2], pause);
+//        SystemClock.sleep(pause);SystemClock.sleep(pause);SystemClock.sleep(pause);SystemClock.sleep(pause);SystemClock.sleep(pause);
+//
+//        onView(withId(R.id.btn_select_result)).perform(scrollTo(), click());
+//        SystemClock.sleep(pause);
+//
+//        assertTrue(TestUtils.selectPicture("glenlivet_18"));
+//        SystemClock.sleep(pause);
+//
+//        saveEditedWork(pause);
+//
+//        startEditWork(_workTitles[2], pause);
+//
+//        onView(withId(R.id.btn_clear_result)).perform(click());
+//        SystemClock.sleep(pause);
+//
+//        saveEditedWork(pause);
+
+        // Long click on item to open popup action menu.
+        onView(withText(_workTitles[2])).perform(longClick());
+        SystemClock.sleep(pause);
+
+        // Click on Delete and then confirm.
+        onView(withText(R.string.delete)).perform(click());
+        SystemClock.sleep(pause);
+        onView(withText(R.string.ok)).perform(click());
+        SystemClock.sleep(pause);
+
+        deleteClient(_clientNames[2], pause);
+        pressBack();
+    }
+
+    private void createClient(String clientName, int pause)
+    {
+        // Fill the form.
+        onView(withId(R.id.client_name)).perform(typeText(clientName));
+        onView(withId(R.id.client_phone)).perform(typeText("1234567890"));
+        onView(withId(R.id.client_email)).perform(typeText("espresso@gmail.com"));
+        SystemClock.sleep(pause);
+
+        // Save new client.
+        onView(withText(R.string.save)).perform(click());
+        SystemClock.sleep(pause);
+    }
+
     private static void deleteClient(String clientName, int pause)
     {
         SystemClock.sleep(pause);
@@ -298,63 +435,20 @@ public class EspressoTester
         SystemClock.sleep(pause);
     }
 
-    @Test
-    public void t004_deleteClient()
+    private static void startEditWork(String title, int pause)
     {
-        TestUtils.allowAllNeededPermissions();
-
-        int pause = _pauses.get(4);
-        deleteClient(_clientName1, pause);
-
-        // Go to Journal
-        pressBack();
+        // Long click on item to open popup action menu.
+        onView(withText(title)).perform(longClick());
         SystemClock.sleep(pause);
 
-        // Go to Calendar
-        onView(withId(R.id.menu_calendar)).perform(click());
-        SystemClock.sleep(pause);
-
-        onView(withText(_workTitle1)).check(doesNotExist());
+        onView(withText(R.string.edit)).perform(click());
         SystemClock.sleep(pause);
     }
 
-    @Test
-    public void t011_createWorkWithClient()
+    private static void saveEditedWork(int pause)
     {
-        TestUtils.allowAllNeededPermissions();
-
-        int pause = _pauses.get(11);
-        SystemClock.sleep(pause);
-
-        // Go to Calendar
-        onView(withId(R.id.menu_calendar)).perform(click());
-        SystemClock.sleep(pause);
-
-        // Go to Create Work form.
-        onView(withText(R.string.create)).perform(click());
-        SystemClock.sleep(pause);
-
-        // Fill the form.
-        onView(withId(R.id.select_client)).perform(scrollTo(), typeText(_clientName2));
-        SystemClock.sleep(pause);
-
-        onView(withId(R.id.work_title)).perform(scrollTo(), typeText(_workTitle2));
-        SystemClock.sleep(pause);
-
-        onView(withId(R.id.work_price)).perform(scrollTo(), typeText("1000"));
-        SystemClock.sleep(pause);
-
-        // Save new work.
-        onView(withText(R.string.save)).perform(click());
-        SystemClock.sleep(pause);
-        SystemClock.sleep(pause);
-
-        // Check existence of the new work.
-        onView(isRoot()).perform(waitFor(withText(_workTitle2), TimeUnit.SECONDS.toMillis(10)));
-        onView(withText(_workTitle2)).check(matches(isDisplayed()));
-        //onView(withClassName(is(RecyclerView.class.getCanonicalName()))).perform(RecyclerViewActions.scrollTo(withText(_workTitle2)));
-
-        deleteClient(_clientName2, pause);
+        // Save edited work.
+        onView(allOf(withText(R.string.save), isDisplayed())).perform(click());
         SystemClock.sleep(pause);
     }
 
