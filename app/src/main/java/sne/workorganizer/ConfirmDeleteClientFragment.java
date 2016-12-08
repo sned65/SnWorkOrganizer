@@ -65,15 +65,21 @@ public class ConfirmDeleteClientFragment extends DialogFragment
     @Override
     public void onClick(DialogInterface dialog, int which)
     {
+        final ClientListActivity mainActivity = (ClientListActivity) getActivity();
+
         // Remove from DB
-        DatabaseHelper.getInstance(getActivity()).deleteClient(_client.getId());
+        DatabaseHelper.getInstance(getActivity()).deleteClient(_client.getId(), new DatabaseHelper.DbDeleteCallback()
+        {
+            @Override
+            public void onDeleteFinished(String id)
+            {
+                // Remove from UI
+                mainActivity.removeClient(_position);
 
-        // Remove from UI
-        ClientListActivity mainActivity = (ClientListActivity) getActivity();
-        mainActivity.removeClient(_position);
-
-        // Inform subscribers
-        ClientDeleteEvent event = new ClientDeleteEvent(_client);
-        EventBus.getDefault().postSticky(event);
+                // Inform subscribers
+//                ClientDeleteEvent event = new ClientDeleteEvent(_client);
+//                EventBus.getDefault().postSticky(event);
+            }
+        });
     }
 }

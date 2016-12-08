@@ -35,6 +35,7 @@ public class GalleryActivity extends AppCompatActivity
 {
     private static final String TAG = GalleryActivity.class.getName();
     public static final String ARG_PICT_TYPE = "arg_pict_type";
+
     // Define the list of accepted constants and declare the PictureType annotation
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({PICT_BEFORE, PICT_AFTER})
@@ -88,6 +89,22 @@ public class GalleryActivity extends AppCompatActivity
         photoGallery.setAdapter(adapter);
     }
 
+    public void showProgressBar(boolean flag)
+    {
+        View progressBar = findViewById(R.id.progressBar);
+        View photoGalleryView = findViewById(R.id.photo_gallery);
+        if (flag)
+        {
+            progressBar.setVisibility(View.VISIBLE);
+            photoGalleryView.setVisibility(View.GONE);
+        }
+        else
+        {
+            progressBar.setVisibility(View.GONE);
+            photoGalleryView.setVisibility(View.VISIBLE);
+        }
+    }
+
 //    @Override
 //    public void onPause()
 //    {
@@ -113,12 +130,6 @@ public class GalleryActivity extends AppCompatActivity
 //            EventBus.getDefault().register(adapter);
 //        }
 //    }
-
-    private void showGallery()
-    {
-        findViewById(R.id.progressBar).setVisibility(View.GONE);
-        findViewById(R.id.photo_gallery).setVisibility(View.VISIBLE);
-    }
 
     public void removeItem(int position)
     {
@@ -228,7 +239,7 @@ public class GalleryActivity extends AppCompatActivity
                 {
                     Log.d(TAG, "onSelectFinished() " + records + ", size = " + ((records == null) ? "" : records.size()));
                     _pictures = records;
-                    showGallery();
+                    showProgressBar(false);
                 }
             });
         }
@@ -358,7 +369,7 @@ public class GalleryActivity extends AppCompatActivity
                 {
                     Log.d(TAG, "onSelectFinished() size = " + ((records == null) ? "" : records.size())+ ": " + records);
                     _projects = records;
-                    showGallery();
+                    showProgressBar(false);
                 }
             });
         }

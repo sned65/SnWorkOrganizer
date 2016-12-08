@@ -351,15 +351,20 @@ public class CreateWorkActivity extends AppCompatActivity
 
         Project project = fillProject();
 
-        db.createProjectWithClient(project, newClient);
+        db.createProjectWithClient(project, newClient, new DatabaseHelper.DbCreateWorkCallback()
+        {
+            @Override
+            public void onCreateFinished(Project work)
+            {
+                Intent result = new Intent();
+                result.putExtra(WoConstants.ARG_WORK, work);
+                setResult(RESULT_OK, result);
+                finish();
 
-        Intent result = new Intent();
-        result.putExtra(WoConstants.ARG_WORK, project);
-        setResult(RESULT_OK, result);
-        finish();
-
-        WorkCreateEvent event = new WorkCreateEvent(project);
-        EventBus.getDefault().postSticky(event);
+//                WorkCreateEvent event = new WorkCreateEvent(project);
+//                EventBus.getDefault().postSticky(event);
+            }
+        });
     }
 
     private Project fillProject()

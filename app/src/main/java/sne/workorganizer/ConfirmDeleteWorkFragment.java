@@ -6,6 +6,7 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.View;
 import android.widget.TextView;
 
@@ -81,24 +82,35 @@ public class ConfirmDeleteWorkFragment extends DialogFragment
     @Override
     public void onClick(DialogInterface dialog, int which)
     {
-        // Remove from DB
-        DatabaseHelper.getInstance(getActivity()).deleteWork(_project.getId());
-
-        // Remove from UI
+        final WorkListMaster mainActivity = (WorkListMaster) getActivity();
         if (_position >= 0)
         {
-            WorkListMaster mainActivity = (WorkListMaster) getActivity();
-            mainActivity.removeWork(_position);
-        }
-        else
-        {
-            Intent i = new Intent(getActivity(), WorkListActivity.class);
-            i.putExtra(WoConstants.ARG_CURRENT_DATE, _project.getDate());
-            getActivity().navigateUpTo(i);
+            mainActivity.showProgressBar(true);
         }
 
-        // Inform subscribers
-        WorkDeleteEvent event = new WorkDeleteEvent(_project);
-        EventBus.getDefault().postSticky(event);
+        // Remove from DB
+        DatabaseHelper.getInstance(getActivity()).deleteWork(_project.getId(), new DatabaseHelper.DbDeleteCallback()
+        {
+            @Override
+            public void onDeleteFinished(String id)
+            {
+                // Remove from UI
+                if (_position >= 0)
+                {
+                    mainActivity.removeWork(_position);
+                    mainActivity.showProgressBar(false);
+                }
+                else
+                {
+                    Intent i = new Intent(getActivity(), WorkListActivity.class);
+                    i.putExtra(WoConstants.ARG_CURRENT_DATE, _project.getDate());
+                    getActivity().navigateUpTo(i);
+                }
+
+                // Inform subscribers
+//                WorkDeleteEvent event = new WorkDeleteEvent(_project);
+//                EventBus.getDefault().postSticky(event);
+            }
+        });
     }
 }

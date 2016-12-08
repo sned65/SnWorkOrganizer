@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.os.Process;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
@@ -140,6 +141,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return _instance;
     }
 
+    //////////////////////////////////////////////////////////////////
+    //   C A L L B A C K   I N T E R F A C E S
+    //////////////////////////////////////////////////////////////////
+
     public interface DbSelectClientsCallback
     {
         void onSelectFinished(ArrayList<Client> records);
@@ -154,6 +159,30 @@ public class DatabaseHelper extends SQLiteOpenHelper
     {
         void onSelectFinished(ArrayList<Picture> records);
     }
+
+    public interface DbCreateClientCallback
+    {
+        void onCreateFinished(Client client);
+    }
+
+    public interface DbCreateWorkCallback
+    {
+        void onCreateFinished(Project work);
+    }
+
+    public interface DbUpdateClient
+    {
+        void onUpdateFinished(Client client);
+    }
+
+    public interface DbDeleteCallback
+    {
+        void onDeleteFinished(String id);
+    }
+
+    //////////////////////////////////////////////////////////////////
+    //   E N D   O F   C A L L B A C K   I N T E R F A C E S
+    //////////////////////////////////////////////////////////////////
 
     private DatabaseHelper(Context ctx)
     {
@@ -276,7 +305,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     private Client createClientFromCursor(Cursor c)
     {
-        String sqlProj = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS
+        final String sqlWorks = "SELECT " + PROJECTS_COLUMNS + " FROM " + Table.PROJECTS
                 + " WHERE client_id = ? ORDER BY " + PROJECTS_COL_DATE;
 
         Client client = new Client();
@@ -295,14 +324,15 @@ public class DatabaseHelper extends SQLiteOpenHelper
         args[0] = client.getId();
         if (BuildConfig.DEBUG)
         {
-            Log.d(TAG, sqlProj + ", using " + args[0]);
+            Log.d(TAG, sqlWorks + ", using " + args[0]);
         }
-        Cursor c_proj = db.rawQuery(sqlProj, args);
-        while (c_proj.moveToNext())
+        Cursor c_work = db.rawQuery(sqlWorks, args);
+        while (c_work.moveToNext())
         {
-            Project proj = createProjectFromCursor(c_proj);
-            projects.add(proj);
+            Project work = createProjectFromCursor(c_work);
+            projects.add(work);
         }
+        c_work.close();
         client.setProjects(projects);
         return client;
     }
@@ -338,11 +368,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
     public void findAllClients(DbSelectClientsCallback callback)
     {
         new SelectClientsTask(callback).execute();
-        //new SelectClientsTask().execute();
     }
 
     /**
      * Synchronously selects {@code Client} by its id.
+     * FIXME remove "Synchronously".
      *
      * @param clientId id of client
      * @return {@code Client} corresponding the given id, or {@code null}
@@ -374,6 +404,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return client;
     }
 
+    // FIXME remove "Synchronously".
     public Cursor getClientCursorByNameStart(String startsWith)
     {
         String selection;
@@ -484,41 +515,44 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * Insert new client in a separate thread.
      *
      * @param client client to be inserted
+     * @param callback to be called after insertion
      */
-    public void createClient(Client client)
+    public void createClient(Client client, DbCreateClientCallback callback)
     {
-        new InsertThread(client).start();
+        new InsertTask(client, callback).execute();
     }
 
     /**
      * Update client in a separate thread.
      *
      * @param client existing client with new data
+     * @param callback to be called after update
      */
-    public void updateClient(Client client)
+    public void updateClient(Client client, DbUpdateClient callback)
     {
-        new UpdateThread(client).start();
+        new UpdateTask(client, callback).execute();
     }
 
     /**
      * Delete client in a separate thread.
      *
      * @param id id of {@code Client}
+     * @param callback to be called when delete is finished. Can be {@code null}.
      */
-    public void deleteClient(String id)
+    public void deleteClient(String id, DbDeleteCallback callback)
     {
-        new DeleteThread(Table.CLIENTS, id).start();
+        new DeleteTask(Table.CLIENTS, id, callback).execute();
     }
 
-    /**
+    /*
      * Insert new project in a separate thread.
      *
      * @param project project to be inserted
      */
-    public void createProject(Project project)
-    {
-        createProjectWithClient(project, null);
-    }
+//    public void createProject(Project project)
+//    {
+//        createProjectWithClient(project, null);
+//    }
 
     /**
      * Insert new work and client in a separate thread.
@@ -526,20 +560,22 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * @param project work to be inserted
      * @param newClient new client.
      *                  Should be {@code null} if the work is for existing client.
+     * @param callback to be called after insertion
      */
-    public void createProjectWithClient(Project project, @Nullable Client newClient)
+    public void createProjectWithClient(Project project, @Nullable Client newClient, DbCreateWorkCallback callback)
     {
-        new InsertThread(project, newClient).start();
+        new InsertTask(project, newClient, callback).execute();
     }
 
     /**
      * Delete work in a separate thread.
      *
      * @param id id of {@code Client}
+     * @param callback to be called when delete is finished. Can be {@code null}.
      */
-    public void deleteWork(String id)
+    public void deleteWork(String id, DbDeleteCallback callback)
     {
-        new DeleteThread(Table.PROJECTS, id).start();
+        new DeleteTask(Table.PROJECTS, id, callback).execute();
     }
 
     /**
@@ -548,40 +584,42 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * @param work existing work with new data
      * @param picture update a reference in {@code Picture} table.
      *                If {@code null} then the reference is not changed.
+     * param callback to be called after update
      */
     public void updateWork(Project work, Picture picture)
     {
-        new UpdateThread(work, picture).start();
+        new UpdateTask(work, picture).execute();
     }
 
-    /**
+    /*
      * Insert new picture in a separate thread.
      *
      * @param picture picture to be inserted
      */
-    public void createPicture(Picture picture)
-    {
-        new InsertThread(picture).start();
-    }
+//    public void createPicture(Picture picture)
+//    {
+//        new InsertTask(picture).execute();
+//    }
 
-    /**
+    /*
      * Update picture in a separate thread.
      *
      * @param picture existing picture with new data
      */
-    public void updatePicture(Picture picture)
-    {
-        new UpdateThread(picture).start();
-    }
+//    public void updatePicture(Picture picture)
+//    {
+//        new UpdateTask(picture).start();
+//    }
 
     /**
      * Delete picture in a separate thread.
      *
      * @param id id of {@link Picture}
+     * @param callback to be called when delete is finished. Can be {@code null}.
      */
-    public void deletePicture(String id)
+    public void deletePicture(String id, DbDeleteCallback callback)
     {
-        new DeleteThread(Table.PICTURES, id).start();
+        new DeleteTask(Table.PICTURES, id, callback).execute();
     }
 
     /**
@@ -656,7 +694,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     {
         if (BuildConfig.DEBUG)
         {
-            Log.i(TAG, "InsertThread: Delete Picture for work "+workId);
+            Log.i(TAG, "InsertTask: Delete Picture for work "+workId);
         }
         getWritableDatabase().delete(Table.PICTURES.toString(), PICTURES_COL_WORK_ID + " = ?", new String[] { workId });
     }
@@ -664,38 +702,44 @@ public class DatabaseHelper extends SQLiteOpenHelper
     /**
      * SQL INSERT
      */
-    private class InsertThread extends Thread
+    private class InsertTask extends AsyncTask<Void, Void, Void>
     {
         private Client _client;
+        private DbCreateClientCallback _clientCallback;
         private Project _work;
+        private DbCreateWorkCallback _workCallback;
         private Picture _picture;
+        //private DbCreatePictureCallback _pictureCallback;
 
-        InsertThread(Client client)
+        InsertTask(Client client, DbCreateClientCallback callback)
         {
             super();
             _client = client;
+            _clientCallback = callback;
         }
 
-        InsertThread(Project work)
+        InsertTask(Project work, DbCreateWorkCallback callback)
         {
             super();
             _work = work;
+            _workCallback = callback;
         }
 
-        InsertThread(Project work, Client client)
+        InsertTask(Project work, Client client, DbCreateWorkCallback callback)
         {
             super();
             _client = client;
             _work = work;
+            _workCallback = callback;
         }
 
-        InsertThread(Picture picture)
+        InsertTask(Picture picture)
         {
             super();
             _picture = picture;
         }
 
-        InsertThread(Project work, Picture picture)
+        InsertTask(Project work, Picture picture)
         {
             super();
             _work = work;
@@ -703,10 +747,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
         }
 
         @Override
-        public void run()
+        protected Void doInBackground(Void... params)
         {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-
             if (_client != null)
             {
                 ContentValues values = new ContentValues();
@@ -717,7 +759,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 values.put(CLIENTS_COL_SOCIAL, _client.getSocial());
                 if (BuildConfig.DEBUG)
                 {
-                    Log.i(TAG, "InsertThread: Client "+values);
+                    Log.i(TAG, "InsertTask: Client "+values);
                 }
                 getWritableDatabase().insert(Table.CLIENTS.toString(), null, values);
             }
@@ -734,7 +776,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 values.put(PROJECTS_COL_DESIGN, _work.getDesign());
                 if (BuildConfig.DEBUG)
                 {
-                    Log.i(TAG, "InsertThread: Work "+values);
+                    Log.i(TAG, "InsertTask: Work "+values);
                 }
                 getWritableDatabase().insert(Table.PROJECTS.toString(), null, values);
             }
@@ -754,49 +796,67 @@ public class DatabaseHelper extends SQLiteOpenHelper
                     values.put(PICTURES_COL_PHOTO, photo);
                     if (BuildConfig.DEBUG)
                     {
-                        Log.i(TAG, "InsertThread: Picture "+values);
+                        Log.i(TAG, "InsertTask: Picture "+values);
                     }
                     getWritableDatabase().insert(Table.PICTURES.toString(), null, values);
                 }
             }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result)
+        {
+            if (_clientCallback != null)
+            {
+                _clientCallback.onCreateFinished(_client);
+            }
+            if (_workCallback != null)
+            {
+                _workCallback.onCreateFinished(_work);
+            }
+            // TODO picture
         }
     }
 
     /**
      * SQL UPDATE
      */
-    private class UpdateThread extends Thread
+    private class UpdateTask extends AsyncTask<Void, Void, Void>
     {
         private Client _client;
+        private DbUpdateClient _clientCallback;
         private Project _work;
         private Picture _picture;
 
-        UpdateThread(Client client)
+        UpdateTask(Client client, DbUpdateClient callback)
         {
             super();
             _client = client;
+            _clientCallback = callback;
         }
 
-        UpdateThread(Project work)
+        UpdateTask(Project work)
         {
             super();
             _work = work;
         }
 
-        UpdateThread(Project work, Client client)
+        UpdateTask(Project work, Client client)
         {
             super();
             _client = client;
             _work = work;
         }
 
-        UpdateThread(Picture picture)
+        UpdateTask(Picture picture)
         {
             super();
             _picture = picture;
         }
 
-        UpdateThread(Project work, Picture picture)
+        UpdateTask(Project work, Picture picture)
         {
             super();
             _work = work;
@@ -804,10 +864,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
         }
 
         @Override
-        public void run()
+        protected Void doInBackground(Void... params)
         {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-
             if (_client != null)
             {
                 ContentValues values = new ContentValues();
@@ -817,7 +875,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 values.put(CLIENTS_COL_SOCIAL, _client.getSocial());
                 if (BuildConfig.DEBUG)
                 {
-                    Log.i(TAG, "UpdateThread: Client "+_client.getId()+": "+values);
+                    Log.i(TAG, "UpdateTask: Client "+_client.getId()+": "+values);
                 }
                 getWritableDatabase().update(Table.CLIENTS.toString(), values, CLIENTS_PK + " = ?", new String[] {_client.getId()});
             }
@@ -833,7 +891,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 values.put(PROJECTS_COL_DESIGN, _work.getDesign());
                 if (BuildConfig.DEBUG)
                 {
-                    Log.i(TAG, "UpdateThread: Work: "+_work.getId()+": "+values);
+                    Log.i(TAG, "UpdateTask: Work: "+_work.getId()+": "+values);
                 }
                 getWritableDatabase().update(Table.PROJECTS.toString(), values, PROJECTS_PK + " = ?", new String[] {_work.getId()});
             }
@@ -851,7 +909,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                     values.put(PICTURES_COL_PHOTO, photo);
                     if (BuildConfig.DEBUG)
                     {
-                        Log.i(TAG, "UpdateThread: Picture for work "+_picture.getWorkId()+": "+values);
+                        Log.i(TAG, "UpdateTask: Picture for work "+_picture.getWorkId()+": "+values);
                     }
                     int n = getWritableDatabase().update(Table.PICTURES.toString(), values, PICTURES_COL_WORK_ID + " = ?", new String[] {_picture.getWorkId()});
                     if (n == 0)
@@ -861,12 +919,29 @@ public class DatabaseHelper extends SQLiteOpenHelper
                         values.put(PICTURES_COL_WORK_ID, _picture.getWorkId());
                         if (BuildConfig.DEBUG)
                         {
-                            Log.i(TAG, "UpdateThread: Insert Picture: "+values);
+                            Log.i(TAG, "UpdateTask: Insert Picture: "+values);
                         }
                         getWritableDatabase().insert(Table.PICTURES.toString(), null, values);
                     }
                 }
             }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result)
+        {
+            if (_clientCallback != null)
+            {
+                _clientCallback.onUpdateFinished(_client);
+            }
+            // TODO work
+//            if (_workCallback != null)
+//            {
+//                _workCallback.onCreateFinished(_work);
+//            }
+            // TODO picture
         }
 
         private void clearResultPictures(String workId)
@@ -888,23 +963,24 @@ public class DatabaseHelper extends SQLiteOpenHelper
     /**
      * SQL DELETE
      */
-    private class DeleteThread extends Thread
+    private class DeleteTask extends AsyncTask<Void, Void, Void>
     {
         private final Table _table;
         private final String _id;
+        private final DbDeleteCallback _callback;
 
-        DeleteThread(Table table, String id)
+        DeleteTask(Table table, String id, DbDeleteCallback callback)
         {
             super();
             _table = table;
             _id = id;
+            _callback = callback;
         }
 
         @Override
-        public void run()
+        protected Void doInBackground(Void... params)
         {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-
+            SystemClock.sleep(5000);
             String sql;
             Object[] args = { _id };
 
@@ -930,6 +1006,16 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 Log.i(TAG, sql + ", using " + _id);
             }
             getWritableDatabase().execSQL(sql, args);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result)
+        {
+            if (_callback != null)
+            {
+                _callback.onDeleteFinished(_id);
+            }
         }
     }
 

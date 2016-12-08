@@ -81,11 +81,16 @@ public class CreateClientActivity extends AppCompatActivity
         client.setEmail(emailView.getText().toString());
 
         DatabaseHelper db = DatabaseHelper.getInstance(this);
-        db.createClient(client);
-
-        Intent result = new Intent();
-        result.putExtra(WoConstants.ARG_CLIENT, client);
-        setResult(RESULT_OK, result);
-        finish();
+        db.createClient(client, new DatabaseHelper.DbCreateClientCallback()
+        {
+            @Override
+            public void onCreateFinished(Client client)
+            {
+                Intent result = new Intent();
+                result.putExtra(WoConstants.ARG_CLIENT, client);
+                setResult(RESULT_OK, result);
+                finish();
+            }
+        });
     }
 }

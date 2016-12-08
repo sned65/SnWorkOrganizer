@@ -92,22 +92,29 @@ public class EditClientDialog extends DialogFragment
         _client.setSocial(_clientSocialView.getText().toString());
         _client.setEmail(_clientEmailView.getText().toString());
 
-        // Update DB
-        DatabaseHelper.getInstance(getActivity()).updateClient(_client);
+        final Activity a = getActivity();
 
-        // Update UI
-        Activity a = getActivity();
-        if (a instanceof EditClientDialogCallback)
+        // Update DB
+        DatabaseHelper.getInstance(getActivity()).updateClient(_client, new DatabaseHelper.DbUpdateClient()
         {
-            EditClientDialogCallback mainActivity = (EditClientDialogCallback) getActivity();
-            mainActivity.onEditClientFinished(_client, _position);
-        }
+            @Override
+            public void onUpdateFinished(Client client)
+            {
+                // Update UI
+                if (a instanceof EditClientDialogCallback)
+                {
+                    EditClientDialogCallback mainActivity = (EditClientDialogCallback) a;
+                    mainActivity.onEditClientFinished(_client, _position);
+                }
+            }
+        });
+
 
         // Inform subscribers
-        if (!new_name.equals(old_name))
-        {
-            ClientNameUpdateEvent event = new ClientNameUpdateEvent(_client);
-            EventBus.getDefault().postSticky(event);
-        }
+//        if (!new_name.equals(old_name))
+//        {
+//            ClientNameUpdateEvent event = new ClientNameUpdateEvent(_client);
+//            EventBus.getDefault().postSticky(event);
+//        }
     }
 }

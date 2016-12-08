@@ -203,6 +203,11 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
     @Override
     public void onEditClientFinished(Client client, int position)
     {
+        Log.i(TAG, "# projects = "+client.getProjects().size());
+        if (client.getProjects().size() > 1)
+        {
+            Log.e(TAG, "!!! # projects > 1 !!!");
+        }
         updateClient(client, position);
     }
 
@@ -215,13 +220,12 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
         {
             _activity = activity;
             DatabaseHelper db = DatabaseHelper.getInstance(_activity);
-            //db.findAllClients();
             db.findAllClients(new DatabaseHelper.DbSelectClientsCallback()
             {
                 @Override
                 public void onSelectFinished(ArrayList<Client> records)
                 {
-                    Log.d(TAG, "onSelectFinished() "+records+", size = "+((records == null) ? "" : records.size()));
+                    Log.i(TAG, "onSelectFinished() "+records+", size = "+((records == null) ? "" : records.size()));
                     _clients = records;
                     showClientList();
                 }
@@ -423,6 +427,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
             _clientSocial.setText(_client.getSocial());
             _clientEmail.setText(_client.getEmail());
             _projTable.setVisibility(View.VISIBLE);
+            _projTable.removeAllViews();
 
             List<Project> projects = _client.getProjects();
             for (int i = 0; i < projects.size(); ++i)

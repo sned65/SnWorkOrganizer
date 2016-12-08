@@ -138,7 +138,6 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
         adapter.removeWork(position);
         adapter.notifyItemRemoved(position);
-
     }
 
     @Override
@@ -163,6 +162,8 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 
     protected void search()
     {
+        showProgressBar(true);
+
         WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
         Date dateFrom = new Date(adapter.getDateFrom());
         Date dateTo = new Date(adapter.getDateTo());
@@ -206,10 +207,12 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         Log.i(TAG, "onWorkUpdated() called");
         EventBus.getDefault().removeStickyEvent(e);
         search();
-//        Project modifiedWork = e.getWork();
-//        int position = e.getPosition();
-//        Log.i(TAG, "onWorkUpdated() "+modifiedWork+" at "+position);
-//        updateWork(modifiedWork, position);
+
+        Project modifiedWork = e.getWork();
+        int position = e.getPosition();
+        Log.i(TAG, "onWorkUpdated() "+modifiedWork+" at "+position);
+        updateWork(modifiedWork, position);
+
 //        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
 //        List<Project> works = adapter.getWorks();
 //        Log.i(TAG, "onWorkUpdated() # works = "+works.size());
@@ -225,28 +228,28 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 //        }
     }
 
-    @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
-    public void onClientDeleteEvent(ClientDeleteEvent e)
-    {
-        Client client = e.getClient();
-        EventBus.getDefault().removeStickyEvent(e);
-        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
-        ArrayList<Project> records = new ArrayList<>();
-        for (Project w : adapter.getWorks())
-        {
-            if (!w.getClientId().equals(client.getId()))
-            {
-                records.add(w);
-            }
-        }
-
-        if (adapter.getWorks().size() != records.size())
-        {
-            adapter.setWorks(records);
-            adapter.notifyDataSetChanged();
-            showProgressBar(false);
-        }
-    }
+//    @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
+//    public void onClientDeleteEvent(ClientDeleteEvent e)
+//    {
+//        Client client = e.getClient();
+//        EventBus.getDefault().removeStickyEvent(e);
+//        WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
+//        ArrayList<Project> records = new ArrayList<>();
+//        for (Project w : adapter.getWorks())
+//        {
+//            if (!w.getClientId().equals(client.getId()))
+//            {
+//                records.add(w);
+//            }
+//        }
+//
+//        if (adapter.getWorks().size() != records.size())
+//        {
+//            adapter.setWorks(records);
+//            adapter.notifyDataSetChanged();
+//            showProgressBar(false);
+//        }
+//    }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onClientNameModified(Client client)
@@ -269,7 +272,8 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         }
     }
 
-    protected void showProgressBar(boolean flag)
+    @Override
+    public void showProgressBar(boolean flag)
     {
         View progressBar = findViewById(R.id.progressBar);
         View workListView = findViewById(R.id.work_list);
@@ -407,7 +411,24 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
             {
                 Log.d(TAG, "updateWork(" + work + ", " + position + ") called. Date range: " + new Date(_dateFrom) + " - " + new Date(_dateTo));
             }
-            Project old = _works.get(position);
+            Project old;
+            try
+            {
+                old = _works.get(position);
+            }
+            catch (IndexOutOfBoundsException e)
+            {
+                // position is not up to date
+                Log.i(TAG, "updateWork("+work+", "+position+"): position is out of bounds.");
+                return;
+            }
+            if (!old.getId().equals(work.getId()))
+            {
+                // work is not at expected position
+                Log.i(TAG, "updateWork("+work+", "+position+"): work is not at expected position.");
+                return;
+            }
+
             boolean inRange = work.getDate() >= _dateFrom && work.getDate() < _dateTo + 24*60*60*1000;
             if (inRange)
             {

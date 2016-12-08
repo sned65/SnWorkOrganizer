@@ -84,12 +84,20 @@ public class PictureActionsFragment extends DialogFragment
 
     private void deletePicture()
     {
-        // Remove from DB
-        DatabaseHelper.getInstance(getActivity()).deletePicture(_picture.getId());
+        final GalleryActivity mainActivity = (GalleryActivity) getActivity();
+        mainActivity.showProgressBar(true);
 
-        // Remove from UI
-        GalleryActivity mainActivity = (GalleryActivity) getActivity();
-        mainActivity.removeItem(_position);
+        // Remove from DB
+        DatabaseHelper.getInstance(getActivity()).deletePicture(_picture.getId(), new DatabaseHelper.DbDeleteCallback()
+        {
+            @Override
+            public void onDeleteFinished(String id)
+            {
+                // Remove from UI
+                mainActivity.removeItem(_position);
+                mainActivity.showProgressBar(false);
+            }
+        });
 
     }
 }

@@ -114,7 +114,7 @@ public class EspressoTester
 //        TestUtils.allowAllNeededPermissions();
 //    }
 
-    @Test
+    //@Test
     public void t001_createClient()
     {
         TestUtils.allowAllNeededPermissions();
@@ -161,7 +161,7 @@ public class EspressoTester
 */
     }
 
-    @Test
+    //@Test
     public void t002_createWork()
     {
         TestUtils.allowAllNeededPermissions();
@@ -200,7 +200,7 @@ public class EspressoTester
         onView(withText(_workTitles[0])).check(matches(isDisplayed()));
     }
 
-    @Test
+    //@Test
     public void t003_editWork()
     {
         TestUtils.allowAllNeededPermissions();
@@ -227,7 +227,7 @@ public class EspressoTester
         onView(withText(new_title)).check(matches(isDisplayed()));
     }
 
-    @Test
+    //@Test
     public void t004_deleteClient()
     {
         TestUtils.allowAllNeededPermissions();
@@ -247,7 +247,7 @@ public class EspressoTester
         SystemClock.sleep(pause);
     }
 
-    @Test
+    //@Test
     public void t010_mainMenu()
     {
         TestUtils.allowAllNeededPermissions();
@@ -280,7 +280,7 @@ public class EspressoTester
         pressBack();
     }
 
-    @Test
+    //@Test
     public void t011_createWorkWithClient()
     {
         TestUtils.allowAllNeededPermissions();
@@ -362,11 +362,13 @@ public class EspressoTester
         SystemClock.sleep(pause);
 
         // FIXME Error performing 'scroll to' on view 'with id: sne.workorganizer:id/btn_select_result'.
-//        startEditWork(_workTitles[2], pause);
-//        SystemClock.sleep(pause);SystemClock.sleep(pause);SystemClock.sleep(pause);SystemClock.sleep(pause);SystemClock.sleep(pause);
-//
-//        onView(withId(R.id.btn_select_result)).perform(scrollTo(), click());
-//        SystemClock.sleep(pause);
+        startEditWork(_workTitles[2], pause);
+        SystemClock.sleep(pause);
+        SystemClock.sleep(120000);
+
+        onView(withId(R.id.btn_select_result)).perform(scrollTo(), click());
+        SystemClock.sleep(pause);
+        SystemClock.sleep(120000);
 //
 //        assertTrue(TestUtils.selectPicture("glenlivet_18"));
 //        SystemClock.sleep(pause);

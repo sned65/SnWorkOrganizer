@@ -93,7 +93,6 @@ public class MainActivity extends WorkListAbstractActivity
         if (savedInstanceState == null)
         {
             setupFilterButtons();
-            showProgressBar(true);
             search();
         }
 
