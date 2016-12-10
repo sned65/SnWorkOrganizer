@@ -23,15 +23,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import org.greenrobot.eventbus.EventBus;
-
 import java.io.File;
 import java.util.Calendar;
 
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Picture;
 import sne.workorganizer.db.Project;
-import sne.workorganizer.eb.WorkUpdateEvent;
 import sne.workorganizer.util.FileUtils;
 import sne.workorganizer.util.InfoDialogFragment;
 import sne.workorganizer.util.Mix;
@@ -144,7 +141,8 @@ public class EditWorkFragment extends Fragment
                     if (save())
                     {
                         WorkListMaster master = (WorkListMaster) getActivity();
-                        master.updateWork(_work, _position);
+                        // FIXME result picture
+                        master.updateWork(_work, null);
                         master.removeWorkEditFragment();
                     }
                 }
@@ -362,11 +360,20 @@ public class EditWorkFragment extends Fragment
 
         // Update DB
         DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
-        db.updateWork(_work, pict);
+        final WorkListMaster master = (WorkListMaster) getActivity();
+        final Picture picture = pict;
+        db.updateWork(_work, pict, new DatabaseHelper.DbUpdateWorkCallback()
+        {
+            @Override
+            public void onUpdateFinished(Project work)
+            {
+                master.updateWork(work, picture);
+            }
+        });
 
         // Inform subscribers
-        WorkUpdateEvent event = new WorkUpdateEvent(_work, _position);
-        EventBus.getDefault().postSticky(event);
+//        WorkUpdateEvent event = new WorkUpdateEvent(_work, _position);
+//        EventBus.getDefault().postSticky(event);
 
         return true;
     }

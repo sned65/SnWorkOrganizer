@@ -20,19 +20,12 @@ import android.widget.TextView;
 
 import com.silencedut.expandablelayout.ExpandableLayout;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
-import sne.workorganizer.eb.WorkCreateEvent;
-import sne.workorganizer.eb.WorkDeleteEvent;
-import sne.workorganizer.eb.WorkUpdateEvent;
 import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
 
@@ -108,6 +101,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
         findViewById(R.id.client_list).setVisibility(View.VISIBLE);
     }
 
+/*
     @Override
     public void onPause()
     {
@@ -118,7 +112,9 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
         }
         super.onPause();
     }
+*/
 
+/*
     @Override
     public void onResume()
     {
@@ -129,6 +125,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
             EventBus.getDefault().register(adapter);
         }
     }
+*/
 
     private ClientListAdapter getClientListAdapter()
     {
@@ -277,6 +274,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
             }
         }
 
+/*
         @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
         public void onWorkCreateEvent(WorkCreateEvent e)
         {
@@ -305,7 +303,9 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
                 }
             }
         }
+*/
 
+/*
         @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
         public void onWorkUpdateEvent(WorkUpdateEvent e)
         {
@@ -331,7 +331,9 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
                 }
             }
         }
+*/
 
+/*
         @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
         public void onWorkDeleteEvent(WorkDeleteEvent e)
         {
@@ -357,6 +359,7 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
                 }
             }
         }
+*/
 
         void addClient(Client client, int position)
         {

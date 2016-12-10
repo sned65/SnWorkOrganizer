@@ -6,15 +6,11 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.view.View;
 import android.widget.TextView;
 
-import org.greenrobot.eventbus.EventBus;
-
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Project;
-import sne.workorganizer.eb.WorkDeleteEvent;
 import sne.workorganizer.util.WoConstants;
 
 /**

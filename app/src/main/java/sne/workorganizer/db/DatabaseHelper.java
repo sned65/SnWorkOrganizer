@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
-import android.os.Process;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -170,9 +169,14 @@ public class DatabaseHelper extends SQLiteOpenHelper
         void onCreateFinished(Project work);
     }
 
-    public interface DbUpdateClient
+    public interface DbUpdateClientCallback
     {
         void onUpdateFinished(Client client);
+    }
+
+    public interface DbUpdateWorkCallback
+    {
+        void onUpdateFinished(Project work);
     }
 
     public interface DbDeleteCallback
@@ -528,7 +532,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * @param client existing client with new data
      * @param callback to be called after update
      */
-    public void updateClient(Client client, DbUpdateClient callback)
+    public void updateClient(Client client, DbUpdateClientCallback callback)
     {
         new UpdateTask(client, callback).execute();
     }
@@ -584,11 +588,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * @param work existing work with new data
      * @param picture update a reference in {@code Picture} table.
      *                If {@code null} then the reference is not changed.
-     * param callback to be called after update
+     * @param callback to be called after update
      */
-    public void updateWork(Project work, Picture picture)
+    public void updateWork(Project work, Picture picture, DbUpdateWorkCallback callback)
     {
-        new UpdateTask(work, picture).execute();
+        new UpdateTask(work, picture, callback).execute();
     }
 
     /*
@@ -826,11 +830,12 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private class UpdateTask extends AsyncTask<Void, Void, Void>
     {
         private Client _client;
-        private DbUpdateClient _clientCallback;
+        private DbUpdateClientCallback _clientCallback;
         private Project _work;
+        private DbUpdateWorkCallback _workCallback;
         private Picture _picture;
 
-        UpdateTask(Client client, DbUpdateClient callback)
+        UpdateTask(Client client, DbUpdateClientCallback callback)
         {
             super();
             _client = client;
@@ -856,11 +861,12 @@ public class DatabaseHelper extends SQLiteOpenHelper
             _picture = picture;
         }
 
-        UpdateTask(Project work, Picture picture)
+        UpdateTask(Project work, Picture picture, DbUpdateWorkCallback callback)
         {
             super();
             _work = work;
             _picture = picture;
+            _workCallback = callback;
         }
 
         @Override
@@ -936,11 +942,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
             {
                 _clientCallback.onUpdateFinished(_client);
             }
-            // TODO work
-//            if (_workCallback != null)
-//            {
-//                _workCallback.onCreateFinished(_work);
-//            }
+            if (_workCallback != null)
+            {
+                _workCallback.onUpdateFinished(_work);
+            }
             // TODO picture
         }
 

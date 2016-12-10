@@ -1,5 +1,6 @@
 package sne.workorganizer;
 
+import sne.workorganizer.db.Picture;
 import sne.workorganizer.db.Project;
 
 /**
@@ -32,9 +33,11 @@ interface WorkListMaster
      * Update work data in the UI.
      *
      * @param work updated work
-     * @param position position of work in the list
+     * @param result result picture. If {@code null}, then the argument will be ignored.
+     *               To remove the result picture, pass a {@code Picture} with
+     *               {@code null} reference to file.
      */
-    void updateWork(Project work, int position);
+    void updateWork(Project work, Picture result);
 
     /**
      * Removes a fragment responsible for modification of work.

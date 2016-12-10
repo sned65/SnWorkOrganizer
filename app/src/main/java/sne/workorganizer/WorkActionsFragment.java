@@ -11,7 +11,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import org.greenrobot.eventbus.EventBus;
+//import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,11 +93,14 @@ public class WorkActionsFragment extends DialogFragment
         switch (position)
         {
         case 0: // Delete
+        {
             ConfirmDeleteWorkFragment.newInstance(_work, _clientName, _position)
                     .show(getFragmentManager(), "confirm_del_work");
             break;
+        }
 
         case 1: // Edit
+        {
             WorkListMaster master = (WorkListMaster) getActivity();
             if (master.isTwoPane())
             {
@@ -126,6 +129,7 @@ public class WorkActionsFragment extends DialogFragment
                 getActivity().startActivityForResult(i, WoConstants.RC_EDIT_WORK);
             }
             break;
+        }
 
         case 2: // Mark as Done
         {
@@ -133,11 +137,19 @@ public class WorkActionsFragment extends DialogFragment
 
             // Update DB
             DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
-            db.updateWork(_work, null);
+            final WorkListMaster master = (WorkListMaster) getActivity();
+            db.updateWork(_work, null, new DatabaseHelper.DbUpdateWorkCallback()
+            {
+                @Override
+                public void onUpdateFinished(Project work)
+                {
+                    master.updateWork(work, null);
+                }
+            });
 
             // Inform subscribers
-            WorkUpdateEvent event = new WorkUpdateEvent(_work, _position);
-            EventBus.getDefault().postSticky(event);
+//            WorkUpdateEvent event = new WorkUpdateEvent(_work, _position);
+//            EventBus.getDefault().postSticky(event);
             break;
         }
         }

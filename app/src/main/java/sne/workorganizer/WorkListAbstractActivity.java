@@ -13,9 +13,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+//import org.greenrobot.eventbus.EventBus;
+//import org.greenrobot.eventbus.Subscribe;
+//import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,10 +24,12 @@ import java.util.Date;
 
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
+import sne.workorganizer.db.Picture;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.eb.ClientDeleteEvent;
 import sne.workorganizer.eb.WorkCreateEvent;
 import sne.workorganizer.eb.WorkUpdateEvent;
+import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
 
 /**
@@ -91,6 +93,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 //        ((WorkListViewAdapter) _workListView.getAdapter()).setWorks(works);
 //    }
 
+/*
     @Override
     public void onResume()
     {
@@ -106,6 +109,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         EventBus.getDefault().unregister(this);
         super.onPause();
     }
+*/
 
     protected void setupWorkListView(Long dateFrom, Long dateTo)
     {
@@ -141,10 +145,10 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
     }
 
     @Override
-    public void updateWork(Project work, int position)
+    public void updateWork(Project work, Picture picture)
     {
         WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
-        adapter.updateWork(work, position);
+        adapter.updateWork(work, picture);
         adapter.notifyDataSetChanged();
     }
 
@@ -194,13 +198,16 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         showProgressBar(false);
     }
 
+/*
     @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
     public void onWorkCreated(WorkCreateEvent e)
     {
         EventBus.getDefault().removeStickyEvent(e);
         search();
     }
+*/
 
+/*
     @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
     public void onWorkUpdated(WorkUpdateEvent e)
     {
@@ -227,6 +234,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 //            }
 //        }
     }
+*/
 
 //    @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
 //    public void onClientDeleteEvent(ClientDeleteEvent e)
@@ -251,6 +259,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
 //        }
 //    }
 
+/*
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onClientNameModified(Client client)
     {
@@ -271,6 +280,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
             showProgressBar(false);
         }
     }
+*/
 
     @Override
     public void showProgressBar(boolean flag)
@@ -326,14 +336,14 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         WorkListViewAdapter(Activity activity, Long dateFrom, Long dateTo)
         {
             _activity = activity;
-            _dateFrom = dateFrom;
+            _dateFrom = Mix.truncateDate(dateFrom);
             if (dateTo == null)
             {
                 _dateTo = _dateFrom;
             }
             else
             {
-                _dateTo = dateTo;
+                _dateTo = Mix.truncateDate(dateTo);
             }
         }
 
@@ -405,6 +415,55 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
             return _works.size();
         }
 
+        public void updateWork(Project work, Picture picture)
+        {
+            // Note: the result picture is not shown in work list item => the 2nd argument is ignored
+
+            if (BuildConfig.DEBUG)
+            {
+                Log.i(TAG, "WLVA.updateWork(" + work + ", " + picture + ") called. Date range: " + new Date(_dateFrom) + " - " + new Date(_dateTo));
+            }
+
+            int position;
+            for (position = 0; position < _works.size(); ++position)
+            {
+                if (work.getId().equals(_works.get(position).getId()))
+                {
+                    break;
+                }
+            }
+            if (position == _works.size())
+            {
+                Log.w(TAG, "Work " + work + " not found in work list for "
+                        + new Date(_dateFrom) + " - " + new Date(_dateTo)+
+                        ". Nothing to update.");
+                return;
+            }
+
+            boolean inRange = work.getDate() >= _dateFrom && work.getDate() < _dateTo + 24*60*60*1000;
+            if (inRange)
+            {
+                if (BuildConfig.DEBUG)
+                {
+                    Log.i(TAG, "updateWork() new date is in the filter range");
+                }
+                _works.set(position, work);
+                long oldDate = _works.get(position).getDate().longValue();
+                if (oldDate != work.getDate().longValue())
+                {
+                    sortWorksByDateTime();
+                }
+            }
+            else
+            {
+                if (BuildConfig.DEBUG)
+                {
+                    Log.i(TAG, "updateWork() new date is NOT in the filter range");
+                }
+                removeWork(position);
+            }
+        }
+/*
         public void updateWork(Project work, int position)
         {
             if (BuildConfig.DEBUG)
@@ -451,6 +510,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
                 removeWork(position);
             }
         }
+*/
 
         private void sortWorksByDateTime()
         {

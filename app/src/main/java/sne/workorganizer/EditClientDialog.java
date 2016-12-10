@@ -9,11 +9,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
-import org.greenrobot.eventbus.EventBus;
-
 import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
-import sne.workorganizer.eb.ClientNameUpdateEvent;
 
 /**
  * Edit client dialog
@@ -95,7 +92,7 @@ public class EditClientDialog extends DialogFragment
         final Activity a = getActivity();
 
         // Update DB
-        DatabaseHelper.getInstance(getActivity()).updateClient(_client, new DatabaseHelper.DbUpdateClient()
+        DatabaseHelper.getInstance(getActivity()).updateClient(_client, new DatabaseHelper.DbUpdateClientCallback()
         {
             @Override
             public void onUpdateFinished(Client client)

@@ -78,6 +78,25 @@ public class Mix
     }
 
     /**
+     *
+     * @param milliseconds the number of milliseconds since epoch
+     *                     representing date to be truncated
+     * @return the number of milliseconds since epoch
+     * representing date with the time portion of the day truncated
+     */
+    public static long truncateDate(long milliseconds)
+    {
+        Calendar c = Calendar.getInstance();
+        Date date = new Date(milliseconds);
+        c.setTime(date);
+        c.set(Calendar.HOUR_OF_DAY, c.getActualMinimum(Calendar.HOUR_OF_DAY));
+        c.set(Calendar.MINUTE, c.getActualMinimum(Calendar.MINUTE));
+        c.set(Calendar.SECOND, c.getActualMinimum(Calendar.SECOND));
+        c.set(Calendar.MILLISECOND, c.getActualMinimum(Calendar.MILLISECOND));
+        return c.getTimeInMillis();
+    }
+
+    /**
      * Adds one month and subtracts one day to/from the given date.
      *
      * @param date date to be incremented

@@ -266,8 +266,8 @@ public class WorkListActivity extends WorkListAbstractActivity
         else if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_EDIT_WORK)
         {
             Project work = data.getParcelableExtra(WoConstants.ARG_WORK);
-            int position = data.getIntExtra(WoConstants.ARG_POSITION, -1);
-            updateWork(work, position);
+//            int position = data.getIntExtra(WoConstants.ARG_POSITION, -1);
+//            updateWork(work, position);
 
             WorkDetailFragment wdf = (WorkDetailFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_DETAILS);
             if (wdf != null)
