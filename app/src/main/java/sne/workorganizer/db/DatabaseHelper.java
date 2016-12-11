@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
-import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
@@ -176,7 +175,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     public interface DbUpdateWorkCallback
     {
-        void onUpdateFinished(Project work);
+        void onUpdateFinished(Project work, Picture result);
     }
 
     public interface DbDeleteCallback
@@ -548,16 +547,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         new DeleteTask(Table.CLIENTS, id, callback).execute();
     }
 
-    /*
-     * Insert new project in a separate thread.
-     *
-     * @param project project to be inserted
-     */
-//    public void createProject(Project project)
-//    {
-//        createProjectWithClient(project, null);
-//    }
-
     /**
      * Insert new work and client in a separate thread.
      *
@@ -594,26 +583,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
     {
         new UpdateTask(work, picture, callback).execute();
     }
-
-    /*
-     * Insert new picture in a separate thread.
-     *
-     * @param picture picture to be inserted
-     */
-//    public void createPicture(Picture picture)
-//    {
-//        new InsertTask(picture).execute();
-//    }
-
-    /*
-     * Update picture in a separate thread.
-     *
-     * @param picture existing picture with new data
-     */
-//    public void updatePicture(Picture picture)
-//    {
-//        new UpdateTask(picture).start();
-//    }
 
     /**
      * Delete picture in a separate thread.
@@ -660,7 +629,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
     }
 
     /**
-     * Synchronously selects {@code Picture} by its id.
+     * Synchronously selects {@code Picture} by its work id.
+     * FIXME remove "Synchronously".
      *
      * @param workId {@link Project} id
      * @return {@link Picture} corresponding the given work id, or {@code null}
@@ -705,6 +675,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     /**
      * SQL INSERT
+     * <br/>
+     * Inserts new {@code Client}, {@code Project}, or both.
+     * <i>Note:</i> there is no API for {@code Picture} because
+     * a picture can appear when the work has been done as a result
+     * of {@code Project} modification (see {@link UpdateTask}).
      */
     private class InsertTask extends AsyncTask<Void, Void, Void>
     {
@@ -712,8 +687,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         private DbCreateClientCallback _clientCallback;
         private Project _work;
         private DbCreateWorkCallback _workCallback;
-        private Picture _picture;
-        //private DbCreatePictureCallback _pictureCallback;
 
         InsertTask(Client client, DbCreateClientCallback callback)
         {
@@ -722,32 +695,12 @@ public class DatabaseHelper extends SQLiteOpenHelper
             _clientCallback = callback;
         }
 
-        InsertTask(Project work, DbCreateWorkCallback callback)
-        {
-            super();
-            _work = work;
-            _workCallback = callback;
-        }
-
         InsertTask(Project work, Client client, DbCreateWorkCallback callback)
         {
             super();
             _client = client;
             _work = work;
             _workCallback = callback;
-        }
-
-        InsertTask(Picture picture)
-        {
-            super();
-            _picture = picture;
-        }
-
-        InsertTask(Project work, Picture picture)
-        {
-            super();
-            _work = work;
-            _picture = picture;
         }
 
         @Override
@@ -785,26 +738,26 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 getWritableDatabase().insert(Table.PROJECTS.toString(), null, values);
             }
 
-            if (_picture != null)
-            {
-                String photo = _picture.getResultPhoto();
-                if (TextUtils.isEmpty(photo))
-                {
-                    deleteResultPictures(_picture.getWorkId());
-                }
-                else
-                {
-                    ContentValues values = new ContentValues();
-                    values.put(PICTURES_PK, _picture.getId());
-                    values.put(PICTURES_COL_WORK_ID, _picture.getWorkId());
-                    values.put(PICTURES_COL_PHOTO, photo);
-                    if (BuildConfig.DEBUG)
-                    {
-                        Log.i(TAG, "InsertTask: Picture "+values);
-                    }
-                    getWritableDatabase().insert(Table.PICTURES.toString(), null, values);
-                }
-            }
+//            if (_picture != null)
+//            {
+//                String photo = _picture.getResultPhoto();
+//                if (TextUtils.isEmpty(photo))
+//                {
+//                    deleteResultPictures(_picture.getWorkId());
+//                }
+//                else
+//                {
+//                    ContentValues values = new ContentValues();
+//                    values.put(PICTURES_PK, _picture.getId());
+//                    values.put(PICTURES_COL_WORK_ID, _picture.getWorkId());
+//                    values.put(PICTURES_COL_PHOTO, photo);
+//                    if (BuildConfig.DEBUG)
+//                    {
+//                        Log.i(TAG, "InsertTask: Picture "+values);
+//                    }
+//                    getWritableDatabase().insert(Table.PICTURES.toString(), null, values);
+//                }
+//            }
 
             return null;
         }
@@ -820,12 +773,16 @@ public class DatabaseHelper extends SQLiteOpenHelper
             {
                 _workCallback.onCreateFinished(_work);
             }
-            // TODO picture
         }
     }
 
     /**
      * SQL UPDATE
+     * <br/>
+     * Updates {@code Client} or {@code Project}.
+     * When {@code Project} is modified, new {@code Picture}
+     * can be inserted, or existing {@code Picture} can be
+     * updated.
      */
     private class UpdateTask extends AsyncTask<Void, Void, Void>
     {
@@ -840,25 +797,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
             super();
             _client = client;
             _clientCallback = callback;
-        }
-
-        UpdateTask(Project work)
-        {
-            super();
-            _work = work;
-        }
-
-        UpdateTask(Project work, Client client)
-        {
-            super();
-            _client = client;
-            _work = work;
-        }
-
-        UpdateTask(Picture picture)
-        {
-            super();
-            _picture = picture;
         }
 
         UpdateTask(Project work, Picture picture, DbUpdateWorkCallback callback)
@@ -944,9 +882,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
             }
             if (_workCallback != null)
             {
-                _workCallback.onUpdateFinished(_work);
+                _workCallback.onUpdateFinished(_work, _picture);
             }
-            // TODO picture
         }
 
         private void clearResultPictures(String workId)
@@ -967,6 +904,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     /**
      * SQL DELETE
+     * <br/>
+     * Deletes {@code Client}, {@code Project}, or {@code Picture}.
      */
     private class DeleteTask extends AsyncTask<Void, Void, Void>
     {
@@ -985,7 +924,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         @Override
         protected Void doInBackground(Void... params)
         {
-            SystemClock.sleep(5000);
             String sql;
             Object[] args = { _id };
 
@@ -1081,7 +1019,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         @Override
         protected ArrayList<Project> doInBackground(Void... params)
         {
-            //SystemClock.sleep(5000);
             return selectProjects(_dateFrom, _dateTo, _where);
         }
 

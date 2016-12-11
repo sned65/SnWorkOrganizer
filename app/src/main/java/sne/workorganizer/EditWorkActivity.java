@@ -10,6 +10,9 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import sne.workorganizer.db.DatabaseHelper;
+import sne.workorganizer.db.Picture;
+import sne.workorganizer.db.Project;
 import sne.workorganizer.util.FileUtils;
 import sne.workorganizer.util.WoConstants;
 
@@ -108,13 +111,19 @@ public class EditWorkActivity extends AppCompatActivity
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData)
     {
-        Log.d(TAG, "onActivityResult("+requestCode+", "+requestCode+") called");
+        if (BuildConfig.DEBUG)
+        {
+            Log.i(TAG, "onActivityResult(" + requestCode + ", " + requestCode + ") called");
+        }
 
         if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_OPEN_DESIGN_DOCUMENT)
         {
             if (resultData == null) return;
             Uri uri = resultData.getData();
-            Log.d(TAG, "onActivityResult() uri = "+uri.toString());
+            if (BuildConfig.DEBUG)
+            {
+                Log.i(TAG, "onActivityResult() uri = " + uri.toString());
+            }
             String path = FileUtils.getPath(this, uri);
 
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
@@ -125,7 +134,10 @@ public class EditWorkActivity extends AppCompatActivity
         {
             if (resultData == null) return;
             Uri uri = resultData.getData();
-            Log.d(TAG, "onActivityResult() uri = "+uri.toString());
+            if (BuildConfig.DEBUG)
+            {
+                Log.i(TAG, "onActivityResult() uri = " + uri.toString());
+            }
             String path = FileUtils.getPath(this, uri);
 
             EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
@@ -149,13 +161,22 @@ public class EditWorkActivity extends AppCompatActivity
 
     private void save()
     {
-        EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
-        if (!frg.save()) return;
-
-        Intent result = new Intent();
-        result.putExtra(WoConstants.ARG_WORK, frg.getWork());
-        result.putExtra(WoConstants.ARG_POSITION, _position);
-        setResult(RESULT_OK, result);
-        finish();
+        final EditWorkFragment frg = (EditWorkFragment) getSupportFragmentManager().findFragmentByTag(WoConstants.FRG_WORK_EDIT);
+        if (!frg.save(new DatabaseHelper.DbUpdateWorkCallback()
+        {
+            @Override
+            public void onUpdateFinished(Project work, Picture result)
+            {
+                Intent answer = new Intent();
+                answer.putExtra(WoConstants.ARG_WORK, frg.getWork());
+                //answer.putExtra(WoConstants.ARG_POSITION, _position);
+                answer.putExtra(WoConstants.ARG_PICTURE, frg.getResultPicture());
+                setResult(RESULT_OK, answer);
+                finish();
+            }
+        }))
+        {
+            // do nothing
+        }
     }
 }

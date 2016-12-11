@@ -96,7 +96,7 @@ public class EspressoTester
         _pauses.put(4, PAUSE_NONE);
         _pauses.put(10, PAUSE_NONE);
         _pauses.put(11, PAUSE_NONE);
-        _pauses.put(20, PAUSE_LONG);
+        _pauses.put(20, PAUSE_NONE);
 
         for (int i = 0; i < N_CLIENTS; ++i)
         {
@@ -114,7 +114,7 @@ public class EspressoTester
 //        TestUtils.allowAllNeededPermissions();
 //    }
 
-    //@Test
+    @Test
     public void t001_createClient()
     {
         TestUtils.allowAllNeededPermissions();
@@ -161,7 +161,7 @@ public class EspressoTester
 */
     }
 
-    //@Test
+    @Test
     public void t002_createWork()
     {
         TestUtils.allowAllNeededPermissions();
@@ -200,7 +200,7 @@ public class EspressoTester
         onView(withText(_workTitles[0])).check(matches(isDisplayed()));
     }
 
-    //@Test
+    @Test
     public void t003_editWork()
     {
         TestUtils.allowAllNeededPermissions();
@@ -227,7 +227,7 @@ public class EspressoTester
         onView(withText(new_title)).check(matches(isDisplayed()));
     }
 
-    //@Test
+    @Test
     public void t004_deleteClient()
     {
         TestUtils.allowAllNeededPermissions();
@@ -247,7 +247,7 @@ public class EspressoTester
         SystemClock.sleep(pause);
     }
 
-    //@Test
+    @Test
     public void t010_mainMenu()
     {
         TestUtils.allowAllNeededPermissions();
@@ -280,7 +280,7 @@ public class EspressoTester
         pressBack();
     }
 
-    //@Test
+    @Test
     public void t011_createWorkWithClient()
     {
         TestUtils.allowAllNeededPermissions();
@@ -331,6 +331,10 @@ public class EspressoTester
         onView(withId(R.id.menu_calendar)).perform(click());
         SystemClock.sleep(pause);
 
+        //////////////////
+        //   C R E A T E
+        //////////////////
+
         // Go to Create Work form.
         onView(withText(R.string.create)).perform(click());
         SystemClock.sleep(pause);
@@ -354,6 +358,10 @@ public class EspressoTester
 
         saveEditedWork(pause);
 
+        ////////////////
+        //   E D I T
+        ////////////////
+
         // Long click on item to open popup action menu.
         onView(withText(_workTitles[2])).perform(longClick());
         SystemClock.sleep(pause);
@@ -361,26 +369,25 @@ public class EspressoTester
         onView(withText(R.string.mark_as_done)).perform(click());
         SystemClock.sleep(pause);
 
-        // FIXME Error performing 'scroll to' on view 'with id: sne.workorganizer:id/btn_select_result'.
         startEditWork(_workTitles[2], pause);
         SystemClock.sleep(pause);
-        SystemClock.sleep(120000);
 
-        onView(withId(R.id.btn_select_result)).perform(scrollTo(), click());
+        // Error performing 'scroll to' on view 'with id: sne.workorganizer:id/btn_select_result'.
+        //onView(withId(R.id.btn_select_result)).perform(scrollTo(), click());
+        onView(withId(R.id.btn_select_result)).perform(click());
         SystemClock.sleep(pause);
-        SystemClock.sleep(120000);
-//
-//        assertTrue(TestUtils.selectPicture("glenlivet_18"));
-//        SystemClock.sleep(pause);
-//
-//        saveEditedWork(pause);
-//
-//        startEditWork(_workTitles[2], pause);
-//
-//        onView(withId(R.id.btn_clear_result)).perform(click());
-//        SystemClock.sleep(pause);
-//
-//        saveEditedWork(pause);
+
+        assertTrue(TestUtils.selectPicture("glenlivet_18"));
+        SystemClock.sleep(pause);
+
+        saveEditedWork(pause);
+
+        startEditWork(_workTitles[2], pause);
+
+        onView(withId(R.id.btn_clear_result)).perform(click());
+        SystemClock.sleep(pause);
+
+        saveEditedWork(pause);
 
         // Long click on item to open popup action menu.
         onView(withText(_workTitles[2])).perform(longClick());

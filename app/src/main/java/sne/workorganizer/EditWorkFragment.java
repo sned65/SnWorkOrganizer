@@ -37,7 +37,6 @@ import sne.workorganizer.util.WoConstants;
 
 import static sne.workorganizer.util.WoConstants.ARG_CLIENT_NAME;
 import static sne.workorganizer.util.WoConstants.ARG_HIDE_BUTTONS;
-import static sne.workorganizer.util.WoConstants.ARG_POSITION;
 import static sne.workorganizer.util.WoConstants.ARG_WORK;
 
 /**
@@ -67,11 +66,12 @@ public class EditWorkFragment extends Fragment
     private String _resultPath;
     private String _photoPath;
     private boolean _resultCanBeChanged = false;
+    private Picture _resultPicture;
 
     private CheckBox _workStatusBtn;
 
     private Project _work;
-    private int _position;
+    //private int _position;
     private String _clientName;
     private boolean _hideButtons = false;
 
@@ -95,7 +95,7 @@ public class EditWorkFragment extends Fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
             _work = getArguments().getParcelable(ARG_WORK);
-            _position = getArguments().getInt(ARG_POSITION, -1);
+            //_position = getArguments().getInt(ARG_POSITION, -1);
             _clientName = getArguments().getString(ARG_CLIENT_NAME);
             _hideButtons = getArguments().getBoolean(ARG_HIDE_BUTTONS, false);
 
@@ -138,12 +138,18 @@ public class EditWorkFragment extends Fragment
                 public void onClick(View v)
                 {
                     // Note: buttons are present in two-pane mode only
-                    if (save())
+                    if (!save(new DatabaseHelper.DbUpdateWorkCallback()
                     {
-                        WorkListMaster master = (WorkListMaster) getActivity();
-                        // FIXME result picture
-                        master.updateWork(_work, null);
-                        master.removeWorkEditFragment();
+                        @Override
+                        public void onUpdateFinished(Project work, Picture result)
+                        {
+                            WorkListMaster master = (WorkListMaster) getActivity();
+                            master.updateWork(_work, _resultPicture);
+                            master.removeWorkEditFragment();
+                        }
+                    }))
+                    {
+                        // do nothing
                     }
                 }
             });
@@ -342,39 +348,17 @@ public class EditWorkFragment extends Fragment
         }
     }
 
-    public boolean save()
+    public boolean save(DatabaseHelper.DbUpdateWorkCallback callback)
     {
         Log.d(TAG, "save() called");
         if (validateFields()) return false;
 
         fillWork();
-
-        Picture pict = null;
-        Log.i(TAG, "save() _resultPath = "+_resultPath+(_resultCanBeChanged?" Changed":" NOT Changed"));
-        if (_resultCanBeChanged)
-        {
-            pict = new Picture();
-            pict.setWorkId(_work.getId());
-            pict.setResultPhoto(_resultPath);
-        }
+        fillResultPicture();
 
         // Update DB
         DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
-        final WorkListMaster master = (WorkListMaster) getActivity();
-        final Picture picture = pict;
-        db.updateWork(_work, pict, new DatabaseHelper.DbUpdateWorkCallback()
-        {
-            @Override
-            public void onUpdateFinished(Project work)
-            {
-                master.updateWork(work, picture);
-            }
-        });
-
-        // Inform subscribers
-//        WorkUpdateEvent event = new WorkUpdateEvent(_work, _position);
-//        EventBus.getDefault().postSticky(event);
-
+        db.updateWork(_work, _resultPicture, callback);
         return true;
     }
 
@@ -440,9 +424,29 @@ public class EditWorkFragment extends Fragment
         }
     }
 
+    private void fillResultPicture()
+    {
+        Log.i(TAG, "fillResultPicture() _resultPath = "+_resultPath+(_resultCanBeChanged?" Changed":" NOT Changed"));
+        if (_resultCanBeChanged)
+        {
+            _resultPicture = new Picture();
+            _resultPicture.setWorkId(_work.getId());
+            _resultPicture.setResultPhoto(_resultPath);
+        }
+        else
+        {
+            _resultPicture = null;
+        }
+    }
+
     public Project getWork()
     {
         return _work;
+    }
+
+    public Picture getResultPicture()
+    {
+        return _resultPicture;
     }
 
     public void changeDesign(String path)

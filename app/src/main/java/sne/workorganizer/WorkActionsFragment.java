@@ -11,15 +11,15 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-//import org.greenrobot.eventbus.EventBus;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import sne.workorganizer.db.DatabaseHelper;
+import sne.workorganizer.db.Picture;
 import sne.workorganizer.db.Project;
-import sne.workorganizer.eb.WorkUpdateEvent;
 import sne.workorganizer.util.WoConstants;
+
+//import org.greenrobot.eventbus.EventBus;
 
 /**
  * Popup dialog to select actions on Work.
@@ -141,15 +141,12 @@ public class WorkActionsFragment extends DialogFragment
             db.updateWork(_work, null, new DatabaseHelper.DbUpdateWorkCallback()
             {
                 @Override
-                public void onUpdateFinished(Project work)
+                public void onUpdateFinished(Project work, Picture result)
                 {
+                    // Update UI
                     master.updateWork(work, null);
                 }
             });
-
-            // Inform subscribers
-//            WorkUpdateEvent event = new WorkUpdateEvent(_work, _position);
-//            EventBus.getDefault().postSticky(event);
             break;
         }
         }

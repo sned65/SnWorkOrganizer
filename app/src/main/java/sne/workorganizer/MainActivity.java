@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import sne.workorganizer.db.Picture;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.help.AboutAppDialogFragment;
 import sne.workorganizer.util.FileUtils;
@@ -308,13 +309,15 @@ public class MainActivity extends WorkListAbstractActivity
     {
         if (BuildConfig.DEBUG)
         {
-            Log.i(TAG, "requestCode = " + (requestCode == WoConstants.RC_CREATE_WORK ? "CREATE_PROJECT" : requestCode)
+            Log.i(TAG, "requestCode = " + requestCode
                     + ", resultCode = " + (resultCode == RESULT_OK ? "OK" : (resultCode == RESULT_CANCELED ? "CANCELLED" : resultCode)));
         }
 
         if (resultCode == Activity.RESULT_OK && requestCode == WoConstants.RC_EDIT_WORK)
         {
             Project work = data.getParcelableExtra(WoConstants.ARG_WORK);
+            Picture picture = data.getParcelableExtra(WoConstants.ARG_PICTURE);
+            updateWork(work, picture);
 //            int position = data.getIntExtra(WoConstants.ARG_POSITION, -1);
 //            updateWork(work, position);
 
