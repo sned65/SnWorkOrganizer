@@ -17,7 +17,7 @@ import static android.support.test.InstrumentationRegistry.getInstrumentation;
 /**
  * General purpose utilities for Espresso tests.
  */
-public class TestUtils
+class TestUtils
 {
     private static final String TAG = TestUtils.class.getName();
     private static final String PERMISSION_ALLOW_BUTTON_ID = "permission_allow_button";
@@ -33,7 +33,7 @@ public class TestUtils
      * Based on ideas from
      * http://stackoverflow.com/questions/33929937/android-marshmallow-test-permissions-with-espresso
      */
-    public static void allowAllNeededPermissions()
+    static void allowAllNeededPermissions()
     {
         Log.i(TAG, "allowAllNeededPermissions() called");
         try
@@ -137,7 +137,7 @@ public class TestUtils
      * @param title text containing in the picture file name.
      * @return {@code true} if a picture is found and selected.
      */
-    public static boolean selectPicture(String title)
+    static boolean selectPicture(String title)
     {
         UiDevice device = UiDevice.getInstance(getInstrumentation());
         UiSelector selector = new UiSelector().textContains(title);
@@ -152,5 +152,17 @@ public class TestUtils
         {
             return false;
         }
+    }
+
+    /**
+     *
+     * @return current screen orientation. That is one of
+     * the {@code Configuration} values for orientation, such as
+     * {@code Configuration.ORIENTATION_LANDSCAPE}.
+     */
+    public static int getOrientation()
+    {
+        return InstrumentationRegistry.getTargetContext()
+                .getResources().getConfiguration().orientation;
     }
 }

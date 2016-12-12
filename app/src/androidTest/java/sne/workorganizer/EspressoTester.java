@@ -1,5 +1,6 @@
 package sne.workorganizer;
 
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.SystemClock;
 import android.support.design.widget.TextInputEditText;
@@ -15,8 +16,10 @@ import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.View;
+import android.widget.TableRow;
 
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
@@ -43,14 +46,15 @@ import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.isPlatformPopup;
-import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -225,6 +229,7 @@ public class EspressoTester
         // Check existence of the edited work.
         onView(isRoot()).perform(waitFor(withText(new_title), TimeUnit.SECONDS.toMillis(10)));
         onView(withText(new_title)).check(matches(isDisplayed()));
+        onView(withText(new_title)).perform(click());
     }
 
     @Test
@@ -388,6 +393,15 @@ public class EspressoTester
         SystemClock.sleep(pause);
 
         saveEditedWork(pause);
+
+        // Show details
+
+        //Log.i(TAG, "orientation = "+TestUtils.getOrientation());
+//        if (TestUtils.getOrientation() == Configuration.ORIENTATION_LANDSCAPE)
+//        {
+//            onView(allOf(withText(_workTitles[2]), not(withParent(Matchers.<View>instanceOf(TableRow.class))))).perform(click());
+//            SystemClock.sleep(10000);
+//        }
 
         // Long click on item to open popup action menu.
         onView(withText(_workTitles[2])).perform(longClick());
