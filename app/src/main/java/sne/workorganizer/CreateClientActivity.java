@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import sne.workorganizer.db.Client;
+import sne.workorganizer.db.DatabaseContract;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.util.WoConstants;
 
@@ -80,6 +81,12 @@ public class CreateClientActivity extends AppCompatActivity
         client.setSocial(socialView.getText().toString());
         client.setEmail(emailView.getText().toString());
 
+        DatabaseContract.createClient(this, client);
+        Intent result = new Intent();
+        result.putExtra(WoConstants.ARG_CLIENT, client);
+        setResult(RESULT_OK, result);
+        finish();
+/*
         DatabaseHelper db = DatabaseHelper.getInstance(this);
         db.createClient(client, new DatabaseHelper.DbCreateClientCallback()
         {
@@ -92,5 +99,6 @@ public class CreateClientActivity extends AppCompatActivity
                 finish();
             }
         });
+*/
     }
 }

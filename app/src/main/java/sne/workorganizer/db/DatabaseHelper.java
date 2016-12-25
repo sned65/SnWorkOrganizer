@@ -24,12 +24,12 @@ import sne.workorganizer.util.Mix;
 /**
  * Singleton class for database manipulations.
  */
-public class DatabaseHelper extends SQLiteOpenHelper
+public class DatabaseHelper extends SQLiteOpenHelper implements DbSchema
 {
     /**
      * List of DB tables.
      */
-    private enum Table
+    public enum Table
     {
         CLIENTS, PROJECTS, PICTURES;
 
@@ -42,16 +42,9 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     private static final String TAG = DatabaseHelper.class.getName();
 
-    private static final String DATABASE_NAME = "SnWorkOrganizer.db";
-    private static final int SCHEMA_VERSION = 1;
 
     // CLIENTS TABLE
 
-    private static final String CLIENTS_PK = "client_id";
-    public static final String CLIENTS_COL_FULLNAME = "fullname";
-    private static final String CLIENTS_COL_PHONE = "phone";
-    private static final String CLIENTS_COL_EMAIL = "email";
-    private static final String CLIENTS_COL_SOCIAL = "social";
     private static final String CLIENTS_TYPED_COLUMNS =
             CLIENTS_PK + " TEXT PRIMARY KEY, " +
                     CLIENTS_COL_FULLNAME + " TEXT, " +

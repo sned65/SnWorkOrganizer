@@ -96,6 +96,11 @@
                 android:value="sne.workorganizer.WorkListActivity"/>
         </activity>
 
+        <provider
+            android:authorities="sne.workorganizer.db.DatabaseProvider"
+            android:name=".db.DatabaseProvider"
+             android:exported="false"/>
+
     </application>
 
 </manifest>
