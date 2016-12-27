@@ -109,6 +109,7 @@ public class WorkActionsFragment extends DialogFragment
                 arguments.putParcelable(WoConstants.ARG_WORK, work_clone);
                 arguments.putString(WoConstants.ARG_CLIENT_NAME, _clientName);
                 arguments.putInt(WoConstants.ARG_POSITION, _position);
+
                 EditWorkFragment fragment = new EditWorkFragment();
                 fragment.setArguments(arguments);
                 ((AppCompatActivity) master).getSupportFragmentManager().beginTransaction()

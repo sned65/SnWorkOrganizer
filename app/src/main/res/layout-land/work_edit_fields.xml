@@ -37,6 +37,7 @@
     </LinearLayout>
 
 
+<!--
     <TextView
         tools:text="Client"
         android:layout_width="match_parent"
@@ -44,6 +45,12 @@
         android:id="@+id/client_name"
         android:textAppearance="@style/TextAppearance.AppCompat.Title"
         android:gravity="center"/>
+-->
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/select_client"
+        android:layout_weight="1"/>
 
     <LinearLayout
         android:orientation="horizontal"

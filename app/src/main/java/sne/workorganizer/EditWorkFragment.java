@@ -2,6 +2,7 @@ package sne.workorganizer;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -20,13 +21,17 @@ import android.widget.CalendarView;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
 import java.io.File;
 import java.util.Calendar;
 
+import sne.workorganizer.db.ClientLoaderCallbacks;
 import sne.workorganizer.db.DatabaseHelper;
+import sne.workorganizer.db.IdNamePair;
 import sne.workorganizer.db.Picture;
 import sne.workorganizer.db.Project;
 import sne.workorganizer.util.FileUtils;
@@ -35,7 +40,6 @@ import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.PhotoUtils;
 import sne.workorganizer.util.WoConstants;
 
-import static sne.workorganizer.util.WoConstants.ARG_CLIENT_NAME;
 import static sne.workorganizer.util.WoConstants.ARG_HIDE_BUTTONS;
 import static sne.workorganizer.util.WoConstants.ARG_WORK;
 
@@ -50,6 +54,7 @@ public class EditWorkFragment extends Fragment
     private static final String TAG = EditWorkFragment.class.getName();
 
     //private View _rootView;
+    private ClientLoaderCallbacks _clientLoaderCallbacks;
     private CalendarView _dateView;
     private TimePicker _timeView;
     private EditText _titleView;
@@ -71,8 +76,7 @@ public class EditWorkFragment extends Fragment
     private CheckBox _workStatusBtn;
 
     private Project _work;
-    //private int _position;
-    private String _clientName;
+    //private String _clientName;
     private boolean _hideButtons = false;
 
     /**
@@ -96,7 +100,7 @@ public class EditWorkFragment extends Fragment
             // to load content from a content provider.
             _work = getArguments().getParcelable(ARG_WORK);
             //_position = getArguments().getInt(ARG_POSITION, -1);
-            _clientName = getArguments().getString(ARG_CLIENT_NAME);
+            //TODO _clientName = getArguments().getString(ARG_CLIENT_NAME);
             _hideButtons = getArguments().getBoolean(ARG_HIDE_BUTTONS, false);
 
             Activity activity = this.getActivity();
@@ -163,8 +167,9 @@ public class EditWorkFragment extends Fragment
 
     private void fillViews(View rootView)
     {
-        TextView clientNameView = (TextView) rootView.findViewById(R.id.client_name);
-        clientNameView.setText(_clientName);
+//        TextView clientNameView = (TextView) rootView.findViewById(R.id.client_name);
+//        clientNameView.setText(_clientName);
+        initClientSelector(rootView);
 
         _dateView = (CalendarView) rootView.findViewById(R.id.work_date);
         //noinspection deprecation
@@ -315,6 +320,31 @@ public class EditWorkFragment extends Fragment
         _workStatusBtn.setChecked(_work.getStatus() == Project.WorkStatus.DONE);
     }
 
+    private void initClientSelector(View rootView)
+    {
+        Spinner selectClientView = (Spinner) rootView.findViewById(R.id.select_client);
+        SimpleCursorAdapter clientsAdapter =
+                new SimpleCursorAdapter(getContext(), R.layout.simple_client_list_item, // android.R.layout.simple_list_item_1
+                        null, new String[] {
+                        DatabaseHelper.CLIENTS_COL_FULLNAME },
+                        new int[] { android.R.id.text1 },
+                        0);
+        clientsAdapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter()
+        {
+            @Override
+            public CharSequence convertToString(Cursor cur)
+            {
+                int index = cur.getColumnIndex(DatabaseHelper.CLIENTS_COL_FULLNAME);
+                return cur.getString(index);
+            }
+        });
+        selectClientView.setAdapter(clientsAdapter);
+
+        _clientLoaderCallbacks = new ClientLoaderCallbacks(selectClientView);
+        _clientLoaderCallbacks.setSelectedClient(new IdNamePair(_work.getClientId(), null));
+        getActivity().getLoaderManager().initLoader(0, null, _clientLoaderCallbacks);
+    }
+
     private void onSelectDesign()
     {
         Intent i = new Intent().setType("image/*");
@@ -387,6 +417,8 @@ public class EditWorkFragment extends Fragment
 
     private void fillWork()
     {
+        _work.setClientId(_clientLoaderCallbacks.getSelectedClient().getId());
+
         long dt = _dateView.getDate();
         int hh = Mix.timePickerGetHour(_timeView);
         int mm = Mix.timePickerGetMinute(_timeView);

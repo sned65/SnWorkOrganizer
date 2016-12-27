@@ -1,10 +1,7 @@
 package sne.workorganizer;
 
 import android.app.Activity;
-import android.app.LoaderManager;
-import android.content.CursorLoader;
 import android.content.Intent;
-import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -30,8 +27,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import sne.workorganizer.db.Client;
-import sne.workorganizer.db.DatabaseContract;
-import sne.workorganizer.db.DatabaseProvider;
+import sne.workorganizer.db.ClientLoaderCallbacks;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.IdNamePair;
 import sne.workorganizer.db.Project;
@@ -49,9 +45,7 @@ public class CreateWorkActivity extends AppCompatActivity
     public static final String EXTRA_DATE = "work_date";
 
     private TimePicker _timePicker;
-    //private AutoCompleteTextView _selectClientView;
-    private Spinner _selectClientView;
-    private SimpleCursorAdapter _clientsAdapter;
+    private ClientLoaderCallbacks _clientLoaderCallbacks;
     private TextInputEditText _titleView;
     private TextInputEditText _priceView;
 
@@ -59,10 +53,8 @@ public class CreateWorkActivity extends AppCompatActivity
     private String _designPath;
     private ImageButton _designSelectBtn;
 
-    //private AsyncTask _loadClientsTask;
-
     private Date _workDate;
-    private IdNamePair _selectedClient;
+    //private IdNamePair _selectedClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -158,14 +150,14 @@ public class CreateWorkActivity extends AppCompatActivity
 
     private void initClientSelector()
     {
-        _selectClientView = (Spinner) findViewById(R.id.select_client);
-        _clientsAdapter =
+        Spinner selectClientView = (Spinner) findViewById(R.id.select_client);
+        SimpleCursorAdapter clientsAdapter =
                 new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1,
                         null, new String[] {
                         DatabaseHelper.CLIENTS_COL_FULLNAME },
                         new int[] { android.R.id.text1 },
                         0);
-        _clientsAdapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter()
+        clientsAdapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter()
         {
             @Override
             public CharSequence convertToString(Cursor cur)
@@ -174,10 +166,10 @@ public class CreateWorkActivity extends AppCompatActivity
                 return cur.getString(index);
             }
         });
-        _selectClientView.setAdapter(_clientsAdapter);
+        selectClientView.setAdapter(clientsAdapter);
 
-        getLoaderManager().initLoader(0, null, new ClientLoaderCallbacks());
-        // TODO
+        _clientLoaderCallbacks = new ClientLoaderCallbacks(selectClientView);
+        getLoaderManager().initLoader(0, null, _clientLoaderCallbacks);
     }
 
 /*
@@ -321,27 +313,8 @@ public class CreateWorkActivity extends AppCompatActivity
         else if (requestCode == WoConstants.RC_CREATE_CLIENT)
         {
             Client client = resultData.getParcelableExtra(WoConstants.ARG_CLIENT);
-            _selectedClient = new IdNamePair(client.getId(), client.getName());
-            // TODO _selectClientView.setText(_selectedClient.getName());
-/*
- //Does not work because the previous call works in a separate thread
-            Cursor c = _clientsAdapter.getCursor();
-            c.moveToFirst();
-            int position = 0;
-            do
-            {
-                String id = c.getString(c.getColumnIndex("_id"));
-                Log.i(TAG, "Client "+c.getString(1));
-                if (client.getId().equals(id))
-                {
-                    Log.i(TAG, "onActivityResult() new client position "+position);
-                    _selectClientView.setSelection(position);
-                    break;
-                }
-                ++position;
-            }
-            while (c.moveToNext());
-*/
+            IdNamePair selectedClient = new IdNamePair(client.getId(), client.getName());
+            _clientLoaderCallbacks.setSelectedClient(selectedClient);
         }
     }
 
@@ -355,11 +328,6 @@ public class CreateWorkActivity extends AppCompatActivity
     private void save()
     {
         // Validate fields
-
-        _selectedClient = new IdNamePair();
-        _selectedClient.setId(((Cursor) _selectClientView.getSelectedItem()).getString(0));
-        _selectedClient.setName(((Cursor) _selectClientView.getSelectedItem()).getString(1));
-        Log.i(TAG, "save() client_name = "+_selectedClient.getName());
 
         boolean cancel = false;
         View focus = null;
@@ -382,7 +350,7 @@ public class CreateWorkActivity extends AppCompatActivity
 
         // Create Project structure
 
-        Project project = fillProject();
+        Project project = fillWork();
 
         db.createProjectWithClient(project, null, new DatabaseHelper.DbCreateWorkCallback()
         {
@@ -442,7 +410,7 @@ public class CreateWorkActivity extends AppCompatActivity
 
         // Create Project structure
 
-        Project project = fillProject();
+        Project project = fillWork();
 
         db.createProjectWithClient(project, newClient, new DatabaseHelper.DbCreateWorkCallback()
         {
@@ -458,10 +426,10 @@ public class CreateWorkActivity extends AppCompatActivity
 */
     }
 
-    private Project fillProject()
+    private Project fillWork()
     {
         Project project = new Project();
-        project.setClientId(_selectedClient.getId());
+        project.setClientId(_clientLoaderCallbacks.getSelectedClient().getId());
         project.setName(_titleView.getText().toString().trim());
 
         String price_str = _priceView.getText().toString();
@@ -503,47 +471,6 @@ public class CreateWorkActivity extends AppCompatActivity
         startActivityForResult(cc, WoConstants.RC_CREATE_CLIENT);
     }
 
-    private class ClientLoaderCallbacks implements LoaderManager.LoaderCallbacks<Cursor>
-    {
-        @Override
-        public Loader<Cursor> onCreateLoader(int id, Bundle args)
-        {
-            return new CursorLoader(CreateWorkActivity.this, DatabaseContract.Clients.CONTENT_URI,
-                    new String[] { DatabaseHelper.CLIENTS_PK+" AS _id", DatabaseHelper.CLIENTS_COL_FULLNAME },
-                    null, null, DatabaseHelper.CLIENTS_COL_FULLNAME);
-        }
-
-        @Override
-        public void onLoadFinished(Loader<Cursor> loader, Cursor data)
-        {
-            _clientsAdapter.swapCursor(data);
-            if (_selectedClient != null)
-            {
-                //Cursor c = _clientsAdapter.getCursor();
-                data.moveToFirst();
-                int position = 0;
-                do
-                {
-                    String id = data.getString(data.getColumnIndex("_id"));
-                    Log.i(TAG, "onLoadFinished() Client " + data.getString(1));
-                    if (_selectedClient.getId().equals(id))
-                    {
-                        Log.i(TAG, "onLoadFinished() new client position " + position);
-                        _selectClientView.setSelection(position);
-                        break;
-                    }
-                    ++position;
-                }
-                while (data.moveToNext());
-            }
-        }
-
-        @Override
-        public void onLoaderReset(Loader<Cursor> loader)
-        {
-            _clientsAdapter.swapCursor(null);
-        }
-    }
 
 /*
     private class LoadCursorTask extends BaseTask<Void>
