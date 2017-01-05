@@ -325,9 +325,8 @@ public class EditWorkFragment extends Fragment
         Spinner selectClientView = (Spinner) rootView.findViewById(R.id.select_client);
         SimpleCursorAdapter clientsAdapter =
                 new SimpleCursorAdapter(getContext(), R.layout.simple_client_list_item, // android.R.layout.simple_list_item_1
-                        null, new String[] {
-                        DatabaseHelper.CLIENTS_COL_FULLNAME },
-                        new int[] { android.R.id.text1 },
+                        null, new String[] { DatabaseHelper.CLIENTS_COL_FULLNAME },
+                        new int[] { R.id.text1 }, // android.R.id.text1 },
                         0);
         clientsAdapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter()
         {

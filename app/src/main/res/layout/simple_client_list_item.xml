@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools"
-          android:id="@android:id/text1"
+          android:id="@+id/text1"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:textAppearance="?android:attr/textAppearanceListItem"
@@ -10,4 +10,6 @@
           android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
           android:minHeight="?android:attr/listPreferredItemHeight"
           android:textStyle="bold"
-          tools:text="Client Name"/>
+          tools:text="Client Name"
+          android:layout_gravity="center_horizontal"
+          android:background="?android:attr/colorButtonNormal"/>

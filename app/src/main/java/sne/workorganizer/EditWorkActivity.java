@@ -4,11 +4,14 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Picture;
@@ -30,9 +33,14 @@ public class EditWorkActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        if (BuildConfig.DEBUG)
+        {
+            Log.i(TAG, "onCreate() called. instance = " + savedInstanceState);
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_work_detail);
 //        Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
+//        toolbar.setVisibility(View.INVISIBLE);
 //        setSupportActionBar(toolbar);
 //
 //        // Show the Up button in the action bar.
@@ -42,11 +50,11 @@ public class EditWorkActivity extends AppCompatActivity
 //            actionBar.setDisplayHomeAsUpEnabled(true);
 //        }
 
-        initActionMode();
+        //initActionMode();
 
         if (savedInstanceState == null)
         {
-            // Create the detail fragment and add it to the activity
+            // Create the edit fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
             arguments.putParcelable(WoConstants.ARG_WORK,
@@ -61,9 +69,25 @@ public class EditWorkActivity extends AppCompatActivity
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.work_detail_container, fragment, WoConstants.FRG_WORK_EDIT)
-                    .commit();
-        }
+                    .commitNow();
 
+            initActionMode();
+
+            // It seems that layouts of the NestedScrollView and the Toolbar
+            // are calculated in different threads and not synchronized (bug ?).
+            // As a result they overlaps sometimes.
+            // The code below scrolls the NestedScrollView to its initial position
+            // to protect against the layout overlapping.
+            final NestedScrollView scroll = (NestedScrollView) findViewById(R.id.work_detail_scroll);
+            scroll.post(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    scroll.scrollTo(0, 0);
+                }
+            });
+        }
     }
 
     private void initActionMode()

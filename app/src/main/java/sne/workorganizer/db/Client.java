@@ -53,12 +53,13 @@ public class Client implements Parcelable, DbRow
         _email = in.readString();
         _social = in.readString();
 
-        Parcelable[] projArray = in.readParcelableArray(Project.class.getClassLoader());
-        for (Parcelable p : projArray)
-        {
-            Project pr = (Project) p;
-            _projects.add(pr);
-        }
+        //Parcelable[] projArray = in.readParcelableArray(Project.class.getClassLoader());
+//        for (Parcelable p : projArray)
+//        {
+//            Project pr = (Project) p;
+//            _projects.add(pr);
+//        }
+         in.readTypedList(_projects, Project.CREATOR);
     }
 
     @Override
@@ -76,8 +77,9 @@ public class Client implements Parcelable, DbRow
         dest.writeString(_email);
         dest.writeString(_social);
 
-        Project[] projArray = _projects.toArray(new Project[0]);
-        dest.writeParcelableArray(projArray, 0);
+        //Project[] projArray = _projects.toArray(new Project[0]);
+        //dest.writeParcelableArray(projArray, 0);
+        dest.writeTypedList(_projects);
     }
 
     @SuppressWarnings("unused")
