@@ -76,7 +76,6 @@ public class EditWorkFragment extends Fragment
     private CheckBox _workStatusBtn;
 
     private Project _work;
-    //private String _clientName;
     private boolean _hideButtons = false;
 
     /**
@@ -99,8 +98,6 @@ public class EditWorkFragment extends Fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
             _work = getArguments().getParcelable(ARG_WORK);
-            //_position = getArguments().getInt(ARG_POSITION, -1);
-            //TODO _clientName = getArguments().getString(ARG_CLIENT_NAME);
             _hideButtons = getArguments().getBoolean(ARG_HIDE_BUTTONS, false);
 
             Activity activity = this.getActivity();
@@ -116,7 +113,7 @@ public class EditWorkFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        View rootView = inflater.inflate(R.layout.activity_edit_work, container, false);
+        View rootView = inflater.inflate(R.layout.work_edit_fields, container, false);
         if (_hideButtons)
         {
             View buttonPanel = rootView.findViewById(R.id.button_panel);
@@ -167,8 +164,6 @@ public class EditWorkFragment extends Fragment
 
     private void fillViews(View rootView)
     {
-//        TextView clientNameView = (TextView) rootView.findViewById(R.id.client_name);
-//        clientNameView.setText(_clientName);
         initClientSelector(rootView);
 
         _dateView = (CalendarView) rootView.findViewById(R.id.work_date);
@@ -360,7 +355,10 @@ public class EditWorkFragment extends Fragment
 
     private void makePhoto()
     {
-        Log.d(TAG, "makePhoto() called");
+        if (BuildConfig.DEBUG)
+        {
+            Log.i(TAG, "makePhoto() called");
+        }
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         Uri resultUri = PhotoUtils.getOutputMediaFileUri(_work.getName()); // create a file to save the image
         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, resultUri); // set the image file name
@@ -379,7 +377,10 @@ public class EditWorkFragment extends Fragment
 
     public boolean save(DatabaseHelper.DbUpdateWorkCallback callback)
     {
-        Log.d(TAG, "save() called");
+        if (BuildConfig.DEBUG)
+        {
+            Log.i(TAG, "save() called");
+        }
         if (validateFields()) return false;
 
         fillWork();
@@ -457,7 +458,10 @@ public class EditWorkFragment extends Fragment
 
     private void fillResultPicture()
     {
-        Log.i(TAG, "fillResultPicture() _resultPath = "+_resultPath+(_resultCanBeChanged?" Changed":" NOT Changed"));
+        if (BuildConfig.DEBUG)
+        {
+            Log.i(TAG, "fillResultPicture() _resultPath = " + _resultPath + (_resultCanBeChanged ? " Changed" : " NOT Changed"));
+        }
         if (_resultCanBeChanged)
         {
             _resultPicture = new Picture();
@@ -514,7 +518,10 @@ public class EditWorkFragment extends Fragment
 
     public void acceptPhoto(boolean flag)
     {
-        Log.d(TAG, "acceptPhoto("+flag+") called for "+_photoPath);
+        if (BuildConfig.DEBUG)
+        {
+            Log.i(TAG, "acceptPhoto(" + flag + ") called for " + _photoPath);
+        }
         if (flag)
         {
             _resultPath = _photoPath;

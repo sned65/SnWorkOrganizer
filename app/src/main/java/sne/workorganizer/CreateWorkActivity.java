@@ -54,7 +54,6 @@ public class CreateWorkActivity extends AppCompatActivity
     private ImageButton _designSelectBtn;
 
     private Date _workDate;
-    //private IdNamePair _selectedClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -172,87 +171,6 @@ public class CreateWorkActivity extends AppCompatActivity
         getLoaderManager().initLoader(0, null, _clientLoaderCallbacks);
     }
 
-/*
-    private void initClientSelector()
-    {
-        _selectClientView = (AutoCompleteTextView) findViewById(R.id.select_client);
-        SimpleCursorAdapter adapter =
-                new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1,
-                        null, new String[] {
-                        DatabaseHelper.CLIENTS_COL_FULLNAME },
-                        new int[] { android.R.id.text1 },
-                        0);
-        adapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter()
-        {
-            @Override
-            public CharSequence convertToString(Cursor cur)
-            {
-                int index = cur.getColumnIndex(DatabaseHelper.CLIENTS_COL_FULLNAME);
-                return cur.getString(index);
-            }
-        });
-
-        adapter.setFilterQueryProvider(new FilterQueryProvider()
-        {
-            @Override
-            public Cursor runQuery(CharSequence str)
-            {
-                if (str != null)
-                {
-                    _loadClientsTask = new LoadCursorTask(str.toString()).execute();
-                }
-                return null;
-            }
-        });
-
-        _selectClientView.setAdapter(adapter);
-
-        _selectClientView.setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-            {
-                // Cursor -> Client Id-Name pair
-                Cursor c = (Cursor) (parent.getAdapter().getItem(position));
-                _selectedClient = new IdNamePair();
-                int idx_id = c.getColumnIndex("_id");
-                _selectedClient.setId(c.getString(idx_id));
-                int idx_name = c.getColumnIndex(DatabaseHelper.CLIENTS_COL_FULLNAME);
-                _selectedClient.setName(c.getString(idx_name));
-            }
-        });
-    }
-*/
-
-/*
-    @Override
-    public void onDestroy()
-    {
-        cancelClientTask();
-        closeClientCursor();
-
-        super.onDestroy();
-    }
-*/
-
-/*
-    private void cancelClientTask()
-    {
-        if (_loadClientsTask != null)
-        {
-            _loadClientsTask.cancel(false);
-        }
-    }
-*/
-
-/*
-    private void closeClientCursor()
-    {
-        Cursor c = ((CursorAdapter) _selectClientView.getAdapter()).getCursor();
-        if (c != null) c.close();
-    }
-*/
-
     private void onSelectDesign()
     {
         Intent i = new Intent().setType("image/*");
@@ -264,14 +182,20 @@ public class CreateWorkActivity extends AppCompatActivity
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData)
     {
-        Log.d(TAG, "onActivityResult("+requestCode+", "+resultCode+") called");
+        if (BuildConfig.DEBUG)
+        {
+            Log.i(TAG, "onActivityResult(" + requestCode + ", " + resultCode + ") called");
+        }
         if (resultCode != Activity.RESULT_OK) return;
         if (resultData == null) return;
 
         if (requestCode == WoConstants.RC_OPEN_DESIGN_DOCUMENT)
         {
             Uri uri = resultData.getData();
-            Log.d(TAG, uri.toString());
+            if (BuildConfig.DEBUG)
+            {
+                Log.i(TAG, uri.toString());
+            }
 
             Cursor c =
                     getContentResolver().query(uri, null, null,
@@ -284,13 +208,19 @@ public class CreateWorkActivity extends AppCompatActivity
                 if (displayNameColumn >= 0)
                 {
                     displayName = c.getString(displayNameColumn);
-                    Log.d(TAG, "Display name: " + displayName);
+                    if (BuildConfig.DEBUG)
+                    {
+                        Log.i(TAG, "Display name: " + displayName);
+                    }
                 }
 
                 c.close();
 
                 _designPath = FileUtils.getPath(this, uri);
-                Log.d(TAG, "onActivityResult() uri ("+uri+") -> _designPath ("+_designPath+")");
+                if (BuildConfig.DEBUG)
+                {
+                    Log.i(TAG, "onActivityResult() uri (" + uri + ") -> _designPath (" + _designPath + ")");
+                }
                 _designView.setText(displayName);
 
                 //int thumbnailWidth = getResources().getDimensionPixelSize(android.R.dimen.thumbnail_width);
@@ -306,7 +236,7 @@ public class CreateWorkActivity extends AppCompatActivity
             }
             else
             {
-                Log.d(TAG, "?No metadata available for "+uri);
+                Log.w(TAG, "?No metadata available for "+uri);
             }
         }
 
@@ -363,67 +293,6 @@ public class CreateWorkActivity extends AppCompatActivity
                 finish();
             }
         });
-/*
-        // Validate fields
-
-        String client_name = _selectClientView.getText().toString().trim();
-        Log.d(TAG, "save() client_name = "+client_name);
-
-        boolean cancel = false;
-        View focus = null;
-
-        if (TextUtils.isEmpty(client_name))
-        {
-            _selectClientView.setError(getString(R.string.error_field_required));
-            focus = _selectClientView;
-            cancel = true;
-        }
-
-        String title = _titleView.getText().toString();
-        if (TextUtils.isEmpty(title))
-        {
-            _titleView.setError(getString(R.string.error_field_required));
-            if (!cancel) focus = _titleView;
-            cancel = true;
-        }
-
-        if (cancel)
-        {
-            focus.requestFocus();
-            return;
-        }
-
-        DatabaseHelper db = DatabaseHelper.getInstance(this);
-        Client newClient = null;
-
-        if (_selectedClient == null || !client_name.equals(_selectedClient.getName()))
-        {
-            // new client
-            Log.d(TAG, "save() new client");
-            newClient = new Client();
-            newClient.setName(client_name);
-
-            _selectedClient = new IdNamePair();
-            _selectedClient.setId(newClient.getId());
-            _selectedClient.setName(client_name);
-        }
-
-        // Create Project structure
-
-        Project project = fillWork();
-
-        db.createProjectWithClient(project, newClient, new DatabaseHelper.DbCreateWorkCallback()
-        {
-            @Override
-            public void onCreateFinished(Project work)
-            {
-                Intent result = new Intent();
-                result.putExtra(WoConstants.ARG_WORK, work);
-                setResult(RESULT_OK, result);
-                finish();
-            }
-        });
-*/
     }
 
     private Project fillWork()
@@ -470,39 +339,4 @@ public class CreateWorkActivity extends AppCompatActivity
         Intent cc = new Intent(this, CreateClientActivity.class);
         startActivityForResult(cc, WoConstants.RC_CREATE_CLIENT);
     }
-
-
-/*
-    private class LoadCursorTask extends BaseTask<Void>
-    {
-        private final String _pattern;
-
-        LoadCursorTask(String pattern)
-        {
-            _pattern = pattern;
-        }
-
-        @Override
-        protected Cursor doInBackground(Void... params)
-        {
-            return doQuery(_pattern);
-        }
-    }
-
-    abstract private class BaseTask<T> extends AsyncTask<T, Void, Cursor>
-    {
-        @Override
-        public void onPostExecute(Cursor result)
-        {
-            ((CursorAdapter) _selectClientView.getAdapter()).changeCursor(result);
-            _loadClientsTask = null;
-        }
-
-        Cursor doQuery(String startsWith)
-        {
-            DatabaseHelper db = DatabaseHelper.getInstance(CreateWorkActivity.this);
-            return db.getClientCursorByNameStart(startsWith);
-        }
-    }
-*/
 }

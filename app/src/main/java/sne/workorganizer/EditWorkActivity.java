@@ -6,12 +6,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Picture;
@@ -49,8 +47,6 @@ public class EditWorkActivity extends AppCompatActivity
 //        {
 //            actionBar.setDisplayHomeAsUpEnabled(true);
 //        }
-
-        //initActionMode();
 
         if (savedInstanceState == null)
         {
@@ -193,7 +189,6 @@ public class EditWorkActivity extends AppCompatActivity
             {
                 Intent answer = new Intent();
                 answer.putExtra(WoConstants.ARG_WORK, frg.getWork());
-                //answer.putExtra(WoConstants.ARG_POSITION, _position);
                 answer.putExtra(WoConstants.ARG_PICTURE, frg.getResultPicture());
                 setResult(RESULT_OK, answer);
                 finish();
