@@ -119,7 +119,7 @@ public class EspressoTester
 //    }
 
     @Test
-    public void t001_createClient()
+    public void t001_createClient1()
     {
         TestUtils.allowAllNeededPermissions();
 
@@ -182,7 +182,8 @@ public class EspressoTester
         SystemClock.sleep(pause);
 
         // Fill the form.
-        onView(withId(R.id.select_client)).perform(typeText(CLIENT_NAME_PREFIX.substring(0,3)));
+//        onView(withId(R.id.select_client)).perform(typeText(CLIENT_NAME_PREFIX.substring(0,3)));
+        onView(withId(R.id.select_client)).perform(click());
         SystemClock.sleep(pause);
 
         onData(allOf(is(instanceOf(Cursor.class)), CursorMatchers.withRowString(DatabaseHelper.CLIENTS_COL_FULLNAME, _clientNames[0])))
@@ -233,7 +234,7 @@ public class EspressoTester
     }
 
     @Test
-    public void t004_deleteClient()
+    public void t004_deleteClient1()
     {
         TestUtils.allowAllNeededPermissions();
 
@@ -285,7 +286,8 @@ public class EspressoTester
         pressBack();
     }
 
-    @Test
+    //@Test
+    @Deprecated
     public void t011_createWorkWithClient()
     {
         TestUtils.allowAllNeededPermissions();
@@ -323,7 +325,6 @@ public class EspressoTester
         deleteClient(_clientNames[1], pause);
         SystemClock.sleep(pause);
     }
-
     @Test
     public void t020_createWorkWithPictures()
     {

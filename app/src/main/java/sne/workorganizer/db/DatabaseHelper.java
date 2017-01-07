@@ -507,16 +507,16 @@ public class DatabaseHelper extends SQLiteOpenHelper implements DbSchema
         new SelectPicturesTask(callback).execute();
     }
 
-    /**
+    /*
      * Insert new client in a separate thread.
      *
      * @param client client to be inserted
      * @param callback to be called after insertion
      */
-    public void createClient(Client client, DbCreateClientCallback callback)
-    {
-        new InsertTask(client, callback).execute();
-    }
+//    public void createClient(Client client, DbCreateClientCallback callback)
+//    {
+//        new InsertTask(client, callback).execute();
+//    }
 
     /**
      * Update client in a separate thread.

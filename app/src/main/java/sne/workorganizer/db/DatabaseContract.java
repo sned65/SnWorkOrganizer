@@ -1,9 +1,13 @@
 package sne.workorganizer.db;
 
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
+
+import sne.workorganizer.BuildConfig;
 
 import static android.provider.BaseColumns._ID;
 import static sne.workorganizer.db.DbSchema.CLIENTS_COL_EMAIL;
@@ -24,6 +28,8 @@ import static sne.workorganizer.db.DbSchema.CLIENTS_PK;
  */
 public class DatabaseContract
 {
+    private static final String TAG = DatabaseContract.class.getName();
+
     /**
      * The authority of the database provider.
      */
@@ -79,7 +85,7 @@ public class DatabaseContract
     }
 
 
-    public static void createClient(Context context, Client client)
+    public static void createClient(Context context, final Client client)
     {
         ContentValues values = new ContentValues();
         values.put(CLIENTS_PK, client.getId());
@@ -89,5 +95,22 @@ public class DatabaseContract
         values.put(CLIENTS_COL_SOCIAL, client.getSocial());
 
         context.getContentResolver().insert(Clients.CONTENT_URI, values);
+    }
+
+    public static void deleteClient(Context context, final String clientId)
+    {
+        final ContentResolver resolver = context.getContentResolver();
+        new Thread(new Runnable()
+        {
+            public void run()
+            {
+                Uri uri = Uri.withAppendedPath(Clients.CONTENT_URI, clientId);
+                int resCount = resolver.delete(uri, null, null);
+                if (BuildConfig.DEBUG)
+                {
+                    Log.i(TAG, "Total of "+resCount+" clients deleted");
+                }
+            }
+        }).start();
     }
 }

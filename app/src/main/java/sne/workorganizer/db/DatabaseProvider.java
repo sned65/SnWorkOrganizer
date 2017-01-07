@@ -150,7 +150,10 @@ public class DatabaseProvider extends ContentProvider
         if (URI_MATCHER.match(uri) == CLIENT_LIST)
         {
             long id = db.insert(DbSchema.TBL_CLIENTS, null, values);
-            return getUriForId(id, uri);
+            Log.i(TAG, "insert() *** id = "+id);
+            Uri uriWithId = getUriForId(id, uri);
+            Log.i(TAG, "uriWithId = "+uriWithId);
+            return uriWithId;
         }
         else
         {
@@ -158,6 +161,7 @@ public class DatabaseProvider extends ContentProvider
         }
     }
 
+    // TODO check the logic: id is long.
     private Uri getUriForId(long id, Uri uri)
     {
         if (id > 0)
@@ -180,7 +184,7 @@ public class DatabaseProvider extends ContentProvider
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs)
+    public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs)
     {
         if (BuildConfig.DEBUG)
         {

@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import sne.workorganizer.db.Client;
+import sne.workorganizer.db.DatabaseContract;
 import sne.workorganizer.db.DatabaseHelper;
 
 /**
@@ -62,6 +63,8 @@ public class ConfirmDeleteClientFragment extends DialogFragment
     @Override
     public void onClick(DialogInterface dialog, int which)
     {
+//        DatabaseContract.deleteClient(getActivity(), _client.getId());
+
         final ClientListActivity mainActivity = (ClientListActivity) getActivity();
 
         // Remove from DB
@@ -72,10 +75,6 @@ public class ConfirmDeleteClientFragment extends DialogFragment
             {
                 // Remove from UI
                 mainActivity.removeClient(_position);
-
-                // Inform subscribers
-//                ClientDeleteEvent event = new ClientDeleteEvent(_client);
-//                EventBus.getDefault().postSticky(event);
             }
         });
     }
