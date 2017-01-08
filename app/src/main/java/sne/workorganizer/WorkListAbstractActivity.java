@@ -13,24 +13,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-//import org.greenrobot.eventbus.EventBus;
-//import org.greenrobot.eventbus.Subscribe;
-//import org.greenrobot.eventbus.ThreadMode;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 
-import sne.workorganizer.db.Client;
 import sne.workorganizer.db.DatabaseHelper;
 import sne.workorganizer.db.Picture;
 import sne.workorganizer.db.Project;
-import sne.workorganizer.eb.ClientDeleteEvent;
-import sne.workorganizer.eb.WorkCreateEvent;
-import sne.workorganizer.eb.WorkUpdateEvent;
 import sne.workorganizer.util.Mix;
 import sne.workorganizer.util.WoConstants;
+
+//import org.greenrobot.eventbus.EventBus;
+//import org.greenrobot.eventbus.Subscribe;
+//import org.greenrobot.eventbus.ThreadMode;
 
 /**
  * Common base class for activities showing work list.
@@ -173,7 +169,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         Date dateTo = new Date(adapter.getDateTo());
         if (BuildConfig.DEBUG)
         {
-            Log.d(TAG, "search() from " + dateFrom + " to " + dateTo);
+            Log.i(TAG, "search() from " + dateFrom + " to " + dateTo);
         }
 
         DatabaseHelper db = DatabaseHelper.getInstance(this);
@@ -191,7 +187,10 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
     //@Subscribe(threadMode = ThreadMode.MAIN)
     public void onSearchFinished(ArrayList<Project> records)
     {
-        Log.i(TAG, "onSearchFinished("+records.size()+") called");
+        if (BuildConfig.DEBUG)
+        {
+            Log.i(TAG, "onSearchFinished(" + records.size() + ") called");
+        }
         WorkListViewAdapter adapter = (WorkListViewAdapter) _workListView.getAdapter();
         adapter.setWorks(records);
         adapter.notifyDataSetChanged();
@@ -448,8 +447,8 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
                     Log.i(TAG, "updateWork() new date is in the filter range");
                 }
                 _works.set(position, work);
-                long oldDate = _works.get(position).getDate().longValue();
-                if (oldDate != work.getDate().longValue())
+                long oldDate = _works.get(position).getDate();
+                if (oldDate != work.getDate())
                 {
                     sortWorksByDateTime();
                 }
@@ -528,7 +527,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         {
             if (BuildConfig.DEBUG)
             {
-                Log.d(TAG, "removeWork(" + position + ") called");
+                Log.i(TAG, "removeWork(" + position + ") called");
             }
             _works.remove(position);
         }
@@ -554,10 +553,10 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
         }
 
         /////////////////////////////////////////////////////////////////////////
-        public class ViewHolder extends WorkViewBaseHolder
+        class ViewHolder extends WorkViewBaseHolder
                 implements View.OnLongClickListener
         {
-            public ViewHolder(View view)
+            ViewHolder(View view)
             {
                 super(view, _noWorkMessage);
 
@@ -569,7 +568,7 @@ public abstract class WorkListAbstractActivity extends AppCompatActivity impleme
             {
                 if (BuildConfig.DEBUG)
                 {
-                    Log.d(TAG, "onLongClick() called " + getAdapterPosition() + "; " + _project);
+                    Log.i(TAG, "onLongClick() called " + getAdapterPosition() + "; " + _project);
                 }
                 if (_project == null || Project.isDummy(_project))
                 {

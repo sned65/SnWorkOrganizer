@@ -237,7 +237,10 @@ public class GalleryActivity extends AppCompatActivity
                 @Override
                 public void onSelectFinished(ArrayList<Picture> records)
                 {
-                    Log.d(TAG, "onSelectFinished() " + records + ", size = " + ((records == null) ? "" : records.size()));
+                    if (BuildConfig.DEBUG)
+                    {
+                        Log.i(TAG, "onSelectFinished() " + records + ", size = " + ((records == null) ? "" : records.size()));
+                    }
                     _pictures = records;
                     showProgressBar(false);
                 }

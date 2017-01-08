@@ -53,7 +53,6 @@ public class ClientLoaderCallbacks implements LoaderManager.LoaderCallbacks<Curs
         _selectedClient = new IdNamePair();
         _selectedClient.setId(((Cursor) _clientSelector.getSelectedItem()).getString(0));
         _selectedClient.setName(((Cursor) _clientSelector.getSelectedItem()).getString(1));
-        Log.i(TAG, "save() client_name = "+_selectedClient.getName());
         return _selectedClient;
     }
 
@@ -71,10 +70,8 @@ public class ClientLoaderCallbacks implements LoaderManager.LoaderCallbacks<Curs
             do
             {
                 String id = data.getString(data.getColumnIndex("_id"));
-                Log.i(TAG, "onLoadFinished() Client " + data.getString(1));
                 if (_selectedClient.getId().equals(id))
                 {
-                    Log.i(TAG, "onLoadFinished() new client position " + position);
                     _clientSelector.setSelection(position);
                     break;
                 }

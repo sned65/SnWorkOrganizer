@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Work Organizer</string>
     <string name="author">Nikolai Smirnov</string>
-    <string name="copyright" translatable="false">© 2016</string>
+    <string name="copyright" translatable="false">© 2017</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="create">Create</string>

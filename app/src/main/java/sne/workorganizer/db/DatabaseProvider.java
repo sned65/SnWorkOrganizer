@@ -52,7 +52,7 @@ public class DatabaseProvider extends ContentProvider
 
     @Nullable
     @Override
-    public String getType(Uri uri)
+    public String getType(@NonNull Uri uri)
     {
         switch (URI_MATCHER.match(uri))
         {
@@ -134,7 +134,7 @@ public class DatabaseProvider extends ContentProvider
 
     @Nullable
     @Override
-    public Uri insert(Uri uri, ContentValues values)
+    public Uri insert(@NonNull Uri uri, ContentValues values)
     {
         if (BuildConfig.DEBUG)
         {
@@ -150,9 +150,9 @@ public class DatabaseProvider extends ContentProvider
         if (URI_MATCHER.match(uri) == CLIENT_LIST)
         {
             long id = db.insert(DbSchema.TBL_CLIENTS, null, values);
-            Log.i(TAG, "insert() *** id = "+id);
+            //Log.i(TAG, "insert() *** id = "+id);
             Uri uriWithId = getUriForId(id, uri);
-            Log.i(TAG, "uriWithId = "+uriWithId);
+            //Log.i(TAG, "uriWithId = "+uriWithId);
             return uriWithId;
         }
         else
@@ -192,7 +192,7 @@ public class DatabaseProvider extends ContentProvider
         }
 
         SQLiteDatabase db = _db.getWritableDatabase();
-        int delCount = 0;
+        int delCount;
 
         switch (URI_MATCHER.match(uri))
         {
@@ -222,7 +222,7 @@ public class DatabaseProvider extends ContentProvider
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs)
+    public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs)
     {
         if (BuildConfig.DEBUG)
         {
@@ -230,7 +230,7 @@ public class DatabaseProvider extends ContentProvider
         }
 
         SQLiteDatabase db = _db.getWritableDatabase();
-        int updateCount = 0;
+        int updateCount;
 
         switch (URI_MATCHER.match(uri))
         {

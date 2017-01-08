@@ -200,7 +200,10 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
     @Override
     public void onEditClientFinished(Client client, int position)
     {
-        Log.i(TAG, "# projects = "+client.getProjects().size());
+        if (BuildConfig.DEBUG)
+        {
+            Log.i(TAG, "# projects = " + client.getProjects().size());
+        }
         if (client.getProjects().size() > 1)
         {
             Log.e(TAG, "!!! # projects > 1 !!!");
@@ -222,7 +225,10 @@ public class ClientListActivity extends AppCompatActivity implements EditClientD
                 @Override
                 public void onSelectFinished(ArrayList<Client> records)
                 {
-                    Log.i(TAG, "onSelectFinished() "+records+", size = "+((records == null) ? "" : records.size()));
+                    if (BuildConfig.DEBUG)
+                    {
+                        Log.i(TAG, "onSelectFinished() " + records + ", size = " + ((records == null) ? "" : records.size()));
+                    }
                     _clients = records;
                     showClientList();
                 }

@@ -37,7 +37,8 @@ public class AboutAppDialogFragment extends DialogFragment
             PackageInfo pinfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
             sb.append("Version code ").append(pinfo.versionCode).append("<br/>");
             sb.append("Version name ").append(pinfo.versionName).append("<br/>");
-            sb.append(getString(R.string.copyright)).append(" ").append(getString(R.string.author));
+            sb.append(getString(R.string.copyright)).append(" ").append(getString(R.string.author)).append("<br/>");
+            sb.append("Licensed solely for use by Kira Smirnova");
         }
         catch (PackageManager.NameNotFoundException e)
         {

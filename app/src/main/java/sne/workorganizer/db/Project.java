@@ -151,7 +151,7 @@ public class Project implements Parcelable, Cloneable, DbRow
 
     protected Project(Parcel in)
     {
-        Log.i(TAG, "*** Project(Parcel in) called ***");
+        //Log.i(TAG, "*** Project(Parcel in) called ***");
         _id = in.readString();
         _clientId = in.readString();
         _name = in.readString();
